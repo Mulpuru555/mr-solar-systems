@@ -1,102 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>M.R Solar Systems | Tenali</title>
-<link rel="stylesheet" href="style.css">
+    <title>M.R Solar Systems</title>
+    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-
 <body>
 
-<header>
-  <div class="header-container">
-    <img src="mr-logo.jpeg" class="logo" alt="M.R Solar Logo">
+<!-- ===== SOLAR PARTICLE BACKGROUND ===== -->
+<div id="particles"></div>
 
+<!-- ===== HEADER ===== -->
+<header class="top-header">
+    <div class="header-container">
+        <img src="mr-logo.jpeg" class="mr-logo glow" alt="M.R Solar Logo">
 
-    <div class="company-text">
-      <h1>M.R SOLAR SYSTEMS</h1>
-      <p>Authorized Channel Partner</p>
+        <h1>M.R SOLAR SYSTEMS</h1>
+
+        <img src="tata-logo.jpeg" class="tata-logo" alt="Tata Solar Logo">
     </div>
-
-    <img src="tata-logo.jpeg" class="tata-logo" alt="Tata Solar Logo">
-
-
-  </div>
 </header>
 
-<nav>
-  <a onclick="scrollToSection('home')">Home</a>
-  <a onclick="scrollToSection('services')">Services</a>
-  <a onclick="scrollToSection('features')">Features</a>
-  <a onclick="scrollToSection('contact')">Contact</a>
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar">
+    <a href="#home">Home</a>
+    <a href="#services">Services</a>
+    <a href="#contact">Contact</a>
 </nav>
 
-<section class="hero" id="home">
-  <div class="hero-overlay">
-    <h2>Power Your Home & Business with Solar Energy</h2>
-    <p>Government Subsidy Assistance | EMI Available | Expert Installation</p>
-    <button onclick="openWhatsApp()">Chat on WhatsApp</button>
-  </div>
+<!-- ===== HERO ===== -->
+<section id="home" class="hero reveal">
+    <h2>Power Your Future with Solar Energy ☀</h2>
+    <p>Government Subsidy | EMI Options | Expert Installation</p>
+    <a href="https://wa.me/919154777773" class="hero-btn">Get Free Consultation</a>
 </section>
 
-<section class="section" id="services">
-  <h2>Our Solar Solutions</h2>
-
-  <div class="card-container">
-    <div class="card">
-      <h3>Residential Solar</h3>
-      <p>Complete rooftop solar systems for homes with subsidy support.</p>
-    </div>
-
-    <div class="card">
-      <h3>Commercial Solar</h3>
-      <p>High-capacity installations for industries & businesses.</p>
-    </div>
-
-    <div class="card">
-      <h3>Solar Cleaning Systems</h3>
-      <p>Automatic sprinkler systems to maintain panel efficiency.</p>
-    </div>
-  </div>
+<!-- ===== SERVICES ===== -->
+<section id="services" class="services reveal">
+    <h2>Our Solar Solutions</h2>
+    <div class="service-box">Residential Solar Systems</div>
+    <div class="service-box">Commercial Solar Installations</div>
+    <div class="service-box">Solar Panel Cleaning Systems</div>
 </section>
 
-<section class="features" id="features">
-  <h2>Why Choose M.R Solar Systems?</h2>
-  <ul>
-    <li>✔ High Efficiency Solar Panels</li>
-    <li>✔ Complete Government Subsidy Assistance</li>
-    <li>✔ Affordable EMI Options</li>
-    <li>✔ Professional Installation Team</li>
-    <li>✔ Strong After-Sales Support</li>
-  </ul>
+<!-- ===== CONTACT ===== -->
+<section id="contact" class="contact reveal">
+    <h2>Contact Us</h2>
+    <p>Bilal Hotel Opposite, Tenali - 522201</p>
+    <p>📞 9154777773 | 9550637304</p>
 </section>
 
-<section class="section" id="contact">
-  <h2>Contact & Branches</h2>
-
-  <p><strong>Main Branch:</strong> Bilal Hotel Opposite, Tenali - 522201</p>
-  <p><strong>Branches:</strong> Tenali | Bapatla | Repalle | Chirala</p>
-
-  <br>
-
-  <p><strong>Proprietor:</strong> M. Manasa</p>
-  <p><strong>Managing Director:</strong> M. Rajesh</p>
-
-  <br>
-
-  <p>📞 9154777773 | 9550637304</p>
-</section>
-
-<footer>
-  <p>© 2026 M.R Solar Systems. All Rights Reserved.</p>
-</footer>
+<!-- ===== FLOATING WHATSAPP ===== -->
+<a href="https://wa.me/919154777773" class="whatsapp-float">💬</a>
 
 <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
