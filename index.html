@@ -1,56 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>M.R Solar Systems</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M.R Solar Systems | Tenali</title>
+<link rel="stylesheet" href="style.css">
 </head>
-<script src="script.js"></script>
 
 <body>
 
 <header>
-    <div class="header-container">
-        <img src="mr-logo.jpeg" class="logo" alt="MR Logo">
+  <div class="header-container">
+    <img src="mr-logo.jpeg" class="logo" alt="MR Logo">
 
-        <div class="company-text">
-            <h1>M.R SOLAR SYSTEMS</h1>
-            <p>Authorized Channel Partner</p>
-        </div>
-
-        <img src="tata-logo.jpeg" class="partner-logo" alt="Tata Power Solar">
+    <div class="company-text">
+      <h1>M.R SOLAR SYSTEMS</h1>
+      <p>Authorized Channel Partner</p>
     </div>
+
+    <img src="tata-logo.jpeg" class="partner-logo" alt="Tata Power Solar">
+  </div>
 </header>
 
 <nav>
-    <a href="#">Home</a>
-    <a href="#">Services</a>
-    <a href="#">Previous Works</a>
-    <a href="#">Achievements</a>
-    <a href="#">Contact</a>
+  <a onclick="scrollToSection('home')">Home</a>
+  <a onclick="scrollToSection('services')">Services</a>
+  <a onclick="scrollToSection('features')">Features</a>
+  <a onclick="scrollToSection('contact')">Contact</a>
 </nav>
 
-<section class="hero">
-    <div class="hero-overlay">
-        <h2>Switch to Solar & Save on Electricity Bills</h2>
-        <p>Govt Subsidy Assistance | EMI Available</p>
-        <button>Chat on WhatsApp</button>
-    </div>
+<section class="hero" id="home">
+  <div class="hero-overlay">
+    <h2>Power Your Home & Business with Solar Energy</h2>
+    <p>Government Subsidy Assistance | EMI Available | Expert Installation</p>
+    <button onclick="openWhatsApp()">Chat on WhatsApp</button>
+  </div>
 </section>
 
-<section class="section">
-    <h2>Our Services</h2>
-    <div class="card-container">
-        <div class="card">Residential Solar</div>
-        <div class="card">Commercial Solar</div>
-        <div class="card">Panel Cleaning</div>
+<section class="section" id="services">
+  <h2>Our Solar Solutions</h2>
+
+  <div class="card-container">
+    <div class="card">
+      <h3>Residential Solar</h3>
+      <p>Complete rooftop solar systems for homes with subsidy support.</p>
     </div>
+
+    <div class="card">
+      <h3>Commercial Solar</h3>
+      <p>High-capacity installations for industries & businesses.</p>
+    </div>
+
+    <div class="card">
+      <h3>Solar Cleaning Systems</h3>
+      <p>Automatic sprinkler systems to maintain panel efficiency.</p>
+    </div>
+  </div>
+</section>
+
+<section class="features" id="features">
+  <h2>Why Choose M.R Solar Systems?</h2>
+  <ul>
+    <li>✔ High Efficiency Solar Panels</li>
+    <li>✔ Complete Government Subsidy Assistance</li>
+    <li>✔ Affordable EMI Options</li>
+    <li>✔ Professional Installation Team</li>
+    <li>✔ Strong After-Sales Support</li>
+  </ul>
+</section>
+
+<section class="section" id="contact">
+  <h2>Contact & Branches</h2>
+
+  <p><strong>Main Branch:</strong> Bilal Hotel Opposite, Tenali - 522201</p>
+  <p><strong>Branches:</strong> Tenali | Bapatla | Repalle | Chirala</p>
+
+  <br>
+
+  <p><strong>Proprietor:</strong> M. Manasa</p>
+  <p><strong>Managing Director:</strong> M. Rajesh</p>
+
+  <br>
+
+  <p>📞 9154777773 | 9550637304</p>
 </section>
 
 <footer>
-    <p>Bilal Hotel Opposite, Tenali - 522201</p>
+  <p>© 2026 M.R Solar Systems. All Rights Reserved.</p>
 </footer>
 
+<script src="script.js"></script>
 </body>
 </html>
+
