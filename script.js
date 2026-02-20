@@ -1,11 +1,26 @@
-function calculateEMI() {
-    let P = document.getElementById("loan").value;
-    let r = document.getElementById("interest").value / 100 / 12;
-    let n = document.getElementById("years").value * 12;
+// Scroll Reveal
+window.addEventListener("scroll", function () {
+    var reveals = document.querySelectorAll(".reveal");
+    for (var i = 0; i < reveals.length; i++) {
+        var windowHeight = window.innerHeight;
+        var elementTop = reveals[i].getBoundingClientRect().top;
+        if (elementTop < windowHeight - 100) {
+            reveals[i].classList.add("active");
+        }
+    }
+});
 
-    let EMI = (P * r * Math.pow(1 + r, n)) /
-              (Math.pow(1 + r, n) - 1);
+// Slideshow
+let slideIndex = 0;
+showSlides();
 
-    document.getElementById("emi-result").innerHTML =
-        "Monthly EMI: ₹" + EMI.toFixed(2);
+function showSlides() {
+    let slides = document.getElementsByClassName("slide");
+    for (let i = 0; i < slides.length; i++) {
+        slides[i].style.display = "none";
+    }
+    slideIndex++;
+    if (slideIndex > slides.length) { slideIndex = 1 }
+    slides[slideIndex - 1].style.display = "block";
+    setTimeout(showSlides, 3000);
 }
