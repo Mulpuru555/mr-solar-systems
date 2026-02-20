@@ -1,70 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Solar Company in Tenali | M.R Solar Systems</title>
-    <meta name="description" content="ISO 9001:2015 Certified Solar Company in Tenali. Authorized Tata Power Solar Channel Partner. Residential & Commercial Solar Installations with Government Subsidy Support.">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<title>M.R Solar Systems | Solar Company in Tenali</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ISO 9001:2015 Certified Solar Company in Tenali. Authorized Tata Power Solar Channel Partner providing Residential & Commercial Solar Installations with Government Subsidy Support.">
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-<!-- HEADER -->
 <header class="header">
-    <div class="logo-section">
-        <img src="mr-logo.jpeg" class="main-logo" alt="M.R Solar Systems">
-        <img src="tata-logo.png" class="tata-logo" alt="Tata Power Solar">
+    <div class="logo-row">
+        <img src="mr-logo.jpeg" class="logo-main" alt="M.R Solar Systems">
+        <img src="tata-logo.png" class="logo-tata" alt="Tata Power Solar">
     </div>
 
     <h1>M.R SOLAR SYSTEMS</h1>
-
-    <p class="iso-text">
-        ISO 9001:2015 Certified | Authorized Tata Power Solar Channel Partner
-    </p>
+    <p class="iso">ISO 9001:2015 Certified | Authorized Tata Power Solar Channel Partner</p>
 
     <nav>
         <a href="#">Home</a>
-        <a href="#">Services</a>
-        <a href="#">Projects</a>
-        <a href="#">Subsidy</a>
+        <a href="#services">Services</a>
+        <a href="#emi">EMI</a>
+        <a href="#instagram">Instagram</a>
         <a href="#">Contact</a>
     </nav>
 </header>
 
-<!-- HERO SECTION -->
 <section class="hero">
-    <div class="hero-content">
-        <h2 class="fade-in">Power Your Home With Solar Energy</h2>
-        <p class="fade-in delay">Save Electricity Bills & Get ₹78,000 Subsidy for 3kW System</p>
-
-        <a href="https://wa.me/919000000000" target="_blank" 
-           class="cta-btn fade-in delay2">
-           ⚡ Get Free Solar Consultation
+    <div class="hero-box">
+        <h2>Trusted Solar Solutions in Tenali</h2>
+        <p>Install 3kW System & Get Up To ₹78,000 Government Subsidy</p>
+        <a href="https://wa.me/919154777773" target="_blank" class="btn-primary">
+            Get Free Consultation
         </a>
     </div>
 </section>
 
-<!-- SERVICES -->
-<section class="section">
+<section class="section" id="services">
     <h2>Our Services</h2>
-    <div class="cards">
-        <div class="card">Residential Solar Installations</div>
-        <div class="card">Commercial Solar Systems</div>
-        <div class="card">Government Subsidy Assistance</div>
-        <div class="card">Panel Cleaning Sprinkler Systems</div>
+
+    <div class="card">
+        <h3>Residential Solar Installation</h3>
+        <p>Complete rooftop solar setup including design, installation, net metering and subsidy documentation.</p>
+    </div>
+
+    <div class="card">
+        <h3>Commercial & Industrial Solar</h3>
+        <p>High-capacity solar systems using A-grade panels for maximum efficiency and durability.</p>
+    </div>
+
+    <div class="card">
+        <h3>Government Subsidy Assistance</h3>
+        <p>We handle complete subsidy documentation and approval process.</p>
+    </div>
+
+    <div class="card">
+        <h3>Solar Panel Cleaning Sprinkler System</h3>
+        <p>Automatic cleaning systems to maintain panel efficiency and increase generation.</p>
     </div>
 </section>
 
-<!-- INSTAGRAM -->
-<section class="section instagram">
+<section class="section light" id="emi">
+    <h2>EMI Calculator (With Subsidy)</h2>
+
+    <div class="emi-box">
+        <input type="number" id="systemCost" placeholder="Total System Cost (₹)">
+        <input type="number" id="subsidyAmount" placeholder="Government Subsidy (₹)">
+        <input type="number" id="interestRate" placeholder="Interest Rate (%)">
+        <input type="number" id="loanTenure" placeholder="Tenure (Years)">
+
+        <button onclick="calculateEMI()">Calculate EMI</button>
+        <button onclick="downloadQuotation()">Download Quotation</button>
+
+        <h3 id="emiResult"></h3>
+    </div>
+</section>
+
+<section class="section" id="instagram">
     <h2>Follow Us On Instagram</h2>
-    <p>@mrsolarsystems</p>
-    <a href="https://instagram.com/mr_solar_systems" 
-       target="_blank" 
-       class="insta-btn">
-       Visit Instagram
+    <a href="https://instagram.com/mr_solar_systems" target="_blank" class="btn-insta">
+        Visit Instagram
     </a>
 </section>
 
@@ -72,12 +91,56 @@
     <p>© 2026 M.R Solar Systems | Tenali, Andhra Pradesh</p>
 </footer>
 
-<!-- WHATSAPP FLOAT -->
-<a href="https://wa.me/919154777773" 
-   class="whatsapp-float" 
-   target="_blank">
-   WhatsApp
+<a href="https://wa.me/919154777773" target="_blank" class="whatsapp">
+    WhatsApp
 </a>
+
+<script>
+function calculateEMI() {
+    let cost = parseFloat(document.getElementById("systemCost").value);
+    let subsidy = parseFloat(document.getElementById("subsidyAmount").value);
+    let rate = parseFloat(document.getElementById("interestRate").value);
+    let years = parseFloat(document.getElementById("loanTenure").value);
+
+    let loanAmount = cost - subsidy;
+    let R = rate / 12 / 100;
+    let N = years * 12;
+
+    let EMI = (loanAmount * R * Math.pow(1 + R, N)) /
+              (Math.pow(1 + R, N) - 1);
+
+    if (EMI) {
+        document.getElementById("emiResult").innerHTML =
+        "Loan After Subsidy: ₹ " + loanAmount.toFixed(2) +
+        "<br>Monthly EMI: ₹ " + EMI.toFixed(2);
+    } else {
+        document.getElementById("emiResult").innerText =
+        "Please enter valid values";
+    }
+}
+
+function downloadQuotation() {
+    let cost = document.getElementById("systemCost").value;
+    let subsidy = document.getElementById("subsidyAmount").value;
+    let finalAmount = cost - subsidy;
+
+    let content =
+`M.R SOLAR SYSTEMS
+Tenali, Andhra Pradesh
+-----------------------------
+System Cost: ₹ ${cost}
+Subsidy: ₹ ${subsidy}
+Final Amount: ₹ ${finalAmount}
+-----------------------------
+Thank you for choosing M.R Solar Systems`;
+
+    let blob = new Blob([content], { type: "text/plain" });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "Solar_Quotation.txt";
+    link.click();
+}
+</script>
 
 </body>
 </html>
