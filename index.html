@@ -11,13 +11,6 @@
 </head>
 
 <body>
-    <section class="hero">
-<h1>M.R SOLAR SYSTEMS</h1>
-<p>ISO Certified Company | A-Grade Panels by Tata Power Solar</p>
-<p>Residential • Commercial • Industrial Solar Installations</p>
-<p><strong>Serving All Districts Across Andhra Pradesh</strong></p>
-<a href="contact.html" class="btn">Get Free Consultation</a>
-</section>
 
 <header class="header">
     <div class="logo-row">
@@ -29,25 +22,55 @@
     <p class="iso">ISO 9001:2015 Certified | Authorized Tata Power Solar Channel Partner</p>
 
     <nav>
-        <a href="#">Home</a>
+        <a href="index.html">Home</a>
         <a href="#services">Services</a>
         <a href="#emi">EMI</a>
         <a href="#instagram">Instagram</a>
-        <a href="#">Contact</a>
+        <a href="contact.html">Contact</a>
     </nav>
 </header>
 
+<!-- HERO -->
 <section class="hero">
     <div class="hero-box">
         <h2>Trusted Solar Solutions in Tenali</h2>
         <p>Install 3kW System & Get Up To ₹78,000 Government Subsidy</p>
-        <a href="https://wa.me/919154777773" target="_blank" class="btn-primary">
+        <p><strong>Serving All Districts Across Andhra Pradesh</strong></p>
+        <a href="https://wa.me/919154777773?text=Hello%20M.R%20Solar%20Systems,%20I%20am%20interested%20in%20solar%20installation."
+        target="_blank" class="btn-primary">
             Get Free Consultation
         </a>
     </div>
 </section>
 
-<section class="section" id="services">
+<!-- TRUST -->
+<section class="section reveal">
+<h2>Why Andhra Pradesh Trusts M.R Solar Systems</h2>
+<div class="trust-strip">
+ISO 9001:2015 Certified • Authorized Tata Power Solar Channel Partner • 
+25-Year Panel Warranty • Complete Government Subsidy Support • 
+Serving All Districts Across Andhra Pradesh
+</div>
+</section>
+
+<!-- STATS -->
+<section class="stats reveal">
+    <div class="stat-box">
+        <h2 class="count" data-target="150">0</h2>
+        <p>Total Installations</p>
+    </div>
+    <div class="stat-box">
+        <h2 class="count" data-target="5">0</h2>
+        <p>Years Experience</p>
+    </div>
+    <div class="stat-box">
+        <h2 class="count" data-target="25">0</h2>
+        <p>Years Warranty</p>
+    </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section reveal" id="services">
     <h2>Our Services</h2>
 
     <div class="card">
@@ -71,7 +94,8 @@
     </div>
 </section>
 
-<section class="section light" id="emi">
+<!-- EMI -->
+<section class="section light reveal" id="emi">
     <h2>EMI Calculator (With Subsidy)</h2>
 
     <div class="emi-box">
@@ -79,93 +103,62 @@
         <input type="number" id="subsidyAmount" placeholder="Government Subsidy (₹)">
         <input type="number" id="interestRate" placeholder="Interest Rate (%)">
         <input type="number" id="loanTenure" placeholder="Tenure (Years)">
-
         <button onclick="calculateEMI()">Calculate EMI</button>
         <button onclick="downloadQuotation()">Download Quotation</button>
-
         <h3 id="emiResult"></h3>
     </div>
 </section>
 
-<section class="section" id="instagram">
+<!-- SAVINGS -->
+<section class="section reveal">
+<h2>Solar Savings Estimator</h2>
+<input type="number" id="monthlyBill" placeholder="Enter Monthly Electricity Bill (₹)">
+<button onclick="calculateSavings()">Calculate Savings</button>
+<h3 id="savingsResult"></h3>
+</section>
+
+<!-- INSTAGRAM -->
+<section class="section reveal" id="instagram">
     <h2>Follow Us On Instagram</h2>
     <a href="https://www.instagram.com/m.r_solar_systems?igsh=MTNoemM2dWd6MzFjMA==" target="_blank" class="btn-insta">
         Visit Instagram
     </a>
 </section>
-<section class="coverage">
-<h2>Our Service Coverage - Andhra Pradesh</h2>
-<ul>
-<li>Guntur</li>
-<li>Krishna</li>
-<li>Prakasam</li>
-<li>East Godavari</li>
-<li>West Godavari</li>
-<li>Nellore</li>
-<li>Chittoor</li>
-<li>Kadapa</li>
-<li>Kurnool</li>
-<li>Anantapur</li>
-<li>Visakhapatnam</li>
-<li>Vizianagaram</li>
-<li>Srikakulam</li>
-</ul>
-</section>
-<footer>
-    <p>© 2026 M.R Solar Systems | Tenali, Andhra Pradesh</p>
+
+<footer class="corporate-footer">
+    <div class="footer-container">
+        <div class="footer-box">
+            <h3>M.R Solar Systems</h3>
+            <p>ISO 9001:2015 Certified</p>
+            <p>Authorized Tata Power Solar Channel Partner</p>
+            <p>Serving All Districts Across Andhra Pradesh</p>
+        </div>
+
+        <div class="footer-box">
+            <h4>Quick Links</h4>
+            <p><a href="index.html">Home</a></p>
+            <p><a href="#services">Services</a></p>
+            <p><a href="#emi">EMI Calculator</a></p>
+            <p><a href="contact.html">Contact</a></p>
+        </div>
+
+        <div class="footer-box">
+            <h4>Contact Info</h4>
+            <p>📍 Tenali, Andhra Pradesh</p>
+            <p>📞 9154777773</p>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        © 2026 M.R Solar Systems. All Rights Reserved.
+    </div>
 </footer>
 
-<a href="https://wa.me/919154777773" target="_blank" class="whatsapp">
-    WhatsApp
-</a>
+<a href="https://wa.me/919154777773?text=Hello%20M.R%20Solar%20Systems,%20I%20am%20interested%20in%20solar%20installation."
+target="_blank" class="whatsapp">WhatsApp</a>
 
-<script>
-function calculateEMI() {
-    let cost = parseFloat(document.getElementById("systemCost").value);
-    let subsidy = parseFloat(document.getElementById("subsidyAmount").value);
-    let rate = parseFloat(document.getElementById("interestRate").value);
-    let years = parseFloat(document.getElementById("loanTenure").value);
+<a href="tel:9154777773" class="call-float">📞</a>
 
-    let loanAmount = cost - subsidy;
-    let R = rate / 12 / 100;
-    let N = years * 12;
-
-    let EMI = (loanAmount * R * Math.pow(1 + R, N)) /
-              (Math.pow(1 + R, N) - 1);
-
-    if (EMI) {
-        document.getElementById("emiResult").innerHTML =
-        "Loan After Subsidy: ₹ " + loanAmount.toFixed(2) +
-        "<br>Monthly EMI: ₹ " + EMI.toFixed(2);
-    } else {
-        document.getElementById("emiResult").innerText =
-        "Please enter valid values";
-    }
-}
-
-function downloadQuotation() {
-    let cost = document.getElementById("systemCost").value;
-    let subsidy = document.getElementById("subsidyAmount").value;
-    let finalAmount = cost - subsidy;
-
-    let content =
-`M.R SOLAR SYSTEMS
-Tenali, Andhra Pradesh
------------------------------
-System Cost: ₹ ${cost}
-Subsidy: ₹ ${subsidy}
-Final Amount: ₹ ${finalAmount}
------------------------------
-Thank you for choosing M.R Solar Systems`;
-
-    let blob = new Blob([content], { type: "text/plain" });
-    let link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "Solar_Quotation.txt";
-    link.click();
-}
-</script>
-
+<script src="script.js"></script>
 </body>
 </html>
-
