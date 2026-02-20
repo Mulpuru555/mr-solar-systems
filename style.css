@@ -1,6 +1,6 @@
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     text-align: center;
     background: #f4f9ff;
 }
@@ -15,7 +15,6 @@ body {
 .logo-section {
     display: flex;
     justify-content: center;
-    align-items: center;
     gap: 20px;
 }
 
@@ -30,46 +29,117 @@ body {
 .iso-text {
     color: #FFD700;
     font-weight: bold;
-    margin: 10px 0;
 }
 
+/* NAV */
 nav a {
     color: white;
-    margin: 0 10px;
+    margin: 0 12px;
     text-decoration: none;
     font-weight: 500;
 }
 
-nav a:hover {
-    text-decoration: underline;
-}
-
 /* HERO */
 .hero {
-    padding: 50px 20px;
-    background: white;
+    height: 85vh;
+    background: url('solar-bg.jpg') no-repeat center center/cover;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    position: relative;
 }
 
-.hero h3 {
-    color: green;
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
 }
 
-/* SECTIONS */
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
+
+/* ANIMATION */
+.fade-in {
+    opacity: 0;
+    animation: fadeIn 1.5s forwards;
+}
+
+.delay {
+    animation-delay: 1s;
+}
+
+.delay2 {
+    animation-delay: 2s;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+/* CTA BUTTON */
+.cta-btn {
+    display: inline-block;
+    margin-top: 25px;
+    padding: 14px 30px;
+    background: linear-gradient(45deg, #FFD700, #ffb700);
+    color: black;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 40px;
+    font-size: 16px;
+    transition: 0.3s ease;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+    animation: pulse 2s infinite;
+}
+
+.cta-btn:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 25px rgba(255, 215, 0, 1);
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
+    50% { box-shadow: 0 0 25px rgba(255, 215, 0, 1); }
+    100% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.7); }
+}
+
+/* SECTION */
 .section {
-    padding: 40px 20px;
+    padding: 50px 20px;
 }
 
-.section.dark {
-    background: #e6f2ff;
+.cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
 }
 
-ul {
-    list-style: none;
-    padding: 0;
+.card {
+    background: white;
+    padding: 20px;
+    width: 220px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
-ul li {
-    padding: 8px;
+/* INSTAGRAM */
+.instagram {
+    background: #ffe6f0;
+}
+
+.insta-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background: #E1306C;
+    color: white;
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: bold;
 }
 
 /* FOOTER */
