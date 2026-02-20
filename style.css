@@ -85,20 +85,16 @@ nav a {
     margin-top: 20px;
 }
 
-.whatsapp, .call-float {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: #25d366;
-    padding: 15px;
-    color: white;
-    border-radius: 50%;
-    text-decoration: none;
+.whatsapp:hover {
+    background: #1ebe5d;
+    transform: scale(1.1);
+    transition: 0.3s;
 }
 
-.call-float {
-    right: 80px;
-    background: #0077b6;
+.call-float:hover {
+    background: #005f8a;
+    transform: scale(1.1);
+    transition: 0.3s;
 }
 
 /* Smooth Scroll */
@@ -106,3 +102,4 @@ html { scroll-behavior: smooth; }
 
 .reveal { opacity: 0; transform: translateY(40px); transition: 0.8s; }
 .reveal.active { opacity: 1; transform: translateY(0); }
+
