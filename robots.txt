@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://Mulpuru555.github.io/M.R-SOLAR-SYSTEMS/sitemap.xml
+Sitemap: https://mulpuru555.github.io/M-R-SOLAR-SYSTEMS/sitemap.xml
