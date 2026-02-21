@@ -7,6 +7,7 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -25,18 +26,19 @@
 <section class="hero">
     <div class="hero-content">
         <h2>Powering Andhra Pradesh With Smart Solar Energy</h2>
-        <p>High-Wattage Bifacial Tata Power Solar Panels | 25-Year Performance Warranty</p>
+        <p>High-Wattage Bifacial Panels | 25-Year Performance Warranty</p>
         <a href="#systems" class="btn-primary">Explore Systems</a>
     </div>
 </section>
 
+<!-- SYSTEMS SECTION -->
 <section id="systems" class="dark-section">
     <h2 class="section-title">Solar Product Series</h2>
 
     <div class="product-card">
         <h3>Residential 3kW Smart Series</h3>
         <ul>
-            <li>High-Wattage Bifacial Tata Panels</li>
+            <li>High-Wattage Bifacial Panels</li>
             <li>Up to 21% Module Efficiency</li>
             <li>Net Metering Ready</li>
             <li>25-Year Linear Warranty</li>
@@ -47,7 +49,7 @@
         <h3>Premium 5kW Advanced Series</h3>
         <ul>
             <li>540W+ High Output Modules</li>
-            <li>Dual Glass Bifacial Technology</li>
+            <li>Dual Glass Technology</li>
             <li>Enhanced Low-Light Performance</li>
             <li>Industrial Mounting Structure</li>
         </ul>
@@ -59,47 +61,47 @@
             <li>Industrial Grade Installation</li>
             <li>Remote Monitoring System</li>
             <li>Optimized Long-Term ROI</li>
-            <li>Large-Scale Solar Deployment</li>
+            <li>Large-Scale Deployment</li>
         </ul>
     </div>
 </section>
 
+<!-- TECHNOLOGY -->
 <section id="technology" class="light-section">
     <h2 class="section-title">Advanced Solar Technology</h2>
     <p>Bifacial Mono PERC Panels | Smart Monitoring | High-Efficiency Performance</p>
 </section>
 
+<!-- STATS UPDATED -->
 <section class="stats dark-section">
     <div class="stat-box">
-        <h2><span class="count" data-target="200">0</span>+</h2>
-        <p>Total Installations</p>
+        <h2>150+</h2>
+        <p>Residential Installations</p>
     </div>
     <div class="stat-box">
-        <h2 class="count" data-target="5">0</h2>
-        <p>Years Experience</p>
+        <h2>50+</h2>
+        <p>Commercial Installations</p>
     </div>
     <div class="stat-box">
-        <h2 class="count" data-target="25">0</h2>
-        <p>Years Warranty</p>
+        <h2>25</h2>
+        <p>Years Panel Warranty</p>
     </div>
 </section>
 
-<section id="leadership" class="dark-section">
-    <h2 class="section-title">Leadership</h2>
-
-    <div class="leader">
-        <h3>M. Rajesh</h3>
-        <p>Managing Director</p>
-        <p>Delivering future-ready solar technology across Andhra Pradesh.</p>
+<!-- PROJECT GALLERY -->
+<section class="dark-section">
+    <h2 class="section-title">Our Solar Projects</h2>
+    <div class="product-card">
+        <h3>Residential Installations</h3>
+        <p>Project images will be updated soon.</p>
     </div>
-
-    <div class="leader">
-        <h3>M. Manasa</h3>
-        <p>Proprietor</p>
-        <p>Committed to quality, reliability, and advanced bifacial solar systems.</p>
+    <div class="product-card">
+        <h3>Commercial Installations</h3>
+        <p>Project images will be updated soon.</p>
     </div>
 </section>
 
+<!-- EMI + PAYBACK -->
 <section id="emi" class="light-section">
     <h2 class="section-title">EMI Calculator</h2>
     <div class="emi-box">
@@ -108,32 +110,92 @@
         <input type="number" id="loanTenure" placeholder="Tenure (Years)">
         <button onclick="calculateEMI()">Calculate</button>
         <h3 id="emiResult"></h3>
+        <canvas id="emiChart"></canvas>
     </div>
 
-    <h2 class="section-title">Solar Savings Estimator</h2>
-    <input type="number" id="monthlyBill" placeholder="Monthly Electricity Bill (₹)">
-    <button onclick="calculateSavings()">Calculate Savings</button>
-    <h3 id="savingsResult"></h3>
+    <h2 class="section-title">Solar Investment Payback Calculator</h2>
+    <div class="emi-box">
+        <input type="number" id="systemCost" placeholder="Total System Cost (₹)">
+        <input type="number" id="beforeBill" placeholder="Monthly Bill Before Solar (₹)">
+        <input type="number" id="afterBill" placeholder="Monthly Bill After Solar (₹)">
+        <button onclick="calculatePayback()">Calculate Payback</button>
+        <h3 id="paybackResult"></h3>
+    </div>
 </section>
 
+<!-- TESTIMONIALS -->
+<section class="light-section">
+    <h2 class="section-title">Customer Testimonials</h2>
+
+    <div class="product-card">⭐⭐⭐⭐⭐ Excellent installation and quick service response. – Ramesh, Tenali</div>
+    <div class="product-card">⭐⭐⭐⭐⭐ Professional team and neat work. – Suresh, Bapatla</div>
+    <div class="product-card">⭐⭐⭐⭐⭐ Very satisfied with performance. – Lakshmi, Repalle</div>
+    <div class="product-card">⭐⭐⭐⭐⭐ Good support after installation. – Praveen, Chirala</div>
+    <div class="product-card">⭐⭐⭐⭐⭐ Highly recommended solar company. – Kavitha, Tenali</div>
+</section>
+
+<!-- SPRINKLER SECTION -->
+<section class="dark-section">
+    <h2 class="section-title">Smart Solar Panel Cleaning System</h2>
+    <p>Our automated sprinkler system improves panel efficiency, reduces dust accumulation, and increases long-term energy generation performance.</p>
+</section>
+
+<!-- SERVICE REQUEST -->
+<section class="light-section">
+    <h2 class="section-title">Request Service / Installation</h2>
+    <div class="emi-box">
+        <input type="text" placeholder="Your Name">
+        <input type="number" placeholder="Mobile Number">
+        <input type="text" placeholder="Location">
+        <select>
+            <option>New Installation</option>
+            <option>Service</option>
+        </select>
+        <button>Submit Request</button>
+    </div>
+</section>
+
+<!-- LEADERSHIP -->
+<section id="leadership" class="dark-section">
+    <h2 class="section-title">Leadership</h2>
+    <div class="product-card">
+        <h3>M. Rajesh</h3>
+        <p>Managing Director</p>
+    </div>
+    <div class="product-card">
+        <h3>M. Manasa</h3>
+        <p>Proprietor</p>
+    </div>
+</section>
+
+<!-- LOCATION -->
 <section id="location" class="dark-section">
     <h2 class="section-title">Our Location - Tenali</h2>
-
-    <iframe 
-        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3830.711696245098!2d80.64425717490779!3d16.23525478446854!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a4a070041c6db57%3A0x22fd42fe176fe8bf!2sMR%20solar%20systems!5e0!3m2!1sen!2sin!4v1771594291234!5m2!1sen!2sin"
-        width="100%" 
-        height="400" 
-        style="border:0; border-radius:10px;"
-        allowfullscreen="" 
-        loading="lazy">
-    </iframe>
-
     <p>📞 9154777773</p>
 </section>
 
-<a href="https://wa.me/919154777773" target="_blank" class="whatsapp">💬</a>
-<a href="tel:9154777773" class="call-float">📞</a>
+<!-- FOOTER -->
+<footer style="background:#0b1c2d; color:white; padding:40px; text-align:center;">
+    <h3>M.R Solar Systems</h3>
+    <p>Bilal Hotel Opposite, Tenali – 522201</p>
+    <p>Branches: Tenali | Bapatla | Repalle | Chirala</p>
+    <p>© 2026 M.R Solar Systems. All Rights Reserved.</p>
+</footer>
 
-<script src="script.js"></script>
+<script>
+function calculatePayback() {
+    let cost = parseFloat(document.getElementById("systemCost").value);
+    let before = parseFloat(document.getElementById("beforeBill").value);
+    let after = parseFloat(document.getElementById("afterBill").value);
+
+    let monthlySavings = before - after;
+    let annualSavings = monthlySavings * 12;
+    let payback = (cost / annualSavings).toFixed(1);
+
+    document.getElementById("paybackResult").innerText =
+        "Annual Savings: ₹" + annualSavings + " | Payback Period: " + payback + " Years";
+}
+</script>
+
 </body>
 </html>
