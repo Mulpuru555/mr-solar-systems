@@ -139,5 +139,87 @@ html { scroll-behavior: smooth; }
 .reveal { opacity: 0; transform: translateY(40px); transition: 0.8s; }
 .reveal.active { opacity: 1; transform: translateY(0); }
 
+/* PREMIUM EMI ISOLATED STYLE */
+
+.premium-emi .emi-box {
+    max-width: 600px;
+    margin: auto;
+}
+
+.premium-emi .emi-box input {
+    width: 100%;
+    padding: 10px;
+    margin: 8px 0;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.premium-emi .emi-box button {
+    padding: 10px 15px;
+    margin: 5px 5px 5px 0;
+    background: #0077b6;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.premium-emi .emi-box button:hover {
+    background: #005f8a;
+}
+
+.premium-emi .emi-result-box {
+    background: #ffffff;
+    padding: 15px;
+    margin-top: 20px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+}
+
+.premium-emi .amortization-box {
+    margin-top: 25px;
+    overflow-x: auto;
+}
+
+.premium-emi .amortization-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: white;
+}
+
+.premium-emi .amortization-table th,
+.premium-emi .amortization-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+.premium-emi .amortization-table th {
+    background: #0077b6;
+    color: white;
+}
+
+.premium-emi .emi-breakdown-bar {
+    display: flex;
+    height: 25px;
+    margin-top: 20px;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+.premium-emi #principalBar {
+    background: #f4a62a;
+    width: 0%;
+    transition: width 1s ease;
+}
+
+.premium-emi #interestBar {
+    background: #00c2a8;
+    width: 0%;
+    transition: width 1s ease;
+}
 
 
