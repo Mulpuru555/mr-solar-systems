@@ -96,20 +96,46 @@ Serving All Districts Across Andhra Pradesh
     </div>
 </section>
 
-<!-- EMI -->
+<!-- PREMIUM EMI SECTION -->
+<div class="premium-emi">
+
 <section class="section light reveal" id="emi">
-    <h2>EMI Calculator (With Subsidy)</h2>
+    <h2>EMI Calculator</h2>
 
     <div class="emi-box">
-        <input type="number" id="systemCost" placeholder="Total System Cost (₹)">
-        <input type="number" id="subsidyAmount" placeholder="Government Subsidy (₹)">
+        <input type="number" id="loanAmount" placeholder="Loan Amount (₹)">
         <input type="number" id="interestRate" placeholder="Interest Rate (%)">
         <input type="number" id="loanTenure" placeholder="Tenure (Years)">
-        <button onclick="calculateEMI()">Calculate EMI</button>
-        <button onclick="downloadQuotation()">Download Quotation</button>
-        <h3 id="emiResult"></h3>
+        <input type="number" id="processingFee" placeholder="Processing Fee (%)">
+
+        <button onclick="calculateEMI()">Calculate</button>
+        <button onclick="resetEMI()">Reset</button>
+
+        <div class="emi-result-box">
+            <p><strong>Monthly EMI:</strong> ₹ <span id="monthlyEMI">0</span></p>
+            <p><strong>Total Interest:</strong> ₹ <span id="totalInterest">0</span></p>
+            <p><strong>Processing Fee:</strong> ₹ <span id="feeAmount">0</span></p>
+            <p><strong>Total Payment:</strong> ₹ <span id="totalPayment">0</span></p>
+        </div>
+
+        <canvas id="emiChart" width="300" height="300"></canvas>
+
+        <div class="emi-extra-actions">
+            <button onclick="generateSchedule()">View Amortization Schedule</button>
+            <button onclick="downloadPDF()">Download EMI Report (PDF)</button>
+        </div>
+
+        <div id="amortizationContainer" class="amortization-box"></div>
+
+        <div class="emi-breakdown-bar">
+            <div id="principalBar"></div>
+            <div id="interestBar"></div>
+        </div>
+
     </div>
 </section>
+
+
 
 <!-- SAVINGS -->
 <section class="section reveal">
@@ -166,6 +192,7 @@ target="_blank" class="whatsapp">
 <script src="script.js"></script>
 </body>
 </html>
+
 
 
 
