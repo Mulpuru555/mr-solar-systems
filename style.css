@@ -25,10 +25,6 @@ body {
     align-items: center;
 }
 
-.header h1 {
-    font-size: 22px;
-}
-
 .header nav a {
     color: white;
     margin-left: 20px;
@@ -45,7 +41,7 @@ body {
 
 .hero {
     background: linear-gradient(rgba(0,0,0,0.75), rgba(0,0,0,0.75)),
-    url('https://images.unsplash.com/photo-1509395176047-4a66953fd231') no-repeat center center/cover;
+    url('https://images.unsplash.com/photo-1509395176047-4a66953fd231?auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover;
     height: 90vh;
     display: flex;
     align-items: center;
@@ -72,13 +68,12 @@ body {
 
 .btn-primary:hover {
     background: #e68900;
-    transform: scale(1.05);
 }
 
 /* ================= SECTIONS ================= */
 
 section {
-    padding: 90px 10%;
+    padding: 80px 10%;
 }
 
 .dark-section {
@@ -105,14 +100,8 @@ section {
     padding: 25px;
     margin-bottom: 25px;
     border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
     border-left: 5px solid #ff9800;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.product-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
 /* ================= STATS ================= */
@@ -120,17 +109,16 @@ section {
 .stats {
     display: flex;
     justify-content: space-around;
-    text-align: center;
     flex-wrap: wrap;
+    text-align: center;
 }
 
 .stat-box {
-    padding: 20px;
+    margin: 20px;
 }
 
 .stat-box h2 {
     font-size: 40px;
-    font-weight: 800;
     color: #ff9800;
 }
 
@@ -173,37 +161,11 @@ footer {
     text-align: center;
 }
 
-/* ================= FLOAT BUTTONS ================= */
+/* ================= RESPONSIVE ================= */
 
-.whatsapp, .call-float {
-    position: fixed;
-    right: 20px;
-    padding: 12px 15px;
-    border-radius: 50%;
-    color: white;
-    font-size: 18px;
-    text-decoration: none;
-}
-
-.whatsapp {
-    bottom: 80px;
-    background: #25D366;
-}
-
-.call-float {
-    bottom: 20px;
-    background: #ff9800;
-}
-
-/* ================= FADE-IN ANIMATION ================= */
-
-.fade-in {
-    opacity: 0;
-    transform: translateY(40px);
-    transition: all 0.8s ease;
-}
-
-.fade-in.show {
-    opacity: 1;
-    transform: translateY(0);
+@media(max-width:768px){
+    .stats {
+        flex-direction: column;
+        align-items: center;
+    }
 }
