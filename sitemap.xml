@@ -1,28 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
   <url>
-    <loc>https://mulpuru555.github.io/M-R-SOLAR-SYSTEMS/</loc>
+    <loc>https://mrsolarsystems.in/</loc>
+    <lastmod>2026-02-21</lastmod>
+    <priority>1.00</priority>
   </url>
-
-  <url>
-    <loc>https://mulpuru555.github.io/M-R-SOLAR-SYSTEMS/about.html</loc>
-  </url>
-
-  <url>
-    <loc>https://mulpuru555.github.io/M-R-SOLAR-SYSTEMS/services.html</loc>
-  </url>
-
-  <url>
-    <loc>https://mulpuru555.github.io/M-R-SOLAR-SYSTEMS/projects.html</loc>
-  </url>
-
-  <url>
-    <loc>https://mulpuru555.github.io/M-R-SOLAR-SYSTEMS/subsidy.html</loc>
-  </url>
-
-  <url>
-    <loc>https://mulpuru555.github.io/M-R-SOLAR-SYSTEMS/contact.html</loc>
-  </url>
-
 </urlset>
