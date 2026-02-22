@@ -474,6 +474,7 @@ footer {
 /* Tata Logo on TOP */
 .tata-logo {
     height: 70px;   /* reduced size */
+    width: 70px;
     margin-bottom: 8px;
 }
 
@@ -514,5 +515,6 @@ footer {
     }
 
 }
+
 
 
