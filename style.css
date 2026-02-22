@@ -445,11 +445,11 @@ footer {
 .header-right {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 25px;
 }
 
 .tata-logo {
-    height: 80px;
+    height: 100px !important;
 }
 
 .menu-toggle {
@@ -497,6 +497,7 @@ footer {
         height: 80px !important;
     }
 }
+
 
 
 
