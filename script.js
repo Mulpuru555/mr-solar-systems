@@ -248,4 +248,59 @@ Location: ${location}`;
     closeLeadPopup();
 }
 
+// ===== PROJECT GALLERY SYSTEM =====
+
+let currentGallery = [];
+let currentIndex = 0;
+
+// Residential images (leave empty for now or add later)
+const residentialImages = [];
+
+// Commercial images (currently empty)
+const commercialImages = [];
+
+function openGallery(type) {
+
+    if (type === "residential") {
+        currentGallery = residentialImages;
+    } else {
+        currentGallery = commercialImages;
+    }
+
+    document.getElementById("galleryOverlay").style.display = "flex";
+
+    if (currentGallery.length === 0) {
+        document.getElementById("galleryImage").style.display = "none";
+        document.getElementById("comingSoonText").style.display = "block";
+        document.querySelector(".gallery-controls").style.display = "none";
+        return;
+    }
+
+    document.getElementById("comingSoonText").style.display = "none";
+    document.getElementById("galleryImage").style.display = "block";
+    document.querySelector(".gallery-controls").style.display = "block";
+
+    currentIndex = 0;
+    document.getElementById("galleryImage").src = currentGallery[currentIndex];
+}
+
+function closeGallery() {
+    document.getElementById("galleryOverlay").style.display = "none";
+}
+
+function nextImage() {
+    currentIndex++;
+    if (currentIndex >= currentGallery.length) {
+        currentIndex = 0;
+    }
+    document.getElementById("galleryImage").src = currentGallery[currentIndex];
+}
+
+function prevImage() {
+    currentIndex--;
+    if (currentIndex < 0) {
+        currentIndex = currentGallery.length - 1;
+    }
+    document.getElementById("galleryImage").src = currentGallery[currentIndex];
+}
 
