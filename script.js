@@ -273,7 +273,7 @@ const residentialImages = [
     "images/res22.jpeg",
     "images/res24.jpeg",
     "images/res25.jpeg"
-]; // add later
+];
 const commercialImages = [];  // add later
 
 function openGallery(type) {
@@ -341,6 +341,7 @@ function startAutoSlide() {
 function stopAutoSlide() {
     clearInterval(slideInterval);
 }
+
 
 
 
