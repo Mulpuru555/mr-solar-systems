@@ -423,7 +423,7 @@ footer {
     color: #ff9800;
 }
 
-/* ================= HEADER ================= */
+/* ================= HEADER FIXED ALIGNMENT ================= */
 
 .header {
     background: #0b1c2d;
@@ -431,18 +431,26 @@ footer {
     padding: 15px 6%;
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-/* LEFT SIDE */
-.header-left {
+/* LEFT SIDE (MR + Tata in one row) */
+.header-branding {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
+    align-items: center;
+    gap: 25px; /* space between MR and Tata */
+}
+
+/* MR LOGO + TEXT */
+.mr-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
 .mr-logo {
-    width: 50px;
+    width: 45px;
 }
 
 .brand-container {
@@ -464,25 +472,17 @@ footer {
     color: #ff9800;
 }
 
-/* RIGHT SIDE */
-.header-right {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-}
-
-/* Tata Logo on TOP */
+/* TATA LOGO */
 .tata-logo {
-    height: 70px;   /* reduced size */
-    width: 70px;
-    margin-bottom: 8px;
+    height: 55px;
+    width: auto;
 }
 
-/* Navigation below Tata logo */
+/* NAVIGATION */
 .nav-menu {
     display: flex;
     gap: 18px;
-    font-size: 13px;   /* reduced size */
+    font-size: 14px;
 }
 
 .nav-menu a {
@@ -495,6 +495,9 @@ footer {
 .nav-menu a:hover {
     color: #ff9800;
 }
+
+/* ================= MOBILE FIX ================= */
+
 @media (max-width: 768px) {
 
     .header {
@@ -503,18 +506,19 @@ footer {
         text-align: center;
     }
 
-    .header-right {
-        align-items: center;
-        margin-top: 10px;
+    .header-branding {
+        flex-direction: column;
+        gap: 12px;
     }
 
     .nav-menu {
+        margin-top: 12px;
         flex-wrap: wrap;
         justify-content: center;
         gap: 12px;
     }
-
 }
+
 
 
 
