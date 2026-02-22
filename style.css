@@ -536,6 +536,7 @@ footer {
 
 /* NAVIGATION */
 .nav-menu {
+    background: #0b1c2d;
     display: flex;
     gap: 18px;
     font-size: 14px;
@@ -636,6 +637,7 @@ footer {
     font-size: 22px;
     margin-top: 40px;
 }
+
 
 
 
