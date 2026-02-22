@@ -249,8 +249,16 @@ Location: ${location}`;
 }
 // ================= MOBILE MENU =================
 
-function toggleMenu() {
+document.addEventListener("DOMContentLoaded", function () {
+
+    const menuBtn = document.querySelector(".menu-toggle");
     const nav = document.getElementById("navMenu");
-    nav.classList.toggle("active");
-}
+
+    if (menuBtn && nav) {
+        menuBtn.addEventListener("click", function () {
+            nav.classList.toggle("active");
+        });
+    }
+
+});
 
