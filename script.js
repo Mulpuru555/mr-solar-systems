@@ -253,19 +253,23 @@ Location: ${location}`;
 let currentGallery = [];
 let currentIndex = 0;
 
-// Residential images (leave empty for now or add later)
 const residentialImages = [
-    "images/res1.jpeg",
+        "images/res1.jpeg",
     "images/res2.jpeg",
     "images/res3.jpeg",
     "images/res4.jpeg",
     "images/res6.jpeg"
-];
-
-// Commercial images (currently empty)
-const commercialImages = [];
+]; // add later
+const commercialImages = [];  // add later
 
 function openGallery(type) {
+
+    const overlay = document.getElementById("galleryOverlay");
+    const image = document.getElementById("galleryImage");
+    const comingSoon = document.getElementById("comingSoonText");
+    const controls = document.querySelector(".gallery-controls");
+
+    overlay.style.display = "flex";
 
     if (type === "residential") {
         currentGallery = residentialImages;
@@ -273,21 +277,20 @@ function openGallery(type) {
         currentGallery = commercialImages;
     }
 
-    document.getElementById("galleryOverlay").style.display = "flex";
-
     if (currentGallery.length === 0) {
-        document.getElementById("galleryImage").style.display = "none";
-        document.getElementById("comingSoonText").style.display = "block";
-        document.querySelector(".gallery-controls").style.display = "none";
+        image.style.display = "none";
+        controls.style.display = "none";
+        comingSoon.innerText = "Project images will be updated soon.";
+        comingSoon.style.display = "block";
         return;
     }
 
-    document.getElementById("comingSoonText").style.display = "none";
-    document.getElementById("galleryImage").style.display = "block";
-    document.querySelector(".gallery-controls").style.display = "block";
+    comingSoon.style.display = "none";
+    image.style.display = "block";
+    controls.style.display = "block";
 
     currentIndex = 0;
-    document.getElementById("galleryImage").src = currentGallery[currentIndex];
+    image.src = currentGallery[currentIndex];
 }
 
 function closeGallery() {
@@ -309,5 +312,3 @@ function prevImage() {
     }
     document.getElementById("galleryImage").src = currentGallery[currentIndex];
 }
-
-
