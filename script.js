@@ -255,11 +255,24 @@ let currentIndex = 0;
 let slideInterval;
 
 const residentialImages = [
-        "images/res1.jpeg",
+    "images/res1.jpeg",
     "images/res2.jpeg",
     "images/res3.jpeg",
     "images/res4.jpeg",
-    "images/res6.jpeg"
+    "images/res6.jpeg",
+    "images/res11.jpeg",
+    "images/res12.jpeg",
+    "images/res13.jpeg",
+    "images/res14.jpeg",
+    "images/res16.jpeg",
+    "images/res17.jpeg",
+    "images/res18.jpeg",
+    "images/res19.jpeg",
+    "images/res20.jpeg",
+    "images/res21.jpeg",
+    "images/res22.jpeg",
+    "images/res24.jpeg",
+    "images/res25.jpeg"
 ]; // add later
 const commercialImages = [];  // add later
 
@@ -328,4 +341,5 @@ function startAutoSlide() {
 function stopAutoSlide() {
     clearInterval(slideInterval);
 }
+
 
