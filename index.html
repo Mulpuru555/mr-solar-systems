@@ -16,13 +16,25 @@
 <body>
 
 <header class="header">
-    <div class="brand-container">
-    <h1 class="brand-title">
-        M.R <span class="highlight-solar">SOLAR</span> SYSTEMS
-    </h1>
-    <p class="brand-subtitle">Authorized Dealer of Tata Power Solar</p>
-</div>
-    <nav>
+    
+    <div class="header-left">
+        <img src="images/mr-logo.jpeg" alt="MR Logo" class="mr-logo">
+
+        <div class="brand-container">
+            <h1 class="brand-title">
+                M.R <span class="highlight-solar">SOLAR</span> SYSTEMS
+            </h1>
+            <p class="brand-subtitle">Authorized Dealer of Tata Power Solar</p>
+        </div>
+    </div>
+
+    <div class="header-right">
+        <img src="images/tata-logo.png" alt="Tata Logo" class="tata-logo">
+
+        <div class="menu-toggle" onclick="toggleMenu()">☰</div>
+    </div>
+
+    <nav id="navMenu" class="nav-menu">
         <a href="#systems">Systems</a>
         <a href="#technology">Technology</a>
         <a href="#emi">EMI</a>
@@ -30,6 +42,7 @@
         <a href="#leadership">Leadership</a>
         <a href="#location">Location</a>
     </nav>
+
 </header>
 
 <section class="hero">
@@ -293,6 +306,7 @@
 </div>
 </body>
 </html>
+
 
 
 
