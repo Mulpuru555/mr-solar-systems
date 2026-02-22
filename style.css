@@ -232,3 +232,68 @@ footer {
         align-items: center;
     }
 }
+/* ===== FAQ ===== */
+.faq-answer {
+    display: none;
+    margin-top: 10px;
+}
+
+.faq-question {
+    cursor: pointer;
+}
+
+/* ===== Chat Assistant ===== */
+#solarChatContainer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+    font-family: 'Montserrat', sans-serif;
+}
+
+#solarChatToggle {
+    background: #ff9800;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 24px;
+    color: white;
+}
+
+#solarChatBox {
+    display: none;
+    width: 300px;
+    height: 380px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    flex-direction: column;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+#solarChatHeader {
+    background: #0b1c2d;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#solarChatMessages {
+    flex: 1;
+    padding: 10px;
+    overflow-y: auto;
+    font-size: 13px;
+}
+
+#solarChatInput {
+    border: none;
+    border-top: 1px solid #ddd;
+    padding: 10px;
+    width: 100%;
+}
