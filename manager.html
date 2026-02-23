@@ -41,10 +41,14 @@ body {
   padding: 40px;
 }
 
-.date-display {
+.date-section {
   margin-top: 10px;
-  font-size: 16px;
-  color: #ff8c00;
+}
+
+input[type="date"] {
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
 }
 
 .table-box {
@@ -95,8 +99,12 @@ tr:nth-child(even) {
 </div>
 
 <div class="container">
-  <h1>Today's Attendance</h1>
-  <div class="date-display" id="currentDate"></div>
+  <h1>Attendance Report</h1>
+
+  <div class="date-section">
+    <label>Select Date: </label>
+    <input type="date" id="attendanceDate">
+  </div>
 
   <div class="table-box">
     <table>
@@ -125,26 +133,21 @@ import { collection, getDocs, query, where }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const tableBody = document.getElementById("attendanceTable");
-const dateDisplay = document.getElementById("currentDate");
+const dateInput = document.getElementById("attendanceDate");
 
-const today = new Date();
-const formattedDate = today.toLocaleDateString("en-IN", {
-  day: "2-digit",
-  month: "long",
-  year: "numeric"
-});
+// Set default date to today
+const today = new Date().toISOString().split("T")[0];
+dateInput.value = today;
 
-dateDisplay.innerText = "Date: " + formattedDate;
+async function loadAttendance(selectedDate) {
 
-async function loadAttendance() {
-
-  const todayISO = today.toISOString().split("T")[0];
+  tableBody.innerHTML = "";
 
   const usersSnapshot = await getDocs(collection(db, "users"));
 
   const attendanceQuery = query(
     collection(db, "attendance"),
-    where("date", "==", todayISO)
+    where("date", "==", selectedDate)
   );
 
   const attendanceSnapshot = await getDocs(attendanceQuery);
@@ -194,7 +197,12 @@ async function loadAttendance() {
   });
 }
 
-loadAttendance();
+dateInput.addEventListener("change", () => {
+  loadAttendance(dateInput.value);
+});
+
+// Load today's attendance on page load
+loadAttendance(today);
 </script>
 
 <script type="module" src="auth.js"></script>
