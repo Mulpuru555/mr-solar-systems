@@ -22,13 +22,11 @@ function animateCounters() {
 
                 requestAnimationFrame(update);
             } else {
-
                 if (counter.closest(".warranty-box")) {
                     counter.innerText = target;
                 } else {
                     counter.innerText = target + "+";
                 }
-
             }
         };
 
@@ -60,7 +58,6 @@ sections.forEach(section => {
 let emiChart;
 
 function calculateEMI() {
-
     let P = parseFloat(document.getElementById("loanAmount").value);
     let annualRate = parseFloat(document.getElementById("interestRate").value);
     let years = parseFloat(document.getElementById("loanTenure").value);
@@ -100,7 +97,6 @@ function calculateEMI() {
 // ================= PAYBACK =================
 
 function calculatePayback() {
-
     let cost = parseFloat(document.getElementById("systemCost").value);
     let before = parseFloat(document.getElementById("beforeBill").value);
     let after = parseFloat(document.getElementById("afterBill").value);
@@ -130,7 +126,6 @@ function calculatePayback() {
 // ================= WHATSAPP =================
 
 function sendWhatsApp() {
-
     let name = document.getElementById("name").value;
     let mobile = document.getElementById("mobile").value;
     let location = document.getElementById("locationInput").value;
@@ -148,70 +143,21 @@ Location: ${location}%0A
 Type: ${type}`;
 
     let url = `https://wa.me/919154777773?text=${message}`;
-
     window.open(url, "_blank");
 }
 
 
-// ================= SAFE FAQ + CHAT =================
+// ================= SMART LEAD POPUP =================
 
-const faqQuestions = document.querySelectorAll(".faq-question");
-if (faqQuestions.length > 0) {
-    faqQuestions.forEach(item => {
-        item.addEventListener("click", () => {
-            const answer = item.nextElementSibling;
-            if (answer) {
-                answer.style.display =
-                    answer.style.display === "block" ? "none" : "block";
-            }
-        });
-    });
+function closeLeadPopup() {
+    const popup = document.getElementById("leadPopupOverlay");
+    if (popup) {
+        popup.style.display = "none";
+    }
 }
 
-const chatToggle = document.getElementById("solarChatToggle");
-const chatBox = document.getElementById("solarChatBox");
-const chatInput = document.getElementById("solarChatInput");
-const chatMessages = document.getElementById("solarChatMessages");
-
-if (chatToggle && chatBox && chatInput && chatMessages) {
-
-    chatToggle.addEventListener("click", () => {
-        chatBox.style.display =
-            chatBox.style.display === "flex" ? "none" : "flex";
-    });
-
-    chatInput.addEventListener("keypress", function(e) {
-        if (e.key === "Enter") {
-
-            let userText = chatInput.value.toLowerCase();
-            let response = "Please contact us at 9154777773 for more details.";
-
-            if (userText.includes("dcr")) {
-                response = "Tata DCR panels are subsidy-approved domestic modules.";
-            } 
-            else if (userText.includes("topcon")) {
-                response = "N-Type TOPCon panels offer higher efficiency and lower degradation.";
-            }
-            else if (userText.includes("subsidy")) {
-                response = "Residential DCR systems are eligible for government subsidy.";
-            }
-            else if (userText.includes("installation")) {
-                response = "Installation usually takes 2–5 days depending on system size.";
-            }
-
-            chatMessages.innerHTML += "<div><strong>You:</strong> " + chatInput.value + "</div>";
-            chatMessages.innerHTML += "<div><strong>Assistant:</strong> " + response + "</div>";
-            chatInput.value = "";
-            chatMessages.scrollTop = chatMessages.scrollHeight;
-        }
-    });
-}
-
-
-// ===== SMART LEAD POPUP =====
-
+// Auto open after 10 sec
 setTimeout(function () {
-
     const popup = document.getElementById("leadPopupOverlay");
 
     if (popup && !sessionStorage.getItem("leadPopupShown")) {
@@ -221,8 +167,23 @@ setTimeout(function () {
 
 }, 10000);
 
+// Close when clicking outside
+window.addEventListener("click", function(e){
+    const popup = document.getElementById("leadPopupOverlay");
+    if(e.target === popup){
+        popup.style.display = "none";
+    }
+});
 
-// ===== PROJECT GALLERY SYSTEM =====
+// Close when pressing ESC
+document.addEventListener("keydown", function(e){
+    if(e.key === "Escape"){
+        closeLeadPopup();
+    }
+});
+
+
+// ================= PROJECT GALLERY =================
 
 let currentGallery = [];
 let currentIndex = 0;
@@ -259,11 +220,7 @@ function openGallery(type) {
 
     overlay.style.display = "flex";
 
-    if (type === "residential") {
-        currentGallery = residentialImages;
-    } else {
-        currentGallery = commercialImages;
-    }
+    currentGallery = type === "residential" ? residentialImages : commercialImages;
 
     if (currentGallery.length === 0) {
         image.style.display = "none";
@@ -288,26 +245,18 @@ function closeGallery() {
 }
 
 function nextImage() {
-    currentIndex++;
-    if (currentIndex >= currentGallery.length) {
-        currentIndex = 0;
-    }
+    currentIndex = (currentIndex + 1) % currentGallery.length;
     document.getElementById("galleryImage").src = currentGallery[currentIndex];
 }
 
 function prevImage() {
-    currentIndex--;
-    if (currentIndex < 0) {
-        currentIndex = currentGallery.length - 1;
-    }
+    currentIndex = (currentIndex - 1 + currentGallery.length) % currentGallery.length;
     document.getElementById("galleryImage").src = currentGallery[currentIndex];
 }
 
 function startAutoSlide() {
     clearInterval(slideInterval);
-    slideInterval = setInterval(() => {
-        nextImage();
-    }, 3000);
+    slideInterval = setInterval(nextImage, 3000);
 }
 
 function stopAutoSlide() {
