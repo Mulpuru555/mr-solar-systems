@@ -33,6 +33,9 @@
     </div>
 <!-- NAVIGATION -->
 <nav class="nav-menu">
+    <button onclick="document.getElementById('loginModal').style.display='flex'">
+Login
+</button>
     <a href="#systems">Systems</a>
     <a href="#technology">Technology</a>
     <a href="#emi">EMI</a>
@@ -282,8 +285,40 @@
 </div>
 <script src="script.js"></script>
 
+<script type="module" src="auth.js"></script>
+
+<div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:9999;">
+
+  <div style="background:#111; padding:30px; width:300px; border-radius:10px; text-align:center;">
+
+    <h3 style="color:#ff8c00;">M.R Solar Login</h3>
+
+    <input type="email" id="loginEmail" placeholder="Email"
+      style="width:100%;padding:10px;margin:10px 0;">
+
+    <input type="password" id="loginPassword" placeholder="Password"
+      style="width:100%;padding:10px;margin:10px 0;">
+
+    <button onclick="loginUser()"
+      style="width:100%;padding:10px;background:#ff8c00;color:white;border:none;">
+      Login
+    </button>
+
+    <p onclick="resetPassword()" style="color:#ff8c00;cursor:pointer;margin-top:10px;">
+      Forgot Password?
+    </p>
+
+    <button onclick="document.getElementById('loginModal').style.display='none'"
+      style="background:none;border:none;color:white;margin-top:10px;">
+      Close
+    </button>
+
+  </div>
+</div>
+    
 </body>
 </html>
+
 
 
 
