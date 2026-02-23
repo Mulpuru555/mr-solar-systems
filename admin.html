@@ -1,1 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Admin Panel – M. Rajesh</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+  margin:0;
+  font-family:'Montserrat',sans-serif;
+  background:#111;
+  color:white;
+}
+
+.header{
+  background:#000;
+  padding:15px 30px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.header h2{
+  color:#ff8c00;
+  margin:0;
+}
+
+.logout-btn{
+  background:#ff8c00;
+  border:none;
+  padding:8px 15px;
+  color:white;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.container{
+  padding:40px;
+}
+
+.section-box{
+  background:#1a1a1a;
+  padding:20px;
+  border-radius:10px;
+  margin-top:30px;
+  box-shadow:0 0 20px rgba(255,140,0,0.2);
+}
+
+input, select{
+  padding:8px;
+  margin:5px 0;
+  border-radius:5px;
+  border:none;
+}
+
+button{
+  background:#ff8c00;
+  border:none;
+  padding:8px 12px;
+  color:white;
+  border-radius:5px;
+  cursor:pointer;
+  margin-top:5px;
+}
+
+h3{
+  color:#ff8c00;
+  margin-top:0;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>Admin Panel – M. Rajesh (Managing Director)</h2>
+  <button class="logout-btn" onclick="logoutUser()">Logout</button>
+</div>
+
+<div class="container">
+
+  <!-- ATTENDANCE CLOSING TIME CONTROL -->
+  <div class="section-box">
+    <h3>Attendance Closing Hour</h3>
+    <p>Set the hour after which attendance will be blocked.</p>
+    <input type="number" id="closeHourInput" min="0" max="23" placeholder="Enter hour (e.g., 11)">
+    <button onclick="updateCloseHour()">Update Closing Time</button>
+    <p id="timeStatus"></p>
+  </div>
+
+  <!-- MONTHLY ATTENDANCE REPORT -->
+  <div class="section-box">
+    <h3>Monthly Attendance Report</h3>
+    <input type="month" id="monthPicker">
+    <button onclick="generateMonthlyReport()">Generate Report</button>
+    <div id="monthlyReport" style="margin-top:15px;"></div>
+  </div>
+
+</div>
+
+<!-- Protect Admin Page -->
+<script type="module">
+import { checkSession } from "./auth.js";
+checkSession("admin");
+</script>
+
+<script type="module">
+import { db } from "./firebase-config.js";
+import { doc, setDoc, collection, getDocs } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+/* ==============================
+   UPDATE ATTENDANCE CLOSING HOUR
+============================== */
+window.updateCloseHour = async function(){
+
+  const hour = parseInt(document.getElementById("closeHourInput").value);
+
+  if(isNaN(hour) || hour < 0 || hour > 23){
+    document.getElementById("timeStatus").innerText = "Please enter valid hour (0-23).";
+    return;
+  }
+
+  await setDoc(doc(db,"settings","attendance"),{
+    closeHour:hour
+  });
+
+  document.getElementById("timeStatus").innerText = 
+  "Closing hour updated successfully!";
+};
+
+
+/* ==============================
+   MONTHLY ATTENDANCE REPORT
+============================== */
+window.generateMonthlyReport = async function(){
+
+  const value = document.getElementById("monthPicker").value;
+
+  if(!value){
+    document.getElementById("monthlyReport").innerText = 
+    "Please select a month.";
+    return;
+  }
+
+  const [year, month] = value.split("-");
+
+  const usersSnapshot = await getDocs(collection(db,"users"));
+  const attendanceSnapshot = await getDocs(collection(db,"attendance"));
+
+  let reportHTML = "";
+
+  usersSnapshot.forEach(userDoc => {
+
+    const user = userDoc.data();
+
+    if(user.role === "employee"){
+
+      let presentCount = 0;
+
+      attendanceSnapshot.forEach(attDoc => {
+        const att = attDoc.data();
+
+        if(
+          att.employeeId === userDoc.id &&
+          att.date.startsWith(`${year}-${month}`)
+        ){
+          presentCount++;
+        }
+      });
+
+      reportHTML += `
+        <div style="margin-bottom:10px;">
+          <strong>${user.name}</strong><br>
+          Present Days: ${presentCount}
+        </div>
+      `;
+    }
+
+  });
+
+  if(reportHTML === ""){
+    reportHTML = "No attendance records found.";
+  }
+
+  document.getElementById("monthlyReport").innerHTML = reportHTML;
+
+};
+</script>
+
+<script type="module" src="auth.js"></script>
+
+</body>
+</html>
