@@ -630,6 +630,24 @@ footer {
     margin-top: 40px;
 }
 
+/* ===== HEADER LOGIN BUTTON ===== */
+
+.login-btn {
+    background: linear-gradient(135deg, #ff9800, #ff5e00);
+    border: none;
+    padding: 8px 18px;
+    border-radius: 20px;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 12px rgba(255,152,0,0.4);
+}
+
+.login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(255,152,0,0.6);
+}
 
 
 
