@@ -425,6 +425,7 @@ footer {
     text-align: center;
     position: relative;
     animation: popupFade 0.3s ease-in-out;
+    z-index: 100000;   /* ADD THIS LINE */
 }
 
 .lead-popup-box h2 {
@@ -458,11 +459,13 @@ footer {
 
 .lead-close-btn {
     position: absolute;
-    top: 10px;
+    top: 12px;
     right: 15px;
     cursor: pointer;
-    font-size: 20px;
+    font-size: 22px;
     font-weight: bold;
+    color: #ff9800;
+    z-index: 100001;   /* ADD THIS LINE */
 }
 
 @keyframes popupFade {
@@ -626,6 +629,7 @@ footer {
     font-size: 22px;
     margin-top: 40px;
 }
+
 
 
 
