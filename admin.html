@@ -48,11 +48,12 @@ body{
   box-shadow:0 0 20px rgba(255,140,0,0.2);
 }
 
-input, select{
+input{
   padding:8px;
-  margin:5px 0;
+  margin:5px 5px 5px 0;
   border-radius:5px;
   border:none;
+  width:100px;
 }
 
 button{
@@ -83,10 +84,15 @@ h3{
 
   <!-- ATTENDANCE CLOSING TIME CONTROL -->
   <div class="section-box">
-    <h3>Attendance Closing Hour</h3>
-    <p>Set the hour after which attendance will be blocked.</p>
-    <input type="number" id="closeHourInput" min="0" max="23" placeholder="Enter hour (e.g., 11)">
-    <button onclick="updateCloseHour()">Update Closing Time</button>
+    <h3>Attendance Closing Time</h3>
+    <p>Set hour and minute after which attendance will be blocked.</p>
+
+    <input type="number" id="closeHourInput" min="0" max="23" placeholder="Hour">
+    :
+    <input type="number" id="closeMinuteInput" min="0" max="59" placeholder="Minute">
+
+    <br>
+    <button onclick="updateCloseTime()">Update Closing Time</button>
     <p id="timeStatus"></p>
   </div>
 
@@ -100,7 +106,6 @@ h3{
 
 </div>
 
-<!-- Protect Admin Page -->
 <script type="module">
 import { checkSession } from "./auth.js";
 checkSession("admin");
@@ -108,27 +113,59 @@ checkSession("admin");
 
 <script type="module">
 import { db } from "./firebase-config.js";
-import { doc, setDoc, collection, getDocs } 
+import { doc, setDoc, getDoc, collection, getDocs } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ==============================
-   UPDATE ATTENDANCE CLOSING HOUR
+   LOAD CURRENT CLOSING TIME
 ============================== */
-window.updateCloseHour = async function(){
+async function loadClosingTime(){
+  const snap = await getDoc(doc(db,"settings","attendance"));
+  if(snap.exists()){
+    const data = snap.data();
+    document.getElementById("closeHourInput").value =
+      data.closeHour ?? 11;
+    document.getElementById("closeMinuteInput").value =
+      data.closeMinute ?? 0;
+  }
+}
+loadClosingTime();
 
-  const hour = parseInt(document.getElementById("closeHourInput").value);
+/* ==============================
+   UPDATE CLOSING TIME
+============================== */
+window.updateCloseTime = async function(){
 
-  if(isNaN(hour) || hour < 0 || hour > 23){
-    document.getElementById("timeStatus").innerText = "Please enter valid hour (0-23).";
+  const hour = parseInt(
+    document.getElementById("closeHourInput").value
+  );
+
+  const minute = parseInt(
+    document.getElementById("closeMinuteInput").value
+  );
+
+  if(
+    isNaN(hour) || hour < 0 || hour > 23 ||
+    isNaN(minute) || minute < 0 || minute > 59
+  ){
+    document.getElementById("timeStatus").innerText =
+      "Enter valid hour (0-23) and minute (0-59).";
     return;
   }
 
-  await setDoc(doc(db,"settings","attendance"),{
-    closeHour:hour
-  });
+  await setDoc(
+    doc(db,"settings","attendance"),
+    {
+      closeHour: hour,
+      closeMinute: minute
+    },
+    { merge:true }
+  );
 
-  document.getElementById("timeStatus").innerText = 
-  "Closing hour updated successfully!";
+  document.getElementById("timeStatus").innerText =
+    `Closing time updated to ${hour}:${minute
+      .toString()
+      .padStart(2,"0")} successfully!`;
 };
 
 
@@ -172,7 +209,12 @@ window.generateMonthlyReport = async function(){
       });
 
       reportHTML += `
-        <div style="margin-bottom:10px;">
+        <div style="
+          background:#222;
+          padding:10px;
+          border-radius:8px;
+          margin-bottom:10px;
+        ">
           <strong>${user.name}</strong><br>
           Present Days: ${presentCount}
         </div>
