@@ -1,1 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manager Dashboard | M.R Solar Systems</title>
 
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  background: #111;
+  color: white;
+}
+
+.header {
+  background: #000;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h2 {
+  color: #ff8c00;
+  margin: 0;
+}
+
+.logout-btn {
+  background: #ff8c00;
+  border: none;
+  padding: 8px 15px;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.container {
+  padding: 40px;
+}
+
+.date-display {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #ff8c00;
+}
+
+.table-box {
+  margin-top: 30px;
+  background: #1a1a1a;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(255,140,0,0.2);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+}
+
+th {
+  background: #222;
+  color: #ff8c00;
+}
+
+tr:nth-child(even) {
+  background: #1f1f1f;
+}
+
+.status-present {
+  color: #00e676;
+  font-weight: bold;
+}
+
+.status-absent {
+  color: #ff5252;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <h2>M.R Solar Manager Portal</h2>
+  <button class="logout-btn" onclick="logoutUser()">Logout</button>
+</div>
+
+<div class="container">
+  <h1>Today's Attendance</h1>
+  <div class="date-display" id="currentDate"></div>
+
+  <div class="table-box">
+    <table>
+      <thead>
+        <tr>
+          <th>Employee Name</th>
+          <th>Status</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="attendanceTable">
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Protect Manager Page -->
+<script type="module">
+import { checkSession } from "./auth.js";
+checkSession("manager");
+</script>
+
+<script type="module">
+import { db } from "./firebase-config.js";
+import { collection, getDocs, query, where } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const tableBody = document.getElementById("attendanceTable");
+const dateDisplay = document.getElementById("currentDate");
+
+const today = new Date();
+const formattedDate = today.toLocaleDateString("en-IN", {
+  day: "2-digit",
+  month: "long",
+  year: "numeric"
+});
+
+dateDisplay.innerText = "Date: " + formattedDate;
+
+async function loadAttendance() {
+
+  const todayISO = today.toISOString().split("T")[0];
+
+  const usersSnapshot = await getDocs(collection(db, "users"));
+
+  const attendanceQuery = query(
+    collection(db, "attendance"),
+    where("date", "==", todayISO)
+  );
+
+  const attendanceSnapshot = await getDocs(attendanceQuery);
+
+  const attendanceMap = {};
+
+  attendanceSnapshot.forEach(doc => {
+    const data = doc.data();
+    attendanceMap[data.employeeId] = data.timestamp;
+  });
+
+  usersSnapshot.forEach(doc => {
+    const user = doc.data();
+
+    if (user.role === "employee") {
+
+      const row = document.createElement("tr");
+
+      const nameCell = document.createElement("td");
+      nameCell.innerText = user.name || "Employee";
+
+      const statusCell = document.createElement("td");
+      const timeCell = document.createElement("td");
+
+      if (attendanceMap[doc.id]) {
+        statusCell.innerHTML = "<span class='status-present'>Present</span>";
+
+        const timestamp = attendanceMap[doc.id];
+        if (timestamp?.seconds) {
+          const dateObj = new Date(timestamp.seconds * 1000);
+          timeCell.innerText = dateObj.toLocaleTimeString("en-IN");
+        } else {
+          timeCell.innerText = "-";
+        }
+
+      } else {
+        statusCell.innerHTML = "<span class='status-absent'>Absent</span>";
+        timeCell.innerText = "-";
+      }
+
+      row.appendChild(nameCell);
+      row.appendChild(statusCell);
+      row.appendChild(timeCell);
+
+      tableBody.appendChild(row);
+    }
+  });
+}
+
+loadAttendance();
+</script>
+
+<script type="module" src="auth.js"></script>
+
+</body>
+</html>
