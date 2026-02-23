@@ -25,7 +25,7 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
 <body>
 
 <div class="header">
-<h2>M.R Solar systems Employee Portal</h2>
+<h2>M.R Solar Systems Employee Portal</h2>
 <button class="logout-btn" onclick="logoutUser()">Logout</button>
 </div>
 
@@ -35,9 +35,11 @@ body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
 <div class="attendance-box">
 
 <div id="distanceDisplay" class="distance-box">Checking location...</div>
+
 <div id="countdownBox" style="margin-bottom:15px;font-weight:600;">
 🕒 Loading countdown...
 </div>
+
 <button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()">
 Mark Attendance
 </button>
@@ -47,6 +49,7 @@ Mark Attendance
 </div>
 </div>
 
+<!-- Protect Page -->
 <script type="module">
 import { checkSession } from "./auth.js";
 checkSession("employee");
@@ -68,24 +71,31 @@ const btn = document.getElementById("attendanceBtn");
 const status = document.getElementById("attendanceStatus");
 const distanceDisplay = document.getElementById("distanceDisplay");
 
-/* ===== GET CLOSING TIME ===== */
-async function getCloseHour(){
-  const snap=await getDoc(doc(db,"settings","attendance"));
-  return snap.exists()?snap.data().closeHour:11;
+/* ===== GET CLOSING TIME (Hour + Minute) ===== */
+async function getClosingTime(){
+  const snap = await getDoc(doc(db,"settings","attendance"));
+
+  if(snap.exists()){
+    return {
+      hour: snap.data().closeHour ?? 11,
+      minute: snap.data().closeMinute ?? 0
+    };
+  }
+
+  return { hour:11, minute:0 };
 }
+
 /* ===== COUNTDOWN TIMER ===== */
 async function startCountdown(){
 
-  const closeHour = await getCloseHour();
-
+  const { hour, minute } = await getClosingTime();
   const countdownBox = document.getElementById("countdownBox");
 
   function updateTimer(){
 
     const now = new Date();
     const closingTime = new Date();
-
-    closingTime.setHours(closeHour,0,0,0);
+    closingTime.setHours(hour, minute, 0, 0);
 
     const diff = closingTime - now;
 
@@ -100,10 +110,10 @@ async function startCountdown(){
     const seconds = Math.floor((diff % (1000*60)) / 1000);
 
     countdownBox.innerHTML =
-    `🕒 Attendance closes in: 
-    <span style="color:#ff8c00;">
-    ${hours}h : ${minutes}m : ${seconds}s
-    </span>`;
+    `🕒 Attendance closes at ${hour}:${minute.toString().padStart(2,"0")} <br>
+     <span style="color:#ff8c00;">
+     ${hours}h : ${minutes}m : ${seconds}s
+     </span>`;
   }
 
   updateTimer();
@@ -111,6 +121,7 @@ async function startCountdown(){
 }
 
 startCountdown();
+
 /* ===== DISTANCE FUNCTION ===== */
 function getDistance(lat1, lon1, lat2, lon2){
   const R = 6371000;
@@ -124,7 +135,7 @@ function getDistance(lat1, lon1, lat2, lon2){
   return R*c;
 }
 
-/* ===== CHECK LOCATION LIVE ===== */
+/* ===== CHECK LOCATION ===== */
 if(navigator.geolocation){
   navigator.geolocation.getCurrentPosition(position=>{
     const userLat = position.coords.latitude;
@@ -154,9 +165,15 @@ if(navigator.geolocation){
 /* ===== MARK ATTENDANCE ===== */
 window.markAttendance = async function(){
 
-  const closeHour = await getCloseHour();
-  if(new Date().getHours() >= closeHour){
-    status.innerText = `❌ Attendance closed after ${closeHour}:00`;
+  const { hour, minute } = await getClosingTime();
+
+  const now = new Date();
+  const closingTime = new Date();
+  closingTime.setHours(hour, minute, 0, 0);
+
+  if(now >= closingTime){
+    status.innerText =
+    `❌ Attendance closed after ${hour}:${minute.toString().padStart(2,"0")}`;
     return;
   }
 
