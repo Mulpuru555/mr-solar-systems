@@ -19,6 +19,9 @@ h3{color:#ff8c00;margin-top:0;}
 table{width:100%;margin-top:15px;border-collapse:collapse;}
 th,td{padding:8px;border:1px solid #333;text-align:center;}
 .download-btn{margin-top:15px;background:#00b894;}
+.lock-btn{background:#d63031;}
+.unlock-btn{background:#00cec9;}
+.pay-btn{background:#0984e3;}
 </style>
 </head>
 
@@ -31,48 +34,12 @@ th,td{padding:8px;border:1px solid #333;text-align:center;}
 
 <div class="container">
 
-<!-- ATTENDANCE CONTROL -->
-<div class="section-box">
-<h3>Attendance Closing Time</h3>
-<input type="number" id="closeHourInput" min="0" max="23" placeholder="Hour">
-:
-<input type="number" id="closeMinuteInput" min="0" max="59" placeholder="Minute">
-<br>
-<button onclick="updateCloseTime()">Update Closing Time</button>
-<p id="timeStatus"></p>
-</div>
-
 <!-- MONTHLY ATTENDANCE VIEW -->
 <div class="section-box">
 <h3>Monthly Attendance Report</h3>
 <input type="month" id="monthPicker">
 <button onclick="generateMonthlyReport()">Generate Report</button>
 <div id="monthlyReport" style="margin-top:15px;"></div>
-</div>
-
-<!-- ADVANCED ATTENDANCE DOWNLOAD -->
-<div class="section-box">
-<h3>Download Attendance Reports</h3>
-
-<select id="reportType">
-<option value="monthly">Monthly</option>
-<option value="range">Date Range</option>
-</select>
-
-<div id="monthlySection">
-<input type="month" id="downloadMonth">
-</div>
-
-<div id="rangeSection" style="display:none;">
-<input type="date" id="fromDate">
-<input type="date" id="toDate">
-</div>
-
-<select id="employeeSelect"></select>
-<br>
-<button class="download-btn" onclick="downloadAttendanceReport()">
-📥 Download Detailed Attendance
-</button>
 </div>
 
 <!-- ERP CUSTOMER MANAGEMENT -->
@@ -88,14 +55,12 @@ th,td{padding:8px;border:1px solid #333;text-align:center;}
 <th>Paid</th>
 <th>Balance</th>
 <th>Status</th>
+<th>Action</th>
+<th>Lock</th>
 </tr>
 </thead>
 <tbody id="customerTable"></tbody>
 </table>
-
-<button class="download-btn" onclick="downloadPendingCustomers()">
-📥 Download Pending Customers
-</button>
 
 </div>
 
@@ -108,110 +73,59 @@ checkSession("admin");
 
 <script type="module">
 import { db } from "./firebase-config.js";
-import { collection, getDocs, doc, getDoc, setDoc, updateDoc } 
+import { collection, getDocs, doc, updateDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* ==============================
-   LOAD EMPLOYEES FOR DROPDOWN
+   MONTHLY ATTENDANCE REPORT
 ============================== */
-async function loadEmployees(){
+window.generateMonthlyReport = async function(){
+
+const month=document.getElementById("monthPicker").value;
+if(!month){ alert("Select month"); return; }
+
+const [year,mon]=month.split("-");
 const usersSnapshot=await getDocs(collection(db,"users"));
-const select=document.getElementById("employeeSelect");
-select.innerHTML="";
+const attendanceSnapshot=await getDocs(collection(db,"attendance"));
+
+let html="";
+
 usersSnapshot.forEach(userDoc=>{
 const user=userDoc.data();
 if(user.role==="employee"){
-select.innerHTML+=`<option value="${userDoc.id}">${user.name}</option>`;
-}
-});
-}
-loadEmployees();
+let present=0;
 
-/* ==============================
-   TOGGLE REPORT TYPE
-============================== */
-document.getElementById("reportType").addEventListener("change",(e)=>{
-if(e.target.value==="monthly"){
-document.getElementById("monthlySection").style.display="block";
-document.getElementById("rangeSection").style.display="none";
-}else{
-document.getElementById("monthlySection").style.display="none";
-document.getElementById("rangeSection").style.display="block";
+attendanceSnapshot.forEach(attDoc=>{
+const att=attDoc.data();
+if(att.employeeId===userDoc.id && att.date.startsWith(`${year}-${mon}`)){
+present++;
 }
 });
 
-/* ==============================
-   DOWNLOAD ATTENDANCE
-============================== */
-window.downloadAttendanceReport=async function(){
-
-const type=document.getElementById("reportType").value;
-const employeeId=document.getElementById("employeeSelect").value;
-
-if(!employeeId){alert("Select employee");return;}
-
-let fromDate,toDate;
-
-if(type==="monthly"){
-const month=document.getElementById("downloadMonth").value;
-if(!month){alert("Select month");return;}
-const [year,mon]=month.split("-");
-fromDate=`${year}-${mon}-01`;
-toDate=new Date(year,mon,0).toISOString().split("T")[0];
-}else{
-fromDate=document.getElementById("fromDate").value;
-toDate=document.getElementById("toDate").value;
-if(!fromDate||!toDate){alert("Select dates");return;}
-}
-
-const attendanceSnapshot=await getDocs(collection(db,"attendance"));
-const usersSnapshot=await getDocs(collection(db,"users"));
-const userDoc=usersSnapshot.docs.find(doc=>doc.id===employeeId);
-const employeeName=userDoc?.data().name||"Employee";
-
-let current=new Date(fromDate);
-const end=new Date(toDate);
-
-let csv=`Employee Name: ${employeeName}\n`;
-csv+=`Report Period: ${fromDate} to ${toDate}\n\n`;
-csv+="Date,Status\n";
-
-while(current<=end){
-const dateStr=current.toISOString().split("T")[0];
-const day=current.getDay();
-if(day!==0){ // Ignore Sundays
-let present=false;
-attendanceSnapshot.forEach(doc=>{
-const data=doc.data();
-if(data.employeeId===employeeId && data.date===dateStr){
-present=true;
+html+=`<div style="margin-bottom:8px;">
+<strong>${user.name}</strong> — Present Days: ${present}
+</div>`;
 }
 });
-csv+=`${dateStr},${present?"Present":"Absent"}\n`;
-}
-current.setDate(current.getDate()+1);
-}
 
-const encodedUri=encodeURI("data:text/csv;charset=utf-8,"+csv);
-const link=document.createElement("a");
-link.setAttribute("href",encodedUri);
-link.setAttribute("download","Attendance_Detailed_Report.csv");
-document.body.appendChild(link);
-link.click();
+document.getElementById("monthlyReport").innerHTML=html || "No records.";
 };
 
 /* ==============================
-   CUSTOMER ERP SECTION
+   LOAD CUSTOMERS
 ============================== */
 async function loadCustomers(){
 const snapshot=await getDocs(collection(db,"customerPayments"));
 const table=document.getElementById("customerTable");
 table.innerHTML="";
+
 snapshot.forEach(docSnap=>{
 const data=docSnap.data();
 const payments=data.payments||[];
 const totalPaid=payments.reduce((sum,p)=>sum+p.amount,0);
 const balance=data.totalAmount-totalPaid;
+const status=balance===0?"Completed":"Pending";
+
 table.innerHTML+=`
 <tr>
 <td>${data.customerName}</td>
@@ -219,58 +133,64 @@ table.innerHTML+=`
 <td>₹${data.totalAmount}</td>
 <td>₹${totalPaid}</td>
 <td style="color:${balance===0?'#00e676':'#ff5252'}">₹${balance}</td>
-<td>${balance===0?'Completed':'Pending'}</td>
+<td>${status}</td>
+<td>
+<button class="pay-btn" onclick="addPayment('${docSnap.id}')">Add Payment</button>
+</td>
+<td>
+<button class="${data.isLocked?'unlock-btn':'lock-btn'}"
+onclick="toggleLock('${docSnap.id}',${data.isLocked})">
+${data.isLocked?'Unlock':'Lock'}
+</button>
+</td>
 </tr>`;
 });
 }
 loadCustomers();
 
-window.downloadPendingCustomers=async function(){
+/* ==============================
+   ADD PAYMENT (ERP METHOD B)
+============================== */
+window.addPayment=async function(id){
+const amount=prompt("Enter Payment Amount:");
+if(!amount||isNaN(amount)) return;
+
 const snapshot=await getDocs(collection(db,"customerPayments"));
-let csv="Customer Name,Executive,Total Amount,Paid,Balance,Status\n";
-snapshot.forEach(docSnap=>{
+const docSnap=snapshot.docs.find(d=>d.id===id);
+if(!docSnap) return;
+
 const data=docSnap.data();
 const payments=data.payments||[];
-const totalPaid=payments.reduce((sum,p)=>sum+p.amount,0);
-const balance=data.totalAmount-totalPaid;
-if(balance>0){
-csv+=`${data.customerName},${data.executiveName},${data.totalAmount},${totalPaid},${balance},Pending\n`;
-}
+
+payments.push({
+amount:Number(amount),
+date:new Date().toISOString().split("T")[0]
 });
-const encodedUri=encodeURI("data:text/csv;charset=utf-8,"+csv);
-const link=document.createElement("a");
-link.setAttribute("href",encodedUri);
-link.setAttribute("download","Pending_Customers_Report.csv");
-document.body.appendChild(link);
-link.click();
+
+await updateDoc(doc(db,"customerPayments",id),{
+payments:payments
+});
+
+loadCustomers();
 };
 
 /* ==============================
-   ATTENDANCE SETTINGS
+   LOCK / UNLOCK
 ============================== */
-async function loadClosingTime(){
-const snap=await getDoc(doc(db,"settings","attendance"));
-if(snap.exists()){
-const data=snap.data();
-document.getElementById("closeHourInput").value=data.closeHour??11;
-document.getElementById("closeMinuteInput").value=data.closeMinute??0;
-}
-}
-loadClosingTime();
+window.toggleLock=async function(id,currentState){
+await updateDoc(doc(db,"customerPayments",id),{
+isLocked:!currentState
+});
+loadCustomers();
+};
 
-window.updateCloseTime=async function(){
-const hour=parseInt(document.getElementById("closeHourInput").value);
-const minute=parseInt(document.getElementById("closeMinuteInput").value);
-if(isNaN(hour)||hour<0||hour>23||isNaN(minute)||minute<0||minute>59){
-document.getElementById("timeStatus").innerText="Invalid time.";
-return;
-}
-await setDoc(doc(db,"settings","attendance"),{closeHour:hour,closeMinute:minute},{merge:true});
-document.getElementById("timeStatus").innerText="Updated successfully!";
+/* ==============================
+   LOGOUT
+============================== */
+window.logoutUser = function(){
+window.location.href="index.html";
 };
 </script>
-
-<script type="module" src="auth.js"></script>
 
 </body>
 </html>
