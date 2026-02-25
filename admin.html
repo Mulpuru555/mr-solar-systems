@@ -226,6 +226,8 @@ totalPending += balance;
 
 const status = balance===0 ? "Completed" : "Pending";
 
+const workStatus = data.workStatus || "Not Completed";
+
 table.innerHTML += `
 <tr>
 <td>${data.customerName}</td>
@@ -234,7 +236,16 @@ table.innerHTML += `
 <td>₹${totalPaid}</td>
 <td style="color:${balance===0?'#00e676':'#ff5252'}">₹${balance}</td>
 <td>${status}</td>
+
+<td>
+<select onchange="updateWorkStatus('${data.id}', this.value)">
+<option value="Not Completed" ${workStatus==="Not Completed"?"selected":""}>Not Completed</option>
+<option value="Completed" ${workStatus==="Completed"?"selected":""}>Completed</option>
+</select>
+</td>
+
 <td><button class="pay-btn" onclick="addPayment('${data.id}')">Add</button></td>
+
 <td>
 <button class="${data.isLocked?'unlock-btn':'lock-btn'}"
 onclick="toggleLock('${data.id}',${data.isLocked})">
@@ -242,7 +253,6 @@ ${data.isLocked?'Unlock':'Lock'}
 </button>
 </td>
 </tr>`;
-});
 
 document.getElementById("totalRevenue").innerText =
 "₹ " + totalRevenue.toLocaleString();
