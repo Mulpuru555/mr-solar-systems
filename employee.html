@@ -10,7 +10,7 @@
 body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
 .header{background:#000;padding:15px 30px;display:flex;justify-content:space-between;}
 .header h2{color:#ff8c00;}
-.logout-btn{background:#ff8c00;border:none;padding:8px 15px;color:white;border-radius:5px;}
+.logout-btn{background:#ff8c00;border:none;padding:8px 15px;color:white;border-radius:5px;cursor:pointer;}
 .dashboard-container{padding:40px;text-align:center;}
 .attendance-box{background:#1a1a1a;padding:30px;border-radius:10px;margin-top:30px;}
 .attendance-btn{margin-top:20px;padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:6px;cursor:pointer;}
@@ -73,7 +73,7 @@ Mark Attendance
 <th>Total</th>
 <th>Paid</th>
 <th>Status</th>
-<th>Action</th>
+<th>Lock</th>
 </tr>
 </thead>
 <tbody id="recordsTable"></tbody>
@@ -83,7 +83,7 @@ Mark Attendance
 
 <script type="module">
 import { auth, db } from "./firebase-config.js";
-import { addDoc, collection, serverTimestamp, query, where, getDocs, doc, updateDoc, getDoc } 
+import { addDoc, collection, serverTimestamp, query, where, getDocs, doc, getDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
@@ -161,6 +161,7 @@ function startLocationTracking(){
 
   if(!navigator.geolocation){
     distanceDisplay.innerText = "Geolocation not supported";
+    distanceDisplay.className = "distance-box red";
     return;
   }
 
@@ -175,9 +176,11 @@ function startLocationTracking(){
       distanceDisplay.innerText = `Distance from office: ${Math.round(distance)} meters`;
 
       if(distance <= allowedRadius){
+        distanceDisplay.className = "distance-box green";
         btn.disabled = false;
         statusBox.innerText = "";
       }else{
+        distanceDisplay.className = "distance-box red";
         btn.disabled = true;
         statusBox.innerText = "You are outside office location";
       }
@@ -186,6 +189,7 @@ function startLocationTracking(){
     (error)=>{
       console.log(error);
       distanceDisplay.innerText = "Location permission denied";
+      distanceDisplay.className = "distance-box red";
       btn.disabled = true;
     },
 
@@ -230,7 +234,7 @@ function calculateDistance(lat1, lon1, lat2, lon2){
 }
 
 /* ==============================
-   ERP CUSTOMER SECTION
+   ERP SECTION
 ============================== */
 const paymentForm = document.getElementById("paymentForm");
 const paymentMessage = document.getElementById("paymentMessage");
@@ -254,9 +258,6 @@ paymentForm.addEventListener("submit", async (e)=>{
   loadRecords();
 });
 
-/* ==============================
-   LOAD RECORDS
-============================== */
 async function loadRecords(){
   const user = auth.currentUser;
   if(!user) return;
@@ -286,6 +287,13 @@ async function loadRecords(){
   });
 }
 
+/* ==============================
+   LOGOUT
+============================== */
+window.logoutUser = async function(){
+  await auth.signOut();
+  window.location.href = "login.html";
+};
 </script>
 
 </body>
