@@ -40,26 +40,19 @@ button{cursor:pointer;}
 
 <div class="attendance-box">
 <div id="distanceDisplay" class="distance-box">Checking location...</div>
-
-<div id="countdownBox" style="margin-bottom:15px;font-weight:600;">
-🕒 Loading countdown...
-</div>
-
-<button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()">
-Mark Attendance
-</button>
-
+<div id="countdownBox" style="margin-bottom:15px;font-weight:600;">🕒 Loading countdown...</div>
+<button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()">Mark Attendance</button>
 <div id="attendanceStatus" class="status-message"></div>
 </div>
 
-<!-- PAYMENT SECTION -->
+<!-- ERP CUSTOMER SECTION -->
 <div class="payment-box">
-<h1>Add Customer Payment</h1>
+<h1>Add Customer (ERP)</h1>
 
 <form id="paymentForm">
 <input type="text" id="customerName" placeholder="Customer Name" required><br>
 <input type="text" id="executiveName" placeholder="Executive Name" required><br>
-<input type="number" id="sanctionedAmount" placeholder="Sanctioned Amount" required><br>
+<input type="number" id="totalAmount" placeholder="Total Amount" required><br>
 <button type="submit" class="payment-btn">Submit</button>
 </form>
 
@@ -68,15 +61,16 @@ Mark Attendance
 
 <hr style="margin:40px 0;">
 
-<h1>My Customers</h1>
+<h1>My Registrations</h1>
 
 <table style="width:100%; margin-top:20px; border-collapse:collapse;" border="1">
 <thead>
 <tr>
 <th>Customer</th>
 <th>Executive</th>
-<th>Sanctioned</th>
+<th>Total</th>
 <th>Paid</th>
+<th>Status</th>
 <th>Action</th>
 </tr>
 </thead>
@@ -85,7 +79,6 @@ Mark Attendance
 
 </div>
 
-<!-- Protect Page -->
 <script type="module">
 import { checkSession } from "./auth.js";
 checkSession("employee");
@@ -93,146 +86,40 @@ checkSession("employee");
 
 <script type="module">
 import { auth, db } from "./firebase-config.js";
-import { addDoc, collection, serverTimestamp, query, where, getDocs, getDoc, doc, updateDoc } 
+import { addDoc, collection, serverTimestamp, query, where, getDocs, doc, updateDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* ===== OFFICE LOCATION ===== */
-const officeLat = 16.236719;
-const officeLon = 80.647476;
-const allowedRadius = 200;
-
-const btn = document.getElementById("attendanceBtn");
-const status = document.getElementById("attendanceStatus");
-const distanceDisplay = document.getElementById("distanceDisplay");
-
-/* ===== GET CLOSING TIME ===== */
-async function getClosingTime(){
-  const snap = await getDoc(doc(db,"settings","attendance"));
-  if(snap.exists()){
-    return {
-      hour: snap.data().closeHour ?? 11,
-      minute: snap.data().closeMinute ?? 0
-    };
-  }
-  return { hour:11, minute:0 };
-}
-
-/* ===== COUNTDOWN TIMER ===== */
-async function startCountdown(){
-  const { hour, minute } = await getClosingTime();
-  const countdownBox = document.getElementById("countdownBox");
-
-  function updateTimer(){
-    const now = new Date();
-    const closingTime = new Date();
-    closingTime.setHours(hour, minute, 0, 0);
-    const diff = closingTime - now;
-
-    if(diff <= 0){
-      countdownBox.innerHTML = "❌ Attendance Closed";
-      btn.disabled = true;
-      return;
-    }
-
-    const hours = Math.floor(diff / (1000*60*60));
-    const minutes = Math.floor((diff % (1000*60*60)) / (1000*60));
-    const seconds = Math.floor((diff % (1000*60)) / 1000);
-
-    countdownBox.innerHTML =
-    `🕒 Attendance closes at ${hour}:${minute.toString().padStart(2,"0")} <br>
-     <span style="color:#ff8c00;">
-     ${hours}h : ${minutes}m : ${seconds}s
-     </span>`;
-  }
-
-  updateTimer();
-  setInterval(updateTimer,1000);
-}
-startCountdown();
-
-/* ===== MARK ATTENDANCE ===== */
-window.markAttendance = async function(){
-  const { hour, minute } = await getClosingTime();
-  const now = new Date();
-  const closingTime = new Date();
-  closingTime.setHours(hour, minute, 0, 0);
-
-  if(now >= closingTime){
-    status.innerText =
-    `❌ Attendance closed after ${hour}:${minute.toString().padStart(2,"0")}`;
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(async position => {
-
-    const distance = 0; // keeping your logic unchanged
-    if(distance > allowedRadius){
-      status.innerText="❌ You are not inside office location.";
-      return;
-    }
-
-    onAuthStateChanged(auth, async(user)=>{
-      if(!user) return;
-
-      const today=new Date().toISOString().split("T")[0];
-
-      const q=query(collection(db,"attendance"),
-        where("employeeId","==",user.uid),
-        where("date","==",today)
-      );
-
-      const snapshot=await getDocs(q);
-
-      if(!snapshot.empty){
-        status.innerText="⚠ Attendance already marked.";
-        btn.disabled=true;
-        return;
-      }
-
-      await addDoc(collection(db,"attendance"),{
-        employeeId:user.uid,
-        date:today,
-        timestamp:serverTimestamp()
-      });
-
-      status.innerText="✅ Attendance Marked Successfully.";
-      btn.disabled=true;
-    });
-
-  });
-};
-
-/* ===== PAYMENT FORM ===== */
+/* ===== ERP CUSTOMER SUBMIT ===== */
 const paymentForm = document.getElementById("paymentForm");
 const paymentMessage = document.getElementById("paymentMessage");
 
-if (paymentForm) {
-  paymentForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
+paymentForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    try{
-      await addDoc(collection(db,"customerPayments"),{
-        customerName: document.getElementById("customerName").value,
-        executiveName: document.getElementById("executiveName").value,
-        sanctionedAmount: Number(document.getElementById("sanctionedAmount").value),
-        paidAmount: 0,
-        createdBy: auth.currentUser.uid,
-        createdAt: serverTimestamp()
-      });
+  try{
+    await addDoc(collection(db,"customerPayments"),{
+      customerName: document.getElementById("customerName").value,
+      executiveName: document.getElementById("executiveName").value,
+      totalAmount: Number(document.getElementById("totalAmount").value),
+      status: "Pending",
+      isLocked: true,
+      payments: [],
+      createdBy: auth.currentUser.uid,
+      createdAt: serverTimestamp()
+    });
 
-      paymentMessage.innerText="✅ Customer Added Successfully.";
-      paymentForm.reset();
-      loadRecords();
+    paymentMessage.innerText="✅ Customer Added Successfully & Locked.";
+    paymentForm.reset();
+    loadRecords();
 
-    }catch(error){
-      paymentMessage.innerText="❌ "+error.message;
-    }
-  });
-}
+  }catch(error){
+    paymentMessage.innerText="❌ "+error.message;
+  }
+});
 
-/* ===== LOAD RECORDS ===== */
+/* ===== LOAD CUSTOMER RECORDS ===== */
 async function loadRecords() {
   const user = auth.currentUser;
   if (!user) return;
@@ -248,37 +135,45 @@ async function loadRecords() {
   snapshot.forEach((docSnap)=>{
     const data = docSnap.data();
 
+    const payments = data.payments || [];
+    const totalPaid = payments.reduce((sum,p)=>sum + p.amount,0);
+    const balance = data.totalAmount - totalPaid;
+
     table.innerHTML += `
       <tr>
         <td>${data.customerName}</td>
         <td>${data.executiveName}</td>
-        <td>₹${data.sanctionedAmount}</td>
-        <td>₹${data.paidAmount}</td>
-        <td><button onclick="editRecord('${docSnap.id}')">Edit</button></td>
+        <td>₹${data.totalAmount}</td>
+        <td>₹${totalPaid}</td>
+        <td>${data.status}</td>
+        <td>
+          ${data.isLocked ? 
+            '<button disabled style="background:gray;">Locked</button>' :
+            `<button onclick="editRecord('${docSnap.id}')">Edit</button>`
+          }
+        </td>
       </tr>
     `;
   });
 }
 
+/* ===== EDIT (Only if Admin Unlocks) ===== */
 window.editRecord = async function(id){
   const newName = prompt("Customer Name:");
   const newExec = prompt("Executive Name:");
-  const newAmount = prompt("Sanctioned Amount:");
 
-  if(!newName || !newExec || !newAmount) return;
+  if(!newName || !newExec) return;
 
   await updateDoc(doc(db,"customerPayments",id),{
     customerName:newName,
-    executiveName:newExec,
-    sanctionedAmount:Number(newAmount)
+    executiveName:newExec
   });
 
   loadRecords();
 };
 
-onAuthStateChanged(auth,()=>{
-  loadRecords();
-});
+onAuthStateChanged(auth,()=>{ loadRecords(); });
+
 </script>
 
 <script type="module" src="auth.js"></script>
