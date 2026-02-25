@@ -111,41 +111,51 @@ async function startCountdown(){
   setInterval(update,1000);
 }
 
-/* ===== MARK ATTENDANCE ===== */
 window.markAttendance = async function(){
 
-  navigator.geolocation.getCurrentPosition(async (pos)=>{
+  if (!navigator.geolocation) {
+    alert("Geolocation not supported by browser.");
+    return;
+  }
 
-    const lat = pos.coords.latitude;
-    const lon = pos.coords.longitude;
+  navigator.geolocation.getCurrentPosition(
+    async (pos) => {
 
-    const distance = getDistance(lat,lon,officeLat,officeLon);
+      const lat = pos.coords.latitude;
+      const lon = pos.coords.longitude;
 
-    document.getElementById("distanceDisplay").innerText =
-      `Distance: ${Math.round(distance)} meters`;
+      const distance = getDistance(lat,lon,officeLat,officeLon);
 
-    if(distance > allowedRadius){
+      document.getElementById("distanceDisplay").innerText =
+        `Distance: ${Math.round(distance)} meters`;
+
+      if(distance > allowedRadius){
+        document.getElementById("attendanceStatus").innerText =
+          "❌ You are outside office location.";
+        return;
+      }
+
+      const user = auth.currentUser;
+      const today = new Date().toISOString().split("T")[0];
+
+      await addDoc(collection(db,"attendance"),{
+        employeeId:user.uid,
+        date:today,
+        timestamp:serverTimestamp()
+      });
+
       document.getElementById("attendanceStatus").innerText =
-        "❌ You are outside office location.";
-      return;
+        "✅ Attendance Marked";
+      document.getElementById("attendanceBtn").disabled=true;
+    },
+
+    (error) => {
+      console.log(error);
+      document.getElementById("attendanceStatus").innerText =
+        "❌ Location permission denied or unavailable.";
     }
-
-    const user = auth.currentUser;
-    const today = new Date().toISOString().split("T")[0];
-
-    await addDoc(collection(db,"attendance"),{
-      employeeId:user.uid,
-      date:today,
-      timestamp:serverTimestamp()
-    });
-
-    document.getElementById("attendanceStatus").innerText =
-      "✅ Attendance Marked";
-    document.getElementById("attendanceBtn").disabled=true;
-
-  });
+  );
 };
-
 /* ===== DISTANCE CALCULATION ===== */
 function getDistance(lat1, lon1, lat2, lon2){
   const R = 6371e3;
