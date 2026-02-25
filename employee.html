@@ -7,23 +7,153 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
-.header{background:#000;padding:15px 30px;display:flex;justify-content:space-between;}
-.header h2{color:#ff8c00;}
-.logout-btn{background:#ff8c00;border:none;padding:8px 15px;color:white;border-radius:5px;cursor:pointer;}
-.dashboard-container{padding:40px;text-align:center;}
-.attendance-box{background:#1a1a1a;padding:30px;border-radius:10px;margin-top:30px;}
-.attendance-btn{margin-top:20px;padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:6px;cursor:pointer;}
-.attendance-btn:disabled{background:gray;cursor:not-allowed;}
-.status-message{margin-top:15px;}
-.distance-box{margin-top:15px;font-weight:bold;}
+body{
+margin:0;
+font-family:'Montserrat',sans-serif;
+background:#0f0f0f;
+color:white;
+}
+
+.header{
+background:#000;
+padding:15px 30px;
+display:flex;
+justify-content:space-between;
+align-items:center;
+box-shadow:0 4px 10px rgba(0,0,0,0.6);
+}
+
+.header h2{
+color:#ff8c00;
+margin:0;
+}
+
+.logout-btn{
+background:#ff8c00;
+border:none;
+padding:8px 15px;
+color:white;
+border-radius:6px;
+cursor:pointer;
+transition:0.3s;
+}
+.logout-btn:hover{
+background:#ff5e00;
+transform:scale(1.05);
+}
+
+.dashboard-container{
+padding:40px;
+max-width:1200px;
+margin:auto;
+}
+
+.section-title{
+margin-bottom:15px;
+color:#ff8c00;
+font-weight:600;
+}
+
+/* Attendance Box */
+.attendance-box{
+background:#1a1a1a;
+padding:30px;
+border-radius:15px;
+box-shadow:0 0 20px rgba(255,140,0,0.15);
+margin-bottom:40px;
+text-align:center;
+}
+
+.attendance-btn{
+margin-top:20px;
+padding:12px 25px;
+background:linear-gradient(45deg,#ff8c00,#ff5e00);
+border:none;
+color:white;
+border-radius:8px;
+cursor:pointer;
+font-weight:600;
+transition:0.3s;
+}
+.attendance-btn:hover{
+transform:scale(1.05);
+}
+.attendance-btn:disabled{
+background:gray;
+cursor:not-allowed;
+}
+
+.status-message{
+margin-top:15px;
+font-weight:600;
+}
+
+.distance-box{
+margin-top:15px;
+font-weight:bold;
+}
+
 .green{color:#00e676;}
 .red{color:#ff5252;}
-.payment-box{background:#1a1a1a;padding:30px;border-radius:10px;margin-top:40px;}
-.payment-box input{padding:10px;width:250px;border-radius:5px;border:none;margin-bottom:10px;}
-.payment-btn{margin-top:10px;padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:6px;cursor:pointer;}
-table{color:white;}
-th,td{padding:8px;}
+
+/* ERP Box */
+.payment-box{
+background:#1a1a1a;
+padding:30px;
+border-radius:15px;
+box-shadow:0 0 20px rgba(255,140,0,0.15);
+margin-bottom:40px;
+}
+
+.payment-box input{
+padding:12px;
+width:260px;
+border-radius:8px;
+border:none;
+margin-bottom:15px;
+background:#222;
+color:white;
+}
+
+.payment-btn{
+padding:12px 25px;
+background:linear-gradient(45deg,#ff8c00,#ff5e00);
+border:none;
+color:white;
+border-radius:8px;
+cursor:pointer;
+font-weight:600;
+transition:0.3s;
+}
+.payment-btn:hover{
+transform:scale(1.05);
+}
+
+/* Table */
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:20px;
+background:#1a1a1a;
+border-radius:15px;
+overflow:hidden;
+}
+
+th{
+background:#222;
+color:#ff8c00;
+padding:12px;
+}
+
+td{
+padding:12px;
+border-bottom:1px solid #333;
+text-align:center;
+}
+
+tr:hover{
+background:#222;
+}
 </style>
 </head>
 
@@ -36,20 +166,22 @@ th,td{padding:8px;}
 
 <div class="dashboard-container">
 
-<h1>Attendance</h1>
+<h2 class="section-title">Attendance</h2>
 
 <div class="attendance-box">
 <div id="distanceDisplay" class="distance-box">Checking location...</div>
 <div id="countdownBox" style="margin-bottom:15px;font-weight:600;">Loading countdown...</div>
+
 <button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()" disabled>
 Mark Attendance
 </button>
+
 <div id="attendanceStatus" class="status-message"></div>
 </div>
 
-<!-- ERP SECTION -->
+<h2 class="section-title">Add Customer (ERP)</h2>
+
 <div class="payment-box">
-<h1>Add Customer (ERP)</h1>
 
 <form id="paymentForm">
 <input type="text" id="customerName" placeholder="Customer Name" required><br>
@@ -59,13 +191,12 @@ Mark Attendance
 </form>
 
 <div id="paymentMessage" class="status-message"></div>
+
 </div>
 
-<hr style="margin:40px 0;">
+<h2 class="section-title">My Registrations</h2>
 
-<h1>My Registrations</h1>
-
-<table style="width:100%; margin-top:20px; border-collapse:collapse;" border="1">
+<table>
 <thead>
 <tr>
 <th>Customer</th>
@@ -88,20 +219,8 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* ==============================
-   OFFICE LOCATION SETTINGS
-============================== */
-const officeLat = 16.236719;
-const officeLon = 80.647476;
-const allowedRadius = 200;
+/* ================= AUTH INIT ================= */
 
-const btn = document.getElementById("attendanceBtn");
-const statusBox = document.getElementById("attendanceStatus");
-const distanceDisplay = document.getElementById("distanceDisplay");
-
-/* ==============================
-   AUTH INIT
-============================== */
 onAuthStateChanged(auth,(user)=>{
   if(user){
     startCountdown();
@@ -110,166 +229,58 @@ onAuthStateChanged(auth,(user)=>{
   }
 });
 
-/* ==============================
-   GET CLOSING TIME
-============================== */
-async function getClosingTime(){
-  const snap = await getDoc(doc(db,"settings","attendance"));
-  if(snap.exists()){
-    return {
-      hour: snap.data().closeHour ?? 10,
-      minute: snap.data().closeMinute ?? 0
-    };
-  }
-  return { hour:10, minute:0 };
-}
+/* ================= ERP SAFE SAVE ================= */
 
-/* ==============================
-   COUNTDOWN
-============================== */
-async function startCountdown(){
-  const { hour, minute } = await getClosingTime();
-  const box = document.getElementById("countdownBox");
-
-  function update(){
-    const now = new Date();
-    const close = new Date();
-    close.setHours(hour, minute, 0, 0);
-    const diff = close - now;
-
-    if(diff <= 0){
-      box.innerText = "Attendance Closed";
-      btn.disabled = true;
-      return;
-    }
-
-    const h = Math.floor(diff/(1000*60*60));
-    const m = Math.floor((diff%(1000*60*60))/(1000*60));
-    const s = Math.floor((diff%(1000*60))/1000);
-
-    box.innerText = `Closes at ${hour}:${minute.toString().padStart(2,"0")} | ${h}h ${m}m ${s}s`;
-  }
-
-  update();
-  setInterval(update,1000);
-}
-
-/* ==============================
-   LOCATION TRACKING
-============================== */
-function startLocationTracking(){
-
-  if(!navigator.geolocation){
-    distanceDisplay.innerText = "Geolocation not supported";
-    distanceDisplay.className = "distance-box red";
-    return;
-  }
-
-  navigator.geolocation.watchPosition(
-
-    (pos)=>{
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
-
-      const distance = calculateDistance(lat, lon, officeLat, officeLon);
-
-      distanceDisplay.innerText = `Distance from office: ${Math.round(distance)} meters`;
-
-      if(distance <= allowedRadius){
-        distanceDisplay.className = "distance-box green";
-        btn.disabled = false;
-        statusBox.innerText = "";
-      }else{
-        distanceDisplay.className = "distance-box red";
-        btn.disabled = true;
-        statusBox.innerText = "You are outside office location";
-      }
-    },
-
-    (error)=>{
-      console.log(error);
-      distanceDisplay.innerText = "Location permission denied";
-      distanceDisplay.className = "distance-box red";
-      btn.disabled = true;
-    },
-
-    { enableHighAccuracy:true, maximumAge:0, timeout:10000 }
-
-  );
-}
-
-window.markAttendance = async function(){
-
-const user = auth.currentUser;
-const today = new Date().toISOString().split("T")[0];
-
-const q = query(
-  collection(db,"attendance"),
-  where("employeeId","==",user.uid),
-  where("date","==",today)
-);
-
-const snapshot = await getDocs(q);
-
-if(!snapshot.empty){
-  statusBox.innerText = "Attendance already marked today.";
-  btn.disabled = true;
-  return;
-}
-
-await addDoc(collection(db,"attendance"),{
-  employeeId:user.uid,
-  date:today,
-  timestamp:serverTimestamp()
-});
-
-statusBox.innerText = "Attendance Marked Successfully";
-btn.disabled = true;
-
-};
-   
-
-   DISTANCE FORMULA
-============================== */
-function calculateDistance(lat1, lon1, lat2, lon2){
-  const R = 6371e3;
-  const φ1 = lat1*Math.PI/180;
-  const φ2 = lat2*Math.PI/180;
-  const Δφ = (lat2-lat1)*Math.PI/180;
-  const Δλ = (lon2-lon1)*Math.PI/180;
-
-  const a = Math.sin(Δφ/2)*Math.sin(Δφ/2) +
-            Math.cos(φ1)*Math.cos(φ2) *
-            Math.sin(Δλ/2)*Math.sin(Δλ/2);
-
-  const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R*c;
-}
-
-/* ==============================
-   ERP SECTION
-============================== */
 const paymentForm = document.getElementById("paymentForm");
 const paymentMessage = document.getElementById("paymentMessage");
+const submitBtn = paymentForm.querySelector("button");
 
 paymentForm.addEventListener("submit", async (e)=>{
   e.preventDefault();
 
-  await addDoc(collection(db,"customerPayments"),{
-    customerName: document.getElementById("customerName").value,
-    executiveName: document.getElementById("executiveName").value,
-    totalAmount: Number(document.getElementById("totalAmount").value),
-    status: "Pending",
-    isLocked: true,
-    payments: [],
-    createdBy: auth.currentUser.uid,
-    createdAt: serverTimestamp()
-  });
+  paymentMessage.innerText="";
+  const user = auth.currentUser;
 
-  paymentMessage.innerText="Customer Added Successfully";
-  paymentForm.reset();
-  loadRecords();
+  if(!user){
+    paymentMessage.innerText="Data not saved ❌ (User not authenticated)";
+    paymentMessage.style.color="#ff5252";
+    return;
+  }
+
+  submitBtn.disabled=true;
+  submitBtn.innerText="Saving...";
+
+  try{
+
+    await addDoc(collection(db,"customerPayments"),{
+      customerName: document.getElementById("customerName").value.trim(),
+      executiveName: document.getElementById("executiveName").value.trim(),
+      totalAmount: Number(document.getElementById("totalAmount").value),
+      status:"Pending",
+      isLocked:true,
+      payments:[],
+      createdBy:user.uid,
+      createdAt:serverTimestamp()
+    });
+
+    paymentMessage.innerText="Data saved successfully ✔";
+    paymentMessage.style.color="#00e676";
+    paymentForm.reset();
+    loadRecords();
+
+  }catch(error){
+
+    console.error("Customer save error:",error);
+    paymentMessage.innerText="Data not saved ❌";
+    paymentMessage.style.color="#ff5252";
+
+  }
+
+  submitBtn.disabled=false;
+  submitBtn.innerText="Submit";
 });
+
+/* ================= LOAD RECORDS ================= */
 
 async function loadRecords(){
   const user = auth.currentUser;
@@ -300,12 +311,11 @@ async function loadRecords(){
   });
 }
 
-/* ==============================
-   LOGOUT
-============================== */
+/* ================= LOGOUT ================= */
+
 window.logoutUser = async function(){
   await auth.signOut();
-  window.location.href = window.location.origin + window.location.pathname.replace("employee.html","");
+  window.location.href = "index.html";
 };
 </script>
 
