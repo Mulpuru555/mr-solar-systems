@@ -368,14 +368,6 @@ html += "</table>";
 document.getElementById("attendanceReportData").innerHTML = html;
 };
 
-let html="<table><tr><th>Employee ID</th><th>Present Days</th></tr>";
-for(let emp in reportMap){
-html+=`<tr><td>${emp}</td><td>${reportMap[emp]}</td></tr>`;
-}
-html+="</table>";
-document.getElementById("attendanceReportData").innerHTML=html;
-};
-
 window.logoutUser=function(){
 window.location.href="index.html";
 };
