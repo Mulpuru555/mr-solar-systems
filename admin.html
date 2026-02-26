@@ -2,28 +2,29 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Admin Panel – M. Rajesh</title>
-
+<title>Admin Panel – M.R Solar Systems</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;}
-.header{background:#000;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;}
-.header h2{color:#ff8c00;margin:0;}
+body{margin:0;font-family:'Montserrat',sans-serif;background:#111;color:white;display:flex;height:100vh;}
+.sidebar{width:240px;background:#000;padding:20px;display:flex;flex-direction:column;}
+.sidebar h3{color:#ff8c00;margin-bottom:30px;}
+.sidebar button{background:none;border:none;color:white;text-align:left;padding:12px;margin-bottom:8px;cursor:pointer;border-radius:6px;font-size:14px;}
+.sidebar button:hover{background:#1a1a1a;}
+.main{flex:1;padding:30px;overflow:auto;}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
 .logout-btn{background:#ff8c00;border:none;padding:8px 15px;color:white;border-radius:6px;cursor:pointer;}
-.container{padding:40px;}
 
-.summary-container{display:flex;gap:20px;margin-bottom:30px;}
-.summary-card{flex:1;padding:25px;border-radius:15px;text-align:center;}
+.summary-container{display:flex;gap:20px;margin-bottom:30px;flex-wrap:wrap;}
+.summary-card{flex:1;min-width:220px;padding:25px;border-radius:15px;text-align:center;}
 .revenue-card{background:linear-gradient(135deg,#00b894,#00cec9);}
 .pending-card{background:linear-gradient(135deg,#d63031,#e17055);}
-.summary-card h4{margin:0;opacity:0.8;}
-.summary-card h2{margin-top:10px;font-size:28px;}
+.present-card{background:linear-gradient(135deg,#6c5ce7,#a29bfe);}
 
-.section-box{background:#1a1a1a;padding:25px;border-radius:12px;margin-top:30px;}
+.section-box{background:#1a1a1a;padding:25px;border-radius:12px;margin-top:20px;}
 
-input{padding:8px 10px;margin:5px;border-radius:6px;border:none;}
-button{background:#ff8c00;border:none;padding:8px 14px;color:white;border-radius:6px;cursor:pointer;}
+input,select{padding:8px 10px;margin:5px;border-radius:6px;border:none;}
+button.action{background:#ff8c00;border:none;padding:8px 14px;color:white;border-radius:6px;cursor:pointer;}
 
 table{width:100%;margin-top:15px;border-collapse:collapse;background:#151515;}
 th{background:#222;color:#ff8c00;}
@@ -33,51 +34,79 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 .unlock-btn{background:#00cec9;}
 .pay-btn{background:#0984e3;}
 .serial{color:#ff8c00;font-weight:600;}
+
+.section{display:none;}
+.section.active{display:block;}
 </style>
 </head>
 
 <body>
 
+<div class="sidebar">
+<h3>M.R Solar Admin</h3>
+<button onclick="showSection('overview')">📊 Overview</button>
+<button onclick="showSection('attendanceControl')">🕒 Attendance Control</button>
+<button onclick="showSection('attendanceReport')">📈 Attendance Report</button>
+<button onclick="showSection('erp')">💰 Customer ERP</button>
+</div>
+
+<div class="main">
+
 <div class="header">
-<h2>Admin Panel – M. Rajesh (Managing Director)</h2>
+<h2>Admin Panel – M. Rajesh</h2>
 <button class="logout-btn" onclick="logoutUser()">Logout</button>
 </div>
 
-<div class="container">
-
-<!-- MAIN SUMMARY -->
+<!-- OVERVIEW -->
+<div id="overview" class="section active">
 <div class="summary-container">
-  <div class="summary-card revenue-card">
-    <h4>Total Revenue</h4>
-    <h2 id="totalRevenue">₹ 0</h2>
-  </div>
-  <div class="summary-card pending-card">
-    <h4>Total Pending</h4>
-    <h2 id="totalPending">₹ 0</h2>
-  </div>
+<div class="summary-card revenue-card">
+<h4>Total Revenue</h4>
+<h2 id="totalRevenue">₹ 0</h2>
+</div>
+<div class="summary-card pending-card">
+<h4>Total Pending</h4>
+<h2 id="totalPending">₹ 0</h2>
+</div>
+<div class="summary-card present-card">
+<h4>Today Present</h4>
+<h2 id="todayPresent">0</h2>
+</div>
+</div>
 </div>
 
-<!-- ATTENDANCE SETTINGS -->
+<!-- ATTENDANCE CONTROL -->
+<div id="attendanceControl" class="section">
 <div class="section-box">
 <h3>Attendance Closing Time</h3>
 <input type="number" id="closeHourInput" min="0" max="23" placeholder="Hour">
 :
 <input type="number" id="closeMinuteInput" min="0" max="59" placeholder="Minute">
 <br>
-<button onclick="updateCloseTime()">Update Closing Time</button>
+<button class="action" onclick="updateCloseTime()">Update Closing Time</button>
 <p id="timeStatus"></p>
 </div>
+</div>
 
-<!-- ERP TABLE -->
+<!-- ATTENDANCE REPORT -->
+<div id="attendanceReport" class="section">
+<div class="section-box">
+<h3>Employee Attendance Report</h3>
+<input type="month" id="reportMonth">
+<button class="action" onclick="generateAttendanceReport()">Generate</button>
+<div id="attendanceReportData"></div>
+</div>
+</div>
+
+<!-- ERP -->
+<div id="erp" class="section">
 <div class="section-box">
 <h3>Customer ERP Management (Live)</h3>
 
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
 <input type="text" id="searchInput" placeholder="Search Customer / Executive">
-<label>
-<input type="checkbox" id="pendingOnly"> Show Pending Only
-</label>
-<button onclick="exportFullReport()">Export CSV</button>
+<label><input type="checkbox" id="pendingOnly"> Show Pending Only</label>
+<button class="action" onclick="exportFullReport()">Export CSV</button>
 </div>
 
 <table>
@@ -99,6 +128,7 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 </table>
 
 </div>
+</div>
 
 </div>
 
@@ -112,61 +142,67 @@ import { db } from "./firebase-config.js";
 import { collection, getDoc, doc, setDoc, updateDoc, getDocs, onSnapshot } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const table = document.getElementById("customerTable");
-const searchInput = document.getElementById("searchInput");
-const pendingCheckbox = document.getElementById("pendingOnly");
+window.showSection=function(id){
+document.querySelectorAll('.section').forEach(sec=>sec.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+};
 
-let allDocs = [];
+const table=document.getElementById("customerTable");
+const searchInput=document.getElementById("searchInput");
+const pendingCheckbox=document.getElementById("pendingOnly");
 
-onSnapshot(collection(db,"customerPayments"), (snapshot) => {
-allDocs = [];
+let allDocs=[];
+
+onSnapshot(collection(db,"customerPayments"),(snapshot)=>{
+allDocs=[];
 snapshot.forEach(docSnap=>{
-allDocs.push({ id: docSnap.id, ...docSnap.data() });
+allDocs.push({id:docSnap.id,...docSnap.data()});
 });
 renderDashboard();
 });
 
-function renderDashboard(){
-
-let totalRevenue = 0;
-let totalPending = 0;
-
-const searchText = searchInput.value.toLowerCase();
-const pendingOnly = pendingCheckbox.checked;
-
-table.innerHTML = "";
-
-const sortedDocs = [...allDocs].sort((a,b)=>{
-const A = a.createdAt?.seconds || 0;
-const B = b.createdAt?.seconds || 0;
-return B - A;
+onSnapshot(collection(db,"attendance"),(snapshot)=>{
+let today=new Date().toISOString().split("T")[0];
+let count=0;
+snapshot.forEach(docSnap=>{
+if(docSnap.data().date===today) count++;
+});
+document.getElementById("todayPresent").innerText=count;
 });
 
-let serial = 1;
+function renderDashboard(){
+let totalRevenue=0;
+let totalPending=0;
+table.innerHTML="";
+
+let searchText=searchInput.value.toLowerCase();
+let pendingOnly=pendingCheckbox.checked;
+
+let sortedDocs=[...allDocs].sort((a,b)=>{
+const A=a.createdAt?.seconds||0;
+const B=b.createdAt?.seconds||0;
+return B-A;
+});
+
+let serial=1;
 
 sortedDocs.forEach(data=>{
+const payments=data.payments||[];
+const totalPaid=payments.reduce((sum,p)=>sum+p.amount,0);
+const balance=data.totalAmount-totalPaid;
+const status=balance===0?"Completed":"Pending";
+const workStatus=data.workStatus||"Not Completed";
 
-const payments = data.payments || [];
-const totalPaid = payments.reduce((sum,p)=>sum+p.amount,0);
-const balance = data.totalAmount - totalPaid;
-const status = balance===0 ? "Completed" : "Pending";
-const workStatus = data.workStatus || "Not Completed";
-
-/* SEARCH FILTER */
 if(searchText){
-const match1 = data.customerName?.toLowerCase().includes(searchText);
-const match2 = data.executiveName?.toLowerCase().includes(searchText);
-if(!match1 && !match2) return;
+if(!data.customerName?.toLowerCase().includes(searchText)&&
+!data.executiveName?.toLowerCase().includes(searchText)) return;
 }
+if(pendingOnly&&balance===0) return;
 
-/* PENDING FILTER */
-if(pendingOnly && balance===0) return;
+totalRevenue+=totalPaid;
+totalPending+=balance;
 
-totalRevenue += totalPaid;
-totalPending += balance;
-
-/* TABLE */
-table.innerHTML += `
+table.innerHTML+=`
 <tr>
 <td class="serial">${serial++}</td>
 <td>${data.customerName}</td>
@@ -191,28 +227,62 @@ ${data.isLocked?'Unlock':'Lock'}
 </tr>`;
 });
 
-document.getElementById("totalRevenue").innerText =
-"₹ " + totalRevenue.toLocaleString();
-
-document.getElementById("totalPending").innerText =
-"₹ " + totalPending.toLocaleString();
+document.getElementById("totalRevenue").innerText="₹ "+totalRevenue.toLocaleString();
+document.getElementById("totalPending").innerText="₹ "+totalPending.toLocaleString();
 }
 
-searchInput.addEventListener("input", renderDashboard);
-pendingCheckbox.addEventListener("change", renderDashboard);
+window.addPayment = async function(id){
 
-window.addPayment=async function(id){
-const amount=prompt("Enter Payment Amount:");
-if(!amount||isNaN(amount)) return;
-const snap=await getDoc(doc(db,"customerPayments",id));
-const data=snap.data();
-const payments=data.payments||[];
-payments.push({amount:Number(amount),date:new Date().toISOString().split("T")[0]});
-await updateDoc(doc(db,"customerPayments",id),{payments:payments});
+const confirmAction = confirm("Are you sure you want to add payment?");
+if(!confirmAction) return;
+
+const amount = prompt("Enter Payment Amount:");
+if(!amount || isNaN(amount)){
+alert("Invalid amount.");
+return;
+}
+
+try{
+
+const snap = await getDoc(doc(db,"customerPayments",id));
+const data = snap.data();
+
+const payments = data.payments || [];
+
+payments.push({
+amount: Number(amount),
+date: new Date().toISOString().split("T")[0]
+});
+
+await updateDoc(doc(db,"customerPayments",id),{
+payments: payments
+});
+
+alert("Payment added successfully.");
+
+}catch(error){
+console.error(error);
+alert("Failed to add payment.");
+}
+
 };
 
-window.toggleLock=async function(id,state){
-await updateDoc(doc(db,"customerPayments",id),{isLocked:!state});
+window.toggleLock = async function(id,state){
+
+const action = state ? "Unlock" : "Lock";
+const confirmAction = confirm(`Are you sure you want to ${action} this record?`);
+if(!confirmAction) return;
+
+try{
+await updateDoc(doc(db,"customerPayments",id),{
+isLocked: !state
+});
+alert("Updated successfully.");
+}catch(error){
+console.error(error);
+alert("Failed to update lock status.");
+}
+
 };
 
 window.updateWorkStatus=async function(id,value){
@@ -255,6 +325,55 @@ return;
 await setDoc(doc(db,"settings","attendance"),
 {closeHour:hour,closeMinute:minute},{merge:true});
 document.getElementById("timeStatus").innerText="Updated successfully!";
+};
+
+window.generateAttendanceReport = async function(){
+
+let month = document.getElementById("reportMonth").value;
+if(!month){
+alert("Please select month.");
+return;
+}
+
+const attendanceSnap = await getDocs(collection(db,"attendance"));
+const usersSnap = await getDocs(collection(db,"users"));
+
+let userMap = {};
+usersSnap.forEach(docSnap=>{
+userMap[docSnap.id] = docSnap.data().name || "Unknown";
+});
+
+let reportMap = {};
+
+attendanceSnap.forEach(docSnap=>{
+let data = docSnap.data();
+if(data.date?.startsWith(month)){
+if(!reportMap[data.employeeId]) reportMap[data.employeeId] = 0;
+reportMap[data.employeeId]++;
+}
+});
+
+let html = "<table><tr><th>Employee Name</th><th>Present Days</th></tr>";
+
+for(let empId in reportMap){
+let empName = userMap[empId] || "Unknown";
+html += `<tr>
+<td>${empName}</td>
+<td>${reportMap[empId]}</td>
+</tr>`;
+}
+
+html += "</table>";
+
+document.getElementById("attendanceReportData").innerHTML = html;
+};
+
+let html="<table><tr><th>Employee ID</th><th>Present Days</th></tr>";
+for(let emp in reportMap){
+html+=`<tr><td>${emp}</td><td>${reportMap[emp]}</td></tr>`;
+}
+html+="</table>";
+document.getElementById("attendanceReportData").innerHTML=html;
 };
 
 window.logoutUser=function(){
