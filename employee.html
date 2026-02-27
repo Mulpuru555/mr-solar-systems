@@ -219,7 +219,7 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 onAuthStateChanged(auth, async (user)=>{
   if(user){
 
-    const empSnap = await getDoc(doc(db,"employees",user.uid));
+    const empSnap = await getDoc(doc(db,"users",user.uid));
 
     if(empSnap.exists()){
       const empData = empSnap.data();
