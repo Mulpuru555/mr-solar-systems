@@ -7,150 +7,30 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-body{
-margin:0;
-font-family:'Montserrat',sans-serif;
-background:#0f0f0f;
-color:white;
-}
-
-.header{
-background:#000;
-padding:15px 30px;
-display:flex;
-justify-content:space-between;
-align-items:center;
-box-shadow:0 4px 10px rgba(0,0,0,0.6);
-}
-
-.header h2{
-color:#ff8c00;
-margin:0;
-}
-
-.logout-btn{
-background:#ff8c00;
-border:none;
-padding:8px 15px;
-color:white;
-border-radius:6px;
-cursor:pointer;
-transition:0.3s;
-}
-.logout-btn:hover{
-background:#ff5e00;
-transform:scale(1.05);
-}
-
-.dashboard-container{
-padding:40px;
-max-width:1200px;
-margin:auto;
-}
-
-.section-title{
-margin-bottom:15px;
-color:#ff8c00;
-font-weight:600;
-}
-
-.attendance-box{
-background:#1a1a1a;
-padding:30px;
-border-radius:15px;
-box-shadow:0 0 20px rgba(255,140,0,0.15);
-margin-bottom:40px;
-text-align:center;
-}
-
-.attendance-btn{
-margin-top:20px;
-padding:12px 25px;
-background:linear-gradient(45deg,#ff8c00,#ff5e00);
-border:none;
-color:white;
-border-radius:8px;
-cursor:pointer;
-font-weight:600;
-transition:0.3s;
-}
-.attendance-btn:hover{
-transform:scale(1.05);
-}
-.attendance-btn:disabled{
-background:gray;
-cursor:not-allowed;
-}
-
-.status-message{
-margin-top:15px;
-font-weight:600;
-}
-
-.distance-box{
-margin-top:15px;
-font-weight:bold;
-}
-
+/* ====== YOUR ORIGINAL CSS (UNCHANGED) ====== */
+body{margin:0;font-family:'Montserrat',sans-serif;background:#0f0f0f;color:white;}
+.header{background:#000;padding:15px 30px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 4px 10px rgba(0,0,0,0.6);}
+.header h2{color:#ff8c00;margin:0;}
+.logout-btn{background:#ff8c00;border:none;padding:8px 15px;color:white;border-radius:6px;cursor:pointer;transition:0.3s;}
+.logout-btn:hover{background:#ff5e00;transform:scale(1.05);}
+.dashboard-container{padding:40px;max-width:1200px;margin:auto;}
+.section-title{margin-bottom:15px;color:#ff8c00;font-weight:600;}
+.attendance-box{background:#1a1a1a;padding:30px;border-radius:15px;box-shadow:0 0 20px rgba(255,140,0,0.15);margin-bottom:40px;text-align:center;}
+.attendance-btn{margin-top:20px;padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:8px;cursor:pointer;font-weight:600;transition:0.3s;}
+.attendance-btn:hover{transform:scale(1.05);}
+.attendance-btn:disabled{background:gray;cursor:not-allowed;}
+.status-message{margin-top:15px;font-weight:600;}
+.distance-box{margin-top:15px;font-weight:bold;}
 .green{color:#00e676;}
 .red{color:#ff5252;}
-
-.payment-box{
-background:#1a1a1a;
-padding:30px;
-border-radius:15px;
-box-shadow:0 0 20px rgba(255,140,0,0.15);
-margin-bottom:40px;
-}
-
-.payment-box input{
-padding:12px;
-width:260px;
-border-radius:8px;
-border:none;
-margin-bottom:15px;
-background:#222;
-color:white;
-}
-
-.payment-btn{
-padding:12px 25px;
-background:linear-gradient(45deg,#ff8c00,#ff5e00);
-border:none;
-color:white;
-border-radius:8px;
-cursor:pointer;
-font-weight:600;
-transition:0.3s;
-}
-.payment-btn:hover{
-transform:scale(1.05);
-}
-
-table{
-width:100%;
-border-collapse:collapse;
-margin-top:20px;
-background:#1a1a1a;
-border-radius:15px;
-overflow:hidden;
-}
-
-th{
-background:#222;
-color:#ff8c00;
-padding:12px;
-}
-
-td{
-padding:12px;
-border-bottom:1px solid #333;
-text-align:center;
-}
-
-tr:hover{
-background:#222;
-}
+.payment-box{background:#1a1a1a;padding:30px;border-radius:15px;box-shadow:0 0 20px rgba(255,140,0,0.15);margin-bottom:40px;}
+.payment-box input{padding:12px;width:260px;border-radius:8px;border:none;margin-bottom:15px;background:#222;color:white;}
+.payment-btn{padding:12px 25px;background:linear-gradient(45deg,#ff8c00,#ff5e00);border:none;color:white;border-radius:8px;cursor:pointer;font-weight:600;transition:0.3s;}
+.payment-btn:hover{transform:scale(1.05);}
+table{width:100%;border-collapse:collapse;margin-top:20px;background:#1a1a1a;border-radius:15px;overflow:hidden;}
+th{background:#222;color:#ff8c00;padding:12px;}
+td{padding:12px;border-bottom:1px solid #333;text-align:center;}
+tr:hover{background:#222;}
 </style>
 </head>
 
@@ -168,11 +48,7 @@ background:#222;
 <div class="attendance-box">
 <div id="distanceDisplay" class="distance-box">Checking location...</div>
 <div id="countdownBox" style="margin-bottom:15px;font-weight:600;">Loading countdown...</div>
-
-<button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()" disabled>
-Mark Attendance
-</button>
-
+<button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()" disabled>Mark Attendance</button>
 <div id="attendanceStatus" class="status-message"></div>
 </div>
 
@@ -208,13 +84,13 @@ Mark Attendance
 
 <script type="module">
 import { auth, db } from "./firebase-config.js";
-import { addDoc, collection, serverTimestamp, query, where, getDocs, doc, getDoc } 
+import { addDoc, collection, serverTimestamp, query, where, getDocs, doc, getDoc, updateDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { onAuthStateChanged } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 /* ==============================
-   AUTH + BLOCK CHECK
+   AUTH + BLOCK + AUTO CHECK
 ============================== */
 onAuthStateChanged(auth, async (user)=>{
   if(user){
@@ -223,9 +99,16 @@ onAuthStateChanged(auth, async (user)=>{
 
     if(empSnap.exists()){
       const empData = empSnap.data();
+
+      // Already blocked
       if(empData.accountStatus === "blocked"){
         showBlockedScreen();
         return;
+      }
+
+      // Auto block only for employees
+      if(empData.role === "employee"){
+        await autoBlockIfAbsent(user);
       }
     }
 
@@ -239,7 +122,45 @@ onAuthStateChanged(auth, async (user)=>{
 });
 
 /* ==============================
-   BLOCK SCREEN
+   AUTO BLOCK LOGIC (NEW)
+============================== */
+async function autoBlockIfAbsent(user){
+
+  const snap = await getDoc(doc(db,"settings","attendance"));
+  if(!snap.exists()) return;
+
+  const { closeHour = 10, closeMinute = 0 } = snap.data();
+
+  const now = new Date();
+  const close = new Date();
+  close.setHours(closeHour, closeMinute, 0, 0);
+
+  if(now <= close) return;
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const q = query(
+    collection(db,"attendance"),
+    where("employeeId","==",user.uid),
+    where("date","==",today)
+  );
+
+  const snapshot = await getDocs(q);
+
+  if(snapshot.empty){
+
+    await updateDoc(doc(db,"users",user.uid),{
+      accountStatus:"blocked",
+      blockReason:"Absent without intimation",
+      blockedOn: serverTimestamp()
+    });
+
+    showBlockedScreen();
+  }
+}
+
+/* ==============================
+   BLOCK SCREEN (UNCHANGED)
 ============================== */
 function showBlockedScreen(){
   document.body.innerHTML=`
@@ -253,20 +174,17 @@ function showBlockedScreen(){
   </div>`;
 }
 
-/* ==============================
-   OFFICE LOCATION SETTINGS
-============================== */
+/* ====== EVERYTHING BELOW IS 100% YOUR ORIGINAL CODE (UNCHANGED) ====== */
+
+/* OFFICE LOCATION */
 const officeLat = 16.236719;
 const officeLon = 80.647476;
 const allowedRadius = 200;
-
 const btn = document.getElementById("attendanceBtn");
 const statusBox = document.getElementById("attendanceStatus");
 const distanceDisplay = document.getElementById("distanceDisplay");
 
-/* ==============================
-   GET CLOSING TIME
-============================== */
+/* CLOSING TIME */
 async function getClosingTime(){
   const snap = await getDoc(doc(db,"settings","attendance"));
   if(snap.exists()){
@@ -278,56 +196,42 @@ async function getClosingTime(){
   return { hour:10, minute:0 };
 }
 
-/* ==============================
-   COUNTDOWN
-============================== */
+/* COUNTDOWN */
 async function startCountdown(){
   const { hour, minute } = await getClosingTime();
   const box = document.getElementById("countdownBox");
-
   function update(){
     const now = new Date();
     const close = new Date();
     close.setHours(hour, minute, 0, 0);
     const diff = close - now;
-
     if(diff <= 0){
       box.innerText="Attendance Closed";
       btn.disabled=true;
       return;
     }
-
     const h=Math.floor(diff/(1000*60*60));
     const m=Math.floor((diff%(1000*60*60))/(1000*60));
     const s=Math.floor((diff%(1000*60))/1000);
-
     box.innerText=`Closes at ${hour}:${minute.toString().padStart(2,"0")} | ${h}h ${m}m ${s}s`;
   }
-
   update();
   setInterval(update,1000);
 }
 
-/* ==============================
-   LOCATION TRACKING
-============================== */
+/* LOCATION TRACKING */
 function startLocationTracking(){
-
   if(!navigator.geolocation){
     distanceDisplay.innerText="Geolocation not supported";
     distanceDisplay.className="distance-box red";
     return;
   }
-
   navigator.geolocation.watchPosition(
-
     (pos)=>{
       const lat=pos.coords.latitude;
       const lon=pos.coords.longitude;
       const distance=calculateDistance(lat,lon,officeLat,officeLon);
-
       distanceDisplay.innerText=`Distance from office: ${Math.round(distance)} meters`;
-
       if(distance<=allowedRadius){
         distanceDisplay.className="distance-box green";
         btn.disabled=false;
@@ -338,70 +242,54 @@ function startLocationTracking(){
         statusBox.innerText="You are outside office location";
       }
     },
-
     ()=>{
       distanceDisplay.innerText="Location permission denied";
       distanceDisplay.className="distance-box red";
       btn.disabled=true;
     },
-
     { enableHighAccuracy:true, maximumAge:0, timeout:10000 }
   );
 }
 
-/* ==============================
-   MARK ATTENDANCE
-============================== */
+/* MARK ATTENDANCE */
 window.markAttendance = async function(){
   const user=auth.currentUser;
   const today=new Date().toISOString().split("T")[0];
-
-  const q=query(
-    collection(db,"attendance"),
+  const q=query(collection(db,"attendance"),
     where("employeeId","==",user.uid),
     where("date","==",today)
   );
-
   const snapshot=await getDocs(q);
-
   if(!snapshot.empty){
     statusBox.innerText="Attendance already marked today.";
     btn.disabled=true;
     return;
   }
-
   await addDoc(collection(db,"attendance"),{
     employeeId:user.uid,
     date:today,
     timestamp:serverTimestamp()
   });
-
   statusBox.innerText="Attendance Marked Successfully";
   btn.disabled=true;
 };
 
-/* ==============================
-   DISTANCE FORMULA
-============================== */
+/* DISTANCE */
 function calculateDistance(lat1, lon1, lat2, lon2){
   const R=6371e3;
   const φ1=lat1*Math.PI/180;
   const φ2=lat2*Math.PI/180;
   const Δφ=(lat2-lat1)*Math.PI/180;
   const Δλ=(lon2-lon1)*Math.PI/180;
-
   const a=Math.sin(Δφ/2)*Math.sin(Δφ/2)+
           Math.cos(φ1)*Math.cos(φ2)*
           Math.sin(Δλ/2)*Math.sin(Δλ/2);
-
   const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
   return R*c;
 }
 
-/* ==============================
-   ERP SAVE
-============================== */
-const paymentForm=document.getElementById("paymentForm");
+/* ERP SAVE + LOAD + LOGOUT — UNCHANGED BELOW */
+   const paymentForm=document.getElementById("paymentForm");
 const paymentMessage=document.getElementById("paymentMessage");
 const submitBtn=paymentForm.querySelector("button");
 
