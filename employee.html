@@ -54,7 +54,6 @@ color:#ff8c00;
 font-weight:600;
 }
 
-/* Attendance Box */
 .attendance-box{
 background:#1a1a1a;
 padding:30px;
@@ -96,7 +95,6 @@ font-weight:bold;
 .green{color:#00e676;}
 .red{color:#ff5252;}
 
-/* ERP Box */
 .payment-box{
 background:#1a1a1a;
 padding:30px;
@@ -129,7 +127,6 @@ transition:0.3s;
 transform:scale(1.05);
 }
 
-/* Table */
 table{
 width:100%;
 border-collapse:collapse;
@@ -182,16 +179,13 @@ Mark Attendance
 <h2 class="section-title">Add Customer (ERP)</h2>
 
 <div class="payment-box">
-
 <form id="paymentForm">
 <input type="text" id="customerName" placeholder="Customer Name" required><br>
 <input type="text" id="executiveName" placeholder="Executive Name" required><br>
 <input type="number" id="totalAmount" placeholder="Total Amount" required><br>
 <button type="submit" class="payment-btn">Submit</button>
 </form>
-
 <div id="paymentMessage" class="status-message"></div>
-
 </div>
 
 <h2 class="section-title">My Registrations</h2>
@@ -220,6 +214,46 @@ import { onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 /* ==============================
+   AUTH + BLOCK CHECK
+============================== */
+onAuthStateChanged(auth, async (user)=>{
+  if(user){
+
+    const empSnap = await getDoc(doc(db,"employees",user.uid));
+
+    if(empSnap.exists()){
+      const empData = empSnap.data();
+      if(empData.accountStatus === "blocked"){
+        showBlockedScreen();
+        return;
+      }
+    }
+
+    startCountdown();
+    startLocationTracking();
+    loadRecords();
+
+  }else{
+    window.location.href="index.html";
+  }
+});
+
+/* ==============================
+   BLOCK SCREEN
+============================== */
+function showBlockedScreen(){
+  document.body.innerHTML=`
+  <div style="height:100vh;display:flex;justify-content:center;align-items:center;background:#0f0f0f;color:white;font-family:Montserrat;">
+  <div style="background:#1a1a1a;padding:50px;border-radius:15px;border:2px solid red;text-align:center;box-shadow:0 0 25px rgba(255,0,0,0.3);">
+  <h2 style="color:#ff5252;">🔒 ACCOUNT BLOCKED</h2>
+  <p>Your account has been blocked due to irresponsible attendance activity.</p>
+  <p>Please contact Manager to reactivate your account.</p>
+  <button onclick="logoutUser()" style="margin-top:20px;padding:10px 20px;background:#ff5252;border:none;border-radius:8px;color:white;cursor:pointer;">Logout</button>
+  </div>
+  </div>`;
+}
+
+/* ==============================
    OFFICE LOCATION SETTINGS
 ============================== */
 const officeLat = 16.236719;
@@ -229,17 +263,6 @@ const allowedRadius = 200;
 const btn = document.getElementById("attendanceBtn");
 const statusBox = document.getElementById("attendanceStatus");
 const distanceDisplay = document.getElementById("distanceDisplay");
-
-/* ==============================
-   AUTH INIT
-============================== */
-onAuthStateChanged(auth,(user)=>{
-  if(user){
-    startCountdown();
-    startLocationTracking();
-    loadRecords();
-  }
-});
 
 /* ==============================
    GET CLOSING TIME
@@ -269,17 +292,16 @@ async function startCountdown(){
     const diff = close - now;
 
     if(diff <= 0){
-      box.innerText = "Attendance Closed";
-      btn.disabled = true;
+      box.innerText="Attendance Closed";
+      btn.disabled=true;
       return;
     }
 
-    const h = Math.floor(diff/(1000*60*60));
-    const m = Math.floor((diff%(1000*60*60))/(1000*60));
-    const s = Math.floor((diff%(1000*60))/1000);
+    const h=Math.floor(diff/(1000*60*60));
+    const m=Math.floor((diff%(1000*60*60))/(1000*60));
+    const s=Math.floor((diff%(1000*60))/1000);
 
-    box.innerText =
-      `Closes at ${hour}:${minute.toString().padStart(2,"0")} | ${h}h ${m}m ${s}s`;
+    box.innerText=`Closes at ${hour}:${minute.toString().padStart(2,"0")} | ${h}h ${m}m ${s}s`;
   }
 
   update();
@@ -292,38 +314,35 @@ async function startCountdown(){
 function startLocationTracking(){
 
   if(!navigator.geolocation){
-    distanceDisplay.innerText = "Geolocation not supported";
-    distanceDisplay.className = "distance-box red";
+    distanceDisplay.innerText="Geolocation not supported";
+    distanceDisplay.className="distance-box red";
     return;
   }
 
   navigator.geolocation.watchPosition(
 
     (pos)=>{
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
+      const lat=pos.coords.latitude;
+      const lon=pos.coords.longitude;
+      const distance=calculateDistance(lat,lon,officeLat,officeLon);
 
-      const distance = calculateDistance(lat, lon, officeLat, officeLon);
+      distanceDisplay.innerText=`Distance from office: ${Math.round(distance)} meters`;
 
-      distanceDisplay.innerText =
-        `Distance from office: ${Math.round(distance)} meters`;
-
-      if(distance <= allowedRadius){
-        distanceDisplay.className = "distance-box green";
-        btn.disabled = false;
-        statusBox.innerText = "";
+      if(distance<=allowedRadius){
+        distanceDisplay.className="distance-box green";
+        btn.disabled=false;
+        statusBox.innerText="";
       }else{
-        distanceDisplay.className = "distance-box red";
-        btn.disabled = true;
-        statusBox.innerText = "You are outside office location";
+        distanceDisplay.className="distance-box red";
+        btn.disabled=true;
+        statusBox.innerText="You are outside office location";
       }
     },
 
-    (error)=>{
-      console.log(error);
-      distanceDisplay.innerText = "Location permission denied";
-      distanceDisplay.className = "distance-box red";
-      btn.disabled = true;
+    ()=>{
+      distanceDisplay.innerText="Location permission denied";
+      distanceDisplay.className="distance-box red";
+      btn.disabled=true;
     },
 
     { enableHighAccuracy:true, maximumAge:0, timeout:10000 }
@@ -334,21 +353,20 @@ function startLocationTracking(){
    MARK ATTENDANCE
 ============================== */
 window.markAttendance = async function(){
+  const user=auth.currentUser;
+  const today=new Date().toISOString().split("T")[0];
 
-  const user = auth.currentUser;
-  const today = new Date().toISOString().split("T")[0];
-
-  const q = query(
+  const q=query(
     collection(db,"attendance"),
     where("employeeId","==",user.uid),
     where("date","==",today)
   );
 
-  const snapshot = await getDocs(q);
+  const snapshot=await getDocs(q);
 
   if(!snapshot.empty){
-    statusBox.innerText = "Attendance already marked today.";
-    btn.disabled = true;
+    statusBox.innerText="Attendance already marked today.";
+    btn.disabled=true;
     return;
   }
 
@@ -358,40 +376,40 @@ window.markAttendance = async function(){
     timestamp:serverTimestamp()
   });
 
-  statusBox.innerText = "Attendance Marked Successfully";
-  btn.disabled = true;
+  statusBox.innerText="Attendance Marked Successfully";
+  btn.disabled=true;
 };
 
 /* ==============================
    DISTANCE FORMULA
 ============================== */
 function calculateDistance(lat1, lon1, lat2, lon2){
-  const R = 6371e3;
-  const φ1 = lat1*Math.PI/180;
-  const φ2 = lat2*Math.PI/180;
-  const Δφ = (lat2-lat1)*Math.PI/180;
-  const Δλ = (lon2-lon1)*Math.PI/180;
+  const R=6371e3;
+  const φ1=lat1*Math.PI/180;
+  const φ2=lat2*Math.PI/180;
+  const Δφ=(lat2-lat1)*Math.PI/180;
+  const Δλ=(lon2-lon1)*Math.PI/180;
 
-  const a = Math.sin(Δφ/2)*Math.sin(Δφ/2) +
-            Math.cos(φ1)*Math.cos(φ2) *
-            Math.sin(Δλ/2)*Math.sin(Δλ/2);
+  const a=Math.sin(Δφ/2)*Math.sin(Δφ/2)+
+          Math.cos(φ1)*Math.cos(φ2)*
+          Math.sin(Δλ/2)*Math.sin(Δλ/2);
 
-  const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
   return R*c;
 }
 
 /* ==============================
-   ERP SAFE SAVE
+   ERP SAVE
 ============================== */
-const paymentForm = document.getElementById("paymentForm");
-const paymentMessage = document.getElementById("paymentMessage");
-const submitBtn = paymentForm.querySelector("button");
+const paymentForm=document.getElementById("paymentForm");
+const paymentMessage=document.getElementById("paymentMessage");
+const submitBtn=paymentForm.querySelector("button");
 
 paymentForm.addEventListener("submit", async (e)=>{
   e.preventDefault();
 
   paymentMessage.innerText="";
-  const user = auth.currentUser;
+  const user=auth.currentUser;
 
   if(!user){
     paymentMessage.innerText="Data not saved ❌ (User not authenticated)";
@@ -405,9 +423,9 @@ paymentForm.addEventListener("submit", async (e)=>{
   try{
 
     await addDoc(collection(db,"customerPayments"),{
-      customerName: document.getElementById("customerName").value.trim(),
-      executiveName: document.getElementById("executiveName").value.trim(),
-      totalAmount: Number(document.getElementById("totalAmount").value),
+      customerName:document.getElementById("customerName").value.trim(),
+      executiveName:document.getElementById("executiveName").value.trim(),
+      totalAmount:Number(document.getElementById("totalAmount").value),
       status:"Pending",
       isLocked:true,
       payments:[],
@@ -421,11 +439,9 @@ paymentForm.addEventListener("submit", async (e)=>{
     loadRecords();
 
   }catch(error){
-
-    console.error("Customer save error:",error);
+    console.error(error);
     paymentMessage.innerText="Data not saved ❌";
     paymentMessage.style.color="#ff5252";
-
   }
 
   submitBtn.disabled=false;
@@ -436,21 +452,21 @@ paymentForm.addEventListener("submit", async (e)=>{
    LOAD RECORDS
 ============================== */
 async function loadRecords(){
-  const user = auth.currentUser;
+  const user=auth.currentUser;
   if(!user) return;
 
-  const q = query(collection(db,"customerPayments"),
+  const q=query(collection(db,"customerPayments"),
     where("createdBy","==",user.uid)
   );
 
-  const snapshot = await getDocs(q);
-  const table = document.getElementById("recordsTable");
+  const snapshot=await getDocs(q);
+  const table=document.getElementById("recordsTable");
   table.innerHTML="";
 
   snapshot.forEach(docSnap=>{
-    const data = docSnap.data();
-    const payments = data.payments || [];
-    const totalPaid = payments.reduce((sum,p)=>sum+p.amount,0);
+    const data=docSnap.data();
+    const payments=data.payments||[];
+    const totalPaid=payments.reduce((sum,p)=>sum+p.amount,0);
 
     table.innerHTML+=`
     <tr>
@@ -469,7 +485,7 @@ async function loadRecords(){
 ============================== */
 window.logoutUser = async function(){
   await auth.signOut();
-  window.location.href = "index.html";
+  window.location.href="index.html";
 };
 </script>
 
