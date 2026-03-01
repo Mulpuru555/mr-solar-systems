@@ -21,6 +21,7 @@ th { background: #222; color: #ff8c00; }
 tr:nth-child(even) { background: #1f1f1f; }
 .status-present { color: #00e676; font-weight: bold; }
 .status-absent { color: #ff5252; font-weight: bold; }
+.status-holiday { color: #ffc107; font-weight: bold; }
 .unblock-btn { background: #ff5252; border: none; padding: 6px 12px; border-radius: 6px; color: white; cursor: pointer; }
 .unblock-btn:hover { background: #ff0000; }
 </style>
@@ -76,11 +77,11 @@ tr:nth-child(even) { background: #1f1f1f; }
 import { auth, db } from "./firebase-config.js";
 import { onAuthStateChanged, signOut } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { collection, getDocs, query, where, doc, updateDoc } 
+import { collection, getDocs, query, where, doc, updateDoc, getDoc } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* =========================
-   SESSION PROTECTION
+   SESSION CHECK
 ========================= */
 onAuthStateChanged(auth, (user) => {
   if (!user) {
@@ -89,92 +90,125 @@ onAuthStateChanged(auth, (user) => {
 });
 
 /* =========================
-   LOGOUT FUNCTION
+   LOGOUT
 ========================= */
 window.logoutUser = async function() {
-  try {
-    await signOut(auth);
-    window.location.href = "index.html";
-  } catch (error) {
-    console.error("Logout Error:", error);
-  }
+  await signOut(auth);
+  window.location.href = "index.html";
 };
 
 const attendanceBody = document.getElementById("attendanceTable");
 const blockedBody = document.getElementById("blockedTable");
 const dateInput = document.getElementById("attendanceDate");
 
-const today = new Date().toISOString().split("T")[0];
+/* =========================
+   LOCAL DATE FIX
+========================= */
+function getLocalDateString(dateObj){
+  return dateObj.getFullYear() + "-" +
+    String(dateObj.getMonth()+1).padStart(2,"0") + "-" +
+    String(dateObj.getDate()).padStart(2,"0");
+}
+
+const today = getLocalDateString(new Date());
 dateInput.value = today;
+
+/* =========================
+   CHECK HOLIDAY
+========================= */
+async function isHoliday(date){
+
+  const d = new Date(date);
+
+  if(d.getDay() === 0) return true; // Sunday
+
+  const snap = await getDoc(
+    doc(db,"settings","holidays","holidayList",date)
+  );
+
+  return snap.exists();
+}
 
 /* =========================
    LOAD ATTENDANCE
 ========================= */
-async function loadAttendance(selectedDate) {
+async function loadAttendance(selectedDate){
 
   attendanceBody.innerHTML = "";
 
-  const usersSnapshot = await getDocs(collection(db, "users"));
+  const holiday = await isHoliday(selectedDate);
+
+  const usersSnapshot = await getDocs(
+    query(collection(db,"users"), where("role","==","employee"))
+  );
+
   const attendanceSnapshot = await getDocs(
-    query(collection(db, "attendance"), where("date", "==", selectedDate))
+    query(collection(db,"attendance"), where("date","==",selectedDate))
   );
 
   const attendanceMap = {};
-  attendanceSnapshot.forEach(docSnap => {
-    attendanceMap[docSnap.data().employeeId] = docSnap.data().timestamp;
+  attendanceSnapshot.forEach(docSnap=>{
+    attendanceMap[docSnap.data().employeeId] = docSnap.data();
   });
 
-  usersSnapshot.forEach(docSnap => {
+  usersSnapshot.forEach(docSnap=>{
+
     const user = docSnap.data();
-    if (user.role === "employee") {
+    const attendanceData = attendanceMap[docSnap.id];
 
-      const timestamp = attendanceMap[docSnap.id];
+    let statusHTML;
+    let timeDisplay = "-";
 
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${user.name || "Employee"}</td>
-        <td>${
-          timestamp ? 
-          "<span class='status-present'>Present</span>" :
-          "<span class='status-absent'>Absent</span>"
-        }</td>
-        <td>${
-          timestamp && timestamp.seconds ?
-          new Date(timestamp.seconds * 1000).toLocaleTimeString("en-IN") :
-          "-"
-        }</td>
-      `;
-
-      attendanceBody.appendChild(row);
+    if(holiday){
+      statusHTML = "<span class='status-holiday'>Holiday</span>";
     }
+    else if(attendanceData){
+      statusHTML = "<span class='status-present'>Present</span>";
+
+      if(attendanceData.timestamp?.seconds){
+        timeDisplay = new Date(
+          attendanceData.timestamp.seconds * 1000
+        ).toLocaleTimeString("en-IN");
+      }
+    }
+    else{
+      statusHTML = "<span class='status-absent'>Absent</span>";
+    }
+
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${user.name || "Employee"}</td>
+      <td>${statusHTML}</td>
+      <td>${timeDisplay}</td>
+    `;
+
+    attendanceBody.appendChild(row);
   });
 }
 
 /* =========================
    LOAD BLOCKED USERS
 ========================= */
-async function loadBlockedUsers() {
+async function loadBlockedUsers(){
 
   blockedBody.innerHTML = "";
 
   const snapshot = await getDocs(
-    query(collection(db, "users"), where("accountStatus", "==", "blocked"))
+    query(collection(db,"users"), where("accountStatus","==","blocked"))
   );
 
-  snapshot.forEach(docSnap => {
+  snapshot.forEach(docSnap=>{
 
     const user = docSnap.data();
 
-    const blockedDate = user.blockedOn && user.blockedOn.seconds
-      ? new Date(user.blockedOn.seconds * 1000).toLocaleString("en-IN")
-      : "-";
+    const blockedDate = user.lastAbsentDate || "-";
 
     const row = document.createElement("tr");
 
     row.innerHTML = `
       <td>${user.name || "Employee"}</td>
       <td>${user.branch || "-"}</td>
-      <td>${user.blockReason || "-"}</td>
+      <td>${user.blockReason || "Auto Absence"}</td>
       <td>${blockedDate}</td>
       <td><button class="unblock-btn" data-id="${docSnap.id}">Unblock</button></td>
     `;
@@ -182,29 +216,28 @@ async function loadBlockedUsers() {
     blockedBody.appendChild(row);
   });
 
-  document.querySelectorAll(".unblock-btn").forEach(btn => {
-    btn.addEventListener("click", async () => {
+  document.querySelectorAll(".unblock-btn").forEach(btn=>{
+    btn.addEventListener("click", async ()=>{
 
       const userId = btn.getAttribute("data-id");
 
-      try {
-        await updateDoc(doc(db, "users", userId), {
-          accountStatus: "active",
-          blockReason: "",
-          blockedOn: null
-        });
+      await updateDoc(doc(db,"users",userId),{
+        accountStatus:"active",
+        absenceCount:0,
+        lastAbsentDate:"",
+        blockReason:""
+      });
 
-        alert("Employee Unblocked Successfully");
-        loadBlockedUsers();
-      } catch (error) {
-        console.error("Unblock Error:", error);
-      }
-
+      alert("Employee Unblocked Successfully");
+      loadBlockedUsers();
     });
   });
 }
 
-dateInput.addEventListener("change", () => {
+/* =========================
+   EVENT LISTENERS
+========================= */
+dateInput.addEventListener("change",()=>{
   loadAttendance(dateInput.value);
 });
 
