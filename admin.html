@@ -47,6 +47,7 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 <button onclick="showSection('overview')">📊 Overview</button>
 <button onclick="showSection('attendanceControl')">🕒 Attendance Control</button>
 <button onclick="showSection('attendanceReport')">📈 Attendance Report</button>
+<button onclick="showSection('holidayManagement')">🎉 Holiday Management</button>
 <button onclick="showSection('erp')">💰 Customer ERP</button>
 </div>
 
@@ -131,13 +132,39 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 </div>
 
 </div>
+  
+<!-- HOLIDAY MANAGEMENT -->
+<div id="holidayManagement" class="section">
+<div class="section-box">
+<h3>Holiday Management</h3>
 
+<input type="date" id="holidayDate">
+<input type="text" id="holidayName" placeholder="Holiday Name">
+<button class="action" onclick="addHoliday()">Add Holiday</button>
+
+<div id="holidayMessage" style="margin-top:10px;"></div>
+
+<table>
+<thead>
+<tr>
+<th>Date</th>
+<th>Name</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody id="holidayTable"></tbody>
+</table>
+
+</div>
+</div>
 <script type="module">
 import { checkSession } from "./auth.js";
 checkSession("admin");
 </script>
 
 <script type="module">
+import { deleteDoc } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { db } from "./firebase-config.js";
 import { collection, getDoc, doc, setDoc, updateDoc, getDocs, onSnapshot } 
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -369,7 +396,78 @@ html += "</table>";
 document.getElementById("attendanceReportData").innerHTML = html;
 
 };
+/* =========================
+   HOLIDAY MANAGEMENT
+========================= */
 
+const holidayTable = document.getElementById("holidayTable");
+
+async function loadHolidays(){
+
+  holidayTable.innerHTML = "";
+
+  const snapshot = await getDocs(
+    collection(db,"settings","holidays","holidayList")
+  );
+
+  snapshot.forEach(docSnap=>{
+
+    const data = docSnap.data();
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${data.date}</td>
+      <td>${data.name}</td>
+      <td>
+        <button class="lock-btn"
+          onclick="deleteHoliday('${docSnap.id}')">
+          Delete
+        </button>
+      </td>
+    `;
+
+    holidayTable.appendChild(row);
+  });
+}
+
+window.addHoliday = async function(){
+
+  const date = document.getElementById("holidayDate").value;
+  const name = document.getElementById("holidayName").value.trim();
+
+  if(!date || !name){
+    document.getElementById("holidayMessage").innerText = "Fill all fields.";
+    return;
+  }
+
+  await setDoc(
+    doc(db,"settings","holidays","holidayList",date),
+    {
+      name: name,
+      date: date
+    }
+  );
+
+  document.getElementById("holidayMessage").innerText = "Holiday Added Successfully.";
+  document.getElementById("holidayDate").value="";
+  document.getElementById("holidayName").value="";
+
+  loadHolidays();
+};
+
+window.deleteHoliday = async function(date){
+
+  if(!confirm("Delete this holiday?")) return;
+
+  await deleteDoc(
+    doc(db,"settings","holidays","holidayList",date)
+  );
+
+  loadHolidays();
+};
+
+loadHolidays();
 </script>
 
 <script type="module" src="auth.js"></script>
