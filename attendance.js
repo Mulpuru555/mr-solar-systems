@@ -295,11 +295,12 @@ async function loadMonthlySummary(user) {
 }
 
 /* ===========================
-   AUTO BLOCK (SAFE)
+   AUTO BLOCK (SINGLE DAY STRICT)
 =========================== */
 
 async function checkAndHandleAbsence(user) {
 
+  // Check if today is working
   if (!(await isTodayWorking())) return;
 
   const { hour, minute } = await getClosingTime();
@@ -308,10 +309,12 @@ async function checkAndHandleAbsence(user) {
   const close = new Date();
   close.setHours(hour, minute, 0, 0);
 
+  // Wait until attendance closes
   if (now < close) return;
 
   const today = new Date().toISOString().split("T")[0];
 
+  // Check if attendance marked
   const attendanceSnap = await getDocs(
     query(
       collection(db, "attendance"),
@@ -320,7 +323,7 @@ async function checkAndHandleAbsence(user) {
     )
   );
 
-  if (!attendanceSnap.empty) return;
+  if (!attendanceSnap.empty) return; // If present, do nothing
 
   const userRef = doc(db, "users", user.uid);
   const userSnap = await getDoc(userRef);
@@ -329,6 +332,7 @@ async function checkAndHandleAbsence(user) {
 
   const userData = userSnap.data();
 
+  // Prevent multiple blocking updates same day
   if (userData.lastAbsentDate === today) return;
 
   await updateDoc(userRef, {
@@ -337,7 +341,7 @@ async function checkAndHandleAbsence(user) {
     accountStatus: "blocked"
   });
 
-  alert("Your account has been blocked due to absence.");
+  alert("Your account has been blocked due to absence recorded from your account,contact branch Manager.");
   location.reload();
 }
 
