@@ -684,6 +684,9 @@ footer {
 }
 
 }
+.gallery-view img{
+pointer-events:none;
+}
 
 
 
