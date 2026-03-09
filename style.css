@@ -595,7 +595,7 @@ footer {
 .gallery-box img {
     width: 100%;
     max-width: 800px;
-    max-height: 75vh;
+    max-height: 65vh;
     object-fit: contain;
     border-radius: 10px;
 }
@@ -651,6 +651,7 @@ footer {
     transform: translateY(-2px);
     box-shadow: 0 6px 18px rgba(255,152,0,0.6);
 }
+
 
 
 
