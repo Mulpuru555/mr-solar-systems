@@ -14,7 +14,10 @@ ref,
 uploadBytes
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
-
+import {
+onSnapshot,
+doc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 const msg = document.getElementById("msg");
 const gpsStatus = document.getElementById("gpsStatus");
 
@@ -293,3 +296,24 @@ audio.play();
 }catch(e){}
 
 }
+/* =========================
+   VERIFY LISTENER
+========================= */
+
+const verifyDoc =
+doc(db,"verificationRequests","chirala");
+
+
+onSnapshot(verifyDoc,(snap)=>{
+
+if(!snap.exists()) return;
+
+const data = snap.data();
+
+if(data.request === true){
+
+showVerifyPopup();
+
+}
+
+});
