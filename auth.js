@@ -43,6 +43,7 @@ window.loginUser = async function () {
 
     const userData = docSnap.data();
     const role = userData.role;
+    const branch = userData.branch || "";
     const accountStatus = userData.accountStatus || "active";
 
     // 🔴 Block check (employees only)
@@ -52,12 +53,43 @@ window.loginUser = async function () {
       return;
     }
 
-    if (role === "admin") window.location.href = "admin.html";
-    else if (role === "manager") window.location.href = "manager.html";
-    else if (role === "employee") window.location.href = "employee.html";
+    // ======================
+    // REDIRECT LOGIC
+    // ======================
+
+    if (role === "admin") {
+
+      window.location.href = "admin.html";
+
+    }
+
+    else if (role === "manager") {
+
+      window.location.href = "manager.html";
+
+    }
+
+    else if (role === "employee") {
+
+      // ✅ NEW: branch check added
+
+      if (branch === "chirala") {
+
+        window.location.href = "chirala-attendance.html";
+
+      } else {
+
+        window.location.href = "employee.html";
+
+      }
+
+    }
+
     else {
+
       alert("Invalid role");
       await signOut(auth);
+
     }
 
   } catch (error) {
