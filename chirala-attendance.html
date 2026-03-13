@@ -4,69 +4,81 @@
 <meta charset="UTF-8">
 <title>Chirala Attendance</title>
 
-<style>
-
-body{
-font-family: Arial;
-background:#0f172a;
-color:white;
-text-align:center;
-padding:20px;
-}
-
-.card{
-background:#1e293b;
-padding:20px;
-margin:15px;
-border-radius:12px;
-box-shadow:0 0 10px black;
-}
-
-button{
-padding:10px 20px;
-font-size:16px;
-border:none;
-border-radius:8px;
-cursor:pointer;
-background:#22c55e;
-color:white;
-}
-
-button:hover{
-background:#16a34a;
-}
-
-.status{
-margin-top:10px;
-color:yellow;
-}
-
-</style>
+<link rel="stylesheet" href="chirala.css">
 
 </head>
 
 <body>
 
-<h2>M.R Solar Systems</h2>
+<div class="header">
+<h2>M.R SOLAR SYSTEMS</h2>
 <h3>Chirala Branch Attendance</h3>
+</div>
+
 
 <div class="card">
 
 <p id="empName">Employee</p>
 
-<p id="gpsStatus">GPS Checking...</p>
+<p id="gpsStatus" class="gps">
+Checking GPS...
+</p>
 
-<input type="file" id="selfie" accept="image/*" capture="user"><br><br>
 
-<input type="file" id="office" accept="image/*" capture="environment"><br><br>
+<div class="photoBox">
 
-<button onclick="markAttendance()">Mark Attendance</button>
+<label>Selfie</label>
+<input type="file" id="selfie"
+accept="image/*"
+capture="user">
+
+<label>Office Photo</label>
+<input type="file" id="office"
+accept="image/*"
+capture="environment">
+
+</div>
+
+
+<button
+class="mainBtn"
+onclick="markAttendance()">
+
+Mark Attendance
+
+</button>
+
 
 <p class="status" id="msg"></p>
 
 </div>
 
-<script src="chirala.js" type="module"></script>
+
+<!-- VERIFY POPUP -->
+
+<div id="verifyPopup" class="popup">
+
+<h3>⚠ Verification Required</h3>
+
+<p>Upload live selfie</p>
+
+<input type="file"
+id="verifyPhoto"
+accept="image/*"
+capture="user">
+
+<button onclick="submitVerify()">
+
+Submit
+
+</button>
+
+</div>
+
+
+
+<script src="chirala.js"
+type="module"></script>
 
 </body>
 </html>
