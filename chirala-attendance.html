@@ -1,7 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
+
 <meta charset="UTF-8">
+
 <title>Chirala Attendance</title>
 
 <link rel="stylesheet" href="chirala.css">
@@ -10,30 +13,43 @@
 
 <body>
 
+
 <div class="header">
+
 <h2>M.R SOLAR SYSTEMS</h2>
-<h3>Chirala Branch Attendance</h3>
+<p>Chirala Branch Attendance</p>
+
+<button id="logoutBtn" onclick="logoutUser()">
+Logout
+</button>
+
 </div>
+
 
 
 <div class="card">
 
-<p id="empName">Employee</p>
+<p id="empName">Loading...</p>
 
-<p id="gpsStatus" class="gps">
-Checking GPS...
-</p>
+<p id="gpsStatus">Checking GPS...</p>
 
 
-<div class="photoBox">
+<div class="inputBox">
 
 <label>Selfie</label>
-<input type="file" id="selfie"
+<input type="file"
+id="selfie"
 accept="image/*"
 capture="user">
 
+</div>
+
+
+<div class="inputBox">
+
 <label>Office Photo</label>
-<input type="file" id="office"
+<input type="file"
+id="office"
 accept="image/*"
 capture="environment">
 
@@ -41,7 +57,7 @@ capture="environment">
 
 
 <button
-class="mainBtn"
+class="btn"
 onclick="markAttendance()">
 
 Mark Attendance
@@ -49,18 +65,17 @@ Mark Attendance
 </button>
 
 
-<p class="status" id="msg"></p>
+<p id="msg"></p>
 
 </div>
+
 
 
 <!-- VERIFY POPUP -->
 
 <div id="verifyPopup" class="popup">
 
-<h3>⚠ Verification Required</h3>
-
-<p>Upload live selfie</p>
+<h3>Verification Required</h3>
 
 <input type="file"
 id="verifyPhoto"
@@ -77,8 +92,12 @@ Submit
 
 
 
-<script src="chirala.js"
-type="module"></script>
+<script
+type="module"
+src="chirala.js">
+
+</script>
+
 
 </body>
 </html>
