@@ -1,36 +1,25 @@
-import { auth, db, storage } from "./firebase-config.js";
+import { auth } from "./firebase-config.js";
 
 import {
-onAuthStateChanged
+onAuthStateChanged,
+signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-import {
-doc,
-setDoc,
-onSnapshot
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
-ref,
-uploadBytes
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+// =========================
+// ELEMENTS
+// =========================
+
 const msg = document.getElementById("msg");
 const gpsStatus = document.getElementById("gpsStatus");
-
-let popup = null;
-
-window.addEventListener("DOMContentLoaded",()=>{
-
-popup = document.getElementById("verifyPopup");
-
-});
+const empName = document.getElementById("empName");
 
 let userId = "";
 
 
-/* =========================
-   Chirala Office Location
-========================= */
+// =========================
+// OFFICE LOCATION
+// =========================
 
 const officeLat = 15.829398363781864;
 const officeLng = 80.35605609999999;
@@ -38,31 +27,48 @@ const officeLng = 80.35605609999999;
 const maxDistance = 200;
 
 
-/* =========================
-   Login Check
-========================= */
+
+// =========================
+// LOGIN CHECK
+// =========================
 
 onAuthStateChanged(auth,(user)=>{
 
-if(user){
+if(!user){
+
+window.location.href = "index.html";
+return;
+
+}
 
 userId = user.uid;
 
-document.getElementById("empName").innerText =
-"User : " + user.email;
+empName.innerText =
+"Logged in : " + user.email;
 
-}else{
-
-msg.innerText = "Not logged in";
-
-}
+checkGPSOnLoad();
 
 });
 
 
-/* =========================
-   Get GPS
-========================= */
+
+// =========================
+// LOGOUT
+// =========================
+
+window.logoutUser = async function(){
+
+await signOut(auth);
+
+window.location.href = "index.html";
+
+};
+
+
+
+// =========================
+// GET GPS
+// =========================
 
 function getGPS(){
 
@@ -81,9 +87,10 @@ err=>reject(err)
 }
 
 
-/* =========================
-   Distance Function
-========================= */
+
+// =========================
+// DISTANCE
+// =========================
 
 function getDistance(lat1, lon1, lat2, lon2) {
 
@@ -106,35 +113,16 @@ return R * c;
 }
 
 
-/* =========================
-   Mark Attendance
-========================= */
 
-window.markAttendance = async function(){
+// =========================
+// GPS ON LOAD
+// =========================
+
+async function checkGPSOnLoad(){
 
 try{
 
-msg.innerText = "Checking time...";
-
-/* ===== TIME CHECK ===== */
-
-const now = new Date();
-
-const hour = now.getHours();
-
-if(hour >= 10){
-
-msg.innerText =
-"Attendance allowed only before 10 AM";
-
-return;
-
-}
-
-
-/* ===== GPS CHECK ===== */
-
-msg.innerText = "Checking GPS...";
+gpsStatus.innerText = "Checking GPS...";
 
 const coords = await getGPS();
 
@@ -146,185 +134,55 @@ officeLng
 );
 
 gpsStatus.innerText =
-"Distance: " + Math.round(distance) + " m";
+"Distance : " + Math.round(distance) + " m";
 
+}catch(e){
+
+gpsStatus.innerText =
+"GPS not allowed";
+
+}
+
+}
+
+
+
+// =========================
+// MARK ATTENDANCE (TEST)
+// =========================
+
+window.markAttendance = async function(){
+
+msg.innerText = "Checking...";
+
+try{
+
+const coords = await getGPS();
+
+const distance = getDistance(
+coords.latitude,
+coords.longitude,
+officeLat,
+officeLng
+);
 
 if(distance > maxDistance){
 
 msg.innerText =
-"You are not at Chirala office";
+"Not in office location";
 
 return;
 
 }
 
-
-/* ===== FILE CHECK ===== */
-
-const selfieFile =
-document.getElementById("selfie").files[0];
-
-const officeFile =
-document.getElementById("office").files[0];
-
-
-if(!selfieFile || !officeFile){
-
 msg.innerText =
-"Upload selfie and office photo";
-
-return;
-
-}
-
-
-/* ===== DATE ===== */
-
-const date =
-new Date().toISOString().slice(0,10);
-
-
-msg.innerText = "Uploading photos...";
-
-
-/* ===== STORAGE ===== */
-
-const selfieRef =
-ref(
-storage,
-"chirala/"+date+"/selfie_"+userId
-);
-
-const officeRef =
-ref(
-storage,
-"chirala/"+date+"/office_"+userId
-);
-
-
-await uploadBytes(selfieRef,selfieFile);
-await uploadBytes(officeRef,officeFile);
-
-
-msg.innerText = "Saving attendance...";
-
-
-/* ===== FIRESTORE ===== */
-
-await setDoc(
-
-doc(
-db,
-"chiralaAttendance",
-date + "_" + userId
-),
-
-{
-
-userId,
-
-gpsLat: coords.latitude,
-gpsLng: coords.longitude,
-
-officeLat,
-officeLng,
-
-distance,
-
-time: Date.now()
-
-}
-
-);
-
-
-msg.innerText =
-"Attendance Saved Successfully ✅";
-
+"Attendance OK (test mode)";
 
 }catch(e){
 
-console.log(e);
-
 msg.innerText =
-"Error: " + e.message;
+"GPS error";
 
 }
 
 };
-
-
-
-/* =========================
-   VERIFY POPUP SUPPORT
-========================= */
-
-
-window.showVerifyPopup = function(){
-
-if(!popup) return;
-
-popup.classList.add("show");
-
-playAlert();
-
-};
-
-window.submitVerify = async function(){
-
-if(popup){
-popup.classList.remove("show");
-}
-
-msg.innerText =
-"Verification Submitted";
-
-
-await setDoc(
-doc(db,"verificationRequests","chirala"),
-{
-request:false
-}
-);
-
-};
-/* =========================
-   SOUND ALERT
-========================= */
-
-function playAlert(){
-
-try{
-
-const audio = new Audio(
-"https://actions.google.com/sounds/v1/alarms/beep_short.ogg"
-);
-
-audio.play();
-
-}catch(e){}
-
-}
-/* =========================
-   VERIFY LISTENER
-========================= */
-
-const verifyDoc =
-doc(db,"verificationRequests","chirala");
-
-
-onSnapshot(verifyDoc,(snap)=>{
-
-if(!snap.exists()) return;
-
-const data = snap.data();
-
-if(!data) return;
-
-if(data.request === true){
-
-showVerifyPopup();
-
-}
-
-});
