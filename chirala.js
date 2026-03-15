@@ -1,9 +1,20 @@
-import { auth } from "./firebase-config.js";
+import { auth, db, storage } from "./firebase-config.js";
 
 import {
 onAuthStateChanged,
 signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+import {
+doc,
+setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+ref,
+uploadBytes
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+
 
 
 // ELEMENTS
@@ -15,12 +26,13 @@ const empName = document.getElementById("empName");
 let userId = "";
 
 
+
 // OFFICE LOCATION
 
 const officeLat = 15.829398363781864;
 const officeLng = 80.35605609999999;
 
-const maxDistance = 200;
+const maxDistance = 300;
 
 
 
@@ -58,7 +70,7 @@ window.location.href = "index.html";
 
 
 
-// GPS FUNCTION
+// GPS
 
 function getGPS(){
 
@@ -102,7 +114,7 @@ return R * c;
 
 
 
-// CHECK GPS ON LOAD
+// CHECK GPS
 
 async function checkGPS(){
 
@@ -133,13 +145,33 @@ gpsStatus.innerText =
 
 
 
-// MARK ATTENDANCE (TEST)
+// MARK ATTENDANCE
 
 window.markAttendance = async function(){
 
-msg.innerText = "Checking...";
-
 try{
+
+msg.innerText = "Checking time...";
+
+
+// TIME CHECK
+
+const now = new Date();
+const hour = now.getHours();
+
+if(hour >= 10){
+
+msg.innerText =
+"Allowed only before 10 AM";
+
+return;
+
+}
+
+
+// GPS
+
+msg.innerText = "Checking GPS...";
 
 const coords = await getGPS();
 
@@ -153,19 +185,82 @@ officeLng
 if(distance > maxDistance){
 
 msg.innerText =
-"You are not at office";
+"Not in office location";
 
 return;
 
 }
 
+
+// FILES
+
+const selfieFile =
+document.getElementById("selfie").files[0];
+
+const officeFile =
+document.getElementById("office").files[0];
+
+if(!selfieFile || !officeFile){
+
 msg.innerText =
-"Attendance OK";
+"Upload photos";
+
+return;
+
+}
+
+
+const date =
+new Date().toISOString().slice(0,10);
+
+
+msg.innerText = "Uploading...";
+
+
+// STORAGE
+
+const selfieRef =
+ref(storage,
+"chirala/"+date+"/selfie_"+userId);
+
+const officeRef =
+ref(storage,
+"chirala/"+date+"/office_"+userId);
+
+
+await uploadBytes(selfieRef,selfieFile);
+await uploadBytes(officeRef,officeFile);
+
+
+// FIRESTORE
+
+await setDoc(
+doc(db,"chiralaAttendance",
+date+"_"+userId),
+{
+
+userId,
+
+gpsLat: coords.latitude,
+gpsLng: coords.longitude,
+
+distance,
+
+time: Date.now()
+
+}
+);
+
+
+msg.innerText =
+"Attendance Saved ✅";
 
 }catch(e){
 
 msg.innerText =
-"GPS error";
+"Error";
+
+console.log(e);
 
 }
 
