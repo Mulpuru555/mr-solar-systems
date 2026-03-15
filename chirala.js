@@ -17,16 +17,17 @@ uploadBytes
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 
+console.log("chirala.js loaded");
+
 
 // ELEMENTS
 
 const msg = document.getElementById("msg");
 const gpsStatus = document.getElementById("gpsStatus");
 const empName = document.getElementById("empName");
-const popup =
-document.getElementById("verifyPopup");
-let userId = "";
+const popup = document.getElementById("verifyPopup");
 
+let userId = "";
 
 
 // OFFICE LOCATION
@@ -34,7 +35,7 @@ let userId = "";
 const officeLat = 15.829398363781864;
 const officeLng = 80.35605609999999;
 
-const maxDistance = 300;
+const maxDistance = 200;
 
 
 
@@ -78,11 +79,24 @@ function getGPS(){
 
 return new Promise((resolve,reject)=>{
 
+if(!navigator.geolocation){
+
+reject("no gps");
+return;
+
+}
+
 navigator.geolocation.getCurrentPosition(
 
 pos => resolve(pos.coords),
 
-err => reject(err)
+err => reject(err),
+
+{
+enableHighAccuracy:true,
+timeout:10000,
+maximumAge:0
+}
 
 );
 
@@ -139,7 +153,7 @@ gpsStatus.innerText =
 }catch(e){
 
 gpsStatus.innerText =
-"GPS not allowed";
+"Location not allowed";
 
 }
 
@@ -156,7 +170,7 @@ try{
 msg.innerText = "Checking time...";
 
 
-// TIME CHECK
+// TIME
 
 const now = new Date();
 const hour = now.getHours();
@@ -164,7 +178,7 @@ const hour = now.getHours();
 if(hour >= 10){
 
 msg.innerText =
-"Allowed only before 10 AM";
+"Allowed before 10 AM";
 
 return;
 
@@ -187,7 +201,7 @@ officeLng
 if(distance > maxDistance){
 
 msg.innerText =
-"Not in office location";
+"Not in office";
 
 return;
 
@@ -259,18 +273,22 @@ msg.innerText =
 
 }catch(e){
 
+console.log(e);
+
 msg.innerText =
 "Error";
-
-console.log(e);
 
 }
 
 };
+
+
+
 // VERIFY LISTENER
 
 const verifyDoc =
 doc(db,"verificationRequests","chirala");
+
 
 onSnapshot(verifyDoc,(snap)=>{
 
@@ -278,7 +296,11 @@ if(!snap.exists()) return;
 
 const data = snap.data();
 
+if(!data) return;
+
 if(data.request === true){
+
+if(popup){
 
 popup.classList.add("show");
 
@@ -286,15 +308,26 @@ playSound();
 
 }
 
+}
+
 });
+
+
+
+// SUBMIT VERIFY
+
 window.submitVerify = async function(){
+
+try{
 
 const file =
 document.getElementById("verifyPhoto").files[0];
 
 if(!file){
 
-msg.innerText = "Upload photo";
+msg.innerText =
+"Upload verify photo";
+
 return;
 
 }
@@ -302,11 +335,12 @@ return;
 const date =
 new Date().toISOString().slice(0,10);
 
-const refPath =
+const verifyRef =
 ref(storage,
 "verify/"+date+"/verify_"+userId);
 
-await uploadBytes(refPath,file);
+await uploadBytes(verifyRef,file);
+
 
 await setDoc(
 doc(db,"verificationRequests","chirala"),
@@ -316,12 +350,24 @@ time:Date.now()
 }
 );
 
+
 popup.classList.remove("show");
 
 msg.innerText =
-"Verification sent";
+"Verified";
+
+}catch(e){
+
+console.log(e);
+
+}
 
 };
+
+
+
+// SOUND
+
 function playSound(){
 
 try{
