@@ -17,7 +17,12 @@ uploadBytes
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
 
-console.log("JS running");
+console.log("chirala.js loaded");
+
+
+// wait until page loaded
+
+window.addEventListener("DOMContentLoaded",()=>{
 
 
 const msg = document.getElementById("msg");
@@ -27,6 +32,7 @@ const popup = document.getElementById("verifyPopup");
 
 let userId = "";
 
+
 const officeLat = 15.829398363781864;
 const officeLng = 80.35605609999999;
 
@@ -34,7 +40,7 @@ const maxDistance = 200;
 
 
 
-// LOGIN
+// LOGIN CHECK
 
 onAuthStateChanged(auth,(user)=>{
 
@@ -47,7 +53,8 @@ return;
 
 userId=user.uid;
 
-empName.innerText=user.email;
+if(empName)
+empName.innerText="Logged in : "+user.email;
 
 checkGPS();
 
@@ -73,6 +80,13 @@ function getGPS(){
 
 return new Promise((resolve,reject)=>{
 
+if(!navigator.geolocation){
+
+reject();
+return;
+
+}
+
 navigator.geolocation.getCurrentPosition(
 
 pos=>resolve(pos.coords),
@@ -81,7 +95,8 @@ err=>reject(err),
 
 {
 enableHighAccuracy:true,
-timeout:10000
+timeout:10000,
+maximumAge:0
 }
 
 );
@@ -92,7 +107,9 @@ timeout:10000
 
 
 
-function getDistance(lat1,lon1,lat2,lon2){
+// DISTANCE
+
+function getDistance(lat1, lon1, lat2, lon2){
 
 const R=6371000;
 
@@ -100,10 +117,11 @@ const dLat=(lat2-lat1)*Math.PI/180;
 const dLon=(lon2-lon1)*Math.PI/180;
 
 const a=
-Math.sin(dLat/2)**2+
+Math.sin(dLat/2)*Math.sin(dLat/2)+
 Math.cos(lat1*Math.PI/180)*
 Math.cos(lat2*Math.PI/180)*
-Math.sin(dLon/2)**2;
+Math.sin(dLon/2)*
+Math.sin(dLon/2);
 
 const c=2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
 
@@ -113,26 +131,31 @@ return R*c;
 
 
 
+// CHECK GPS
+
 async function checkGPS(){
 
-gpsStatus.innerText="Checking GPS";
+if(!gpsStatus) return;
+
+gpsStatus.innerText="Checking GPS...";
 
 try{
 
-const c=await getGPS();
+const coords=await getGPS();
 
-const d=getDistance(
-c.latitude,
-c.longitude,
+const dist=getDistance(
+coords.latitude,
+coords.longitude,
 officeLat,
 officeLng
 );
 
-gpsStatus.innerText="Distance "+Math.round(d)+" m";
+gpsStatus.innerText=
+"Distance : "+Math.round(dist)+" m";
 
 }catch{
 
-gpsStatus.innerText="GPS error";
+gpsStatus.innerText="Location not allowed";
 
 }
 
@@ -146,14 +169,17 @@ window.markAttendance = async function(){
 
 try{
 
+msg.innerText="Checking time...";
+
 const now=new Date();
 
 if(now.getHours()>=10){
 
-msg.innerText="Only before 10 AM";
+msg.innerText="Allowed before 10 AM";
 return;
 
 }
+
 
 const coords=await getGPS();
 
@@ -171,8 +197,12 @@ return;
 
 }
 
-const selfie=document.getElementById("selfie").files[0];
-const office=document.getElementById("office").files[0];
+
+const selfie=
+document.getElementById("selfie").files[0];
+
+const office=
+document.getElementById("office").files[0];
 
 if(!selfie||!office){
 
@@ -181,27 +211,33 @@ return;
 
 }
 
-const date=new Date().toISOString().slice(0,10);
+
+const date=
+new Date().toISOString().slice(0,10);
+
 
 await uploadBytes(
-ref(storage,"chirala/"+date+"/s_"+userId),
+ref(storage,"chirala/"+date+"/selfie_"+userId),
 selfie
 );
 
 await uploadBytes(
-ref(storage,"chirala/"+date+"/o_"+userId),
+ref(storage,"chirala/"+date+"/office_"+userId),
 office
 );
 
+
 await setDoc(
-doc(db,"chiralaAttendance",date+"_"+userId),
+doc(db,"chiralaAttendance",
+date+"_"+userId),
 {
 userId,
 time:Date.now()
 }
 );
 
-msg.innerText="Saved";
+
+msg.innerText="Attendance Saved";
 
 }catch(e){
 
@@ -216,7 +252,9 @@ msg.innerText="Error";
 
 // VERIFY LISTENER
 
-const verifyDoc=doc(db,"verificationRequests","chirala");
+const verifyDoc=
+doc(db,"verificationRequests","chirala");
+
 
 onSnapshot(verifyDoc,(snap)=>{
 
@@ -224,9 +262,13 @@ if(!snap.exists()) return;
 
 const data=snap.data();
 
-if(data.request){
+if(data && data.request===true){
 
-popup.style.display="block";
+if(popup){
+
+popup.classList.add("show");
+
+}
 
 }
 
@@ -234,15 +276,19 @@ popup.style.display="block";
 
 
 
-// SUBMIT VERIFY
+// VERIFY SUBMIT
 
-window.submitVerify=async function(){
+window.submitVerify = async function(){
 
-const file=document.getElementById("verifyPhoto").files[0];
+try{
+
+const file=
+document.getElementById("verifyPhoto").files[0];
 
 if(!file) return;
 
-const date=new Date().toISOString().slice(0,10);
+const date=
+new Date().toISOString().slice(0,10);
 
 await uploadBytes(
 ref(storage,"verify/"+date+"/"+userId),
@@ -254,6 +300,16 @@ doc(db,"verificationRequests","chirala"),
 {request:false}
 );
 
-popup.style.display="none";
+if(popup)
+popup.classList.remove("show");
+
+}catch(e){
+
+console.log(e);
+
+}
 
 };
+
+
+});
