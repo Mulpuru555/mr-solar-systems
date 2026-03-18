@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Manager Dashboard</title>
+<title>Manager Portal</title>
 
 <link rel="stylesheet" href="manager.css">
 
@@ -14,12 +14,13 @@
 
 <body>
 
+<div class="nav">
 
-<div class="header">
+<div class="logo">
+Manager Dashboard
+</div>
 
-<h2>M.R Solar Systems Manager</h2>
-
-<button class="logout" onclick="logoutUser()">
+<button onclick="logoutUser()" class="logout">
 Logout
 </button>
 
@@ -30,12 +31,27 @@ Logout
 <div class="container">
 
 
-<h1>Attendance Report</h1>
+<div class="card">
+
+<h2>Chirala Verification</h2>
+
+<p id="verifyStatus">
+Status : loading...
+</p>
+
+<button onclick="sendVerify()" class="btn">
+Send Verification
+</button>
+
+</div>
+
+
+
+<div class="card">
+
+<h2>Attendance Report</h2>
 
 <input type="date" id="attendanceDate">
-
-
-<div class="box">
 
 <table>
 
@@ -55,28 +71,16 @@ Logout
 
 
 
-<h1>Chirala Control</h1>
+<div class="card">
 
-<div class="box">
-
-<button onclick="sendVerify()">
-Send Verification To Chirala
-</button>
-
-</div>
-
-
-
-<h1>Employee Summary</h1>
-
-<div class="box">
+<h2>Summary</h2>
 
 <table>
 
 <thead>
 <tr>
 <th>Name</th>
-<th>Working Days</th>
+<th>Working</th>
 <th>Present</th>
 <th>Absent</th>
 </tr>
@@ -90,9 +94,9 @@ Send Verification To Chirala
 
 
 
-<h1>Blocked Employees</h1>
+<div class="card">
 
-<div class="box">
+<h2>Blocked</h2>
 
 <table>
 
@@ -101,7 +105,6 @@ Send Verification To Chirala
 <th>Name</th>
 <th>Branch</th>
 <th>Reason</th>
-<th>Date</th>
 <th>Action</th>
 </tr>
 </thead>
@@ -111,6 +114,7 @@ Send Verification To Chirala
 </table>
 
 </div>
+
 
 
 </div>
