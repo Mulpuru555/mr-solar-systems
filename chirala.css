@@ -1,66 +1,65 @@
 body{
-margin:0;
-font-family:system-ui, sans-serif;
 
-background:linear-gradient(
-180deg,
+margin:0;
+
+font-family:system-ui;
+
+background:
+linear-gradient(
+135deg,
 #020617,
-#0f172a
+#0f172a,
+#020617
 );
 
 color:white;
 
 min-height:100vh;
 
-display:flex;
-flex-direction:column;
-align-items:center;
 }
 
 
-/* HEADER */
+/* NAVBAR */
 
-.header{
+.navbar{
 
-width:100%;
+display:flex;
 
-padding:15px;
+justify-content:space-between;
 
-text-align:center;
+align-items:center;
+
+padding:12px 15px;
 
 background:rgba(0,0,0,0.4);
 
 backdrop-filter:blur(10px);
 
-position:sticky;
-top:0;
-
-animation:fadeDown 0.4s;
-
 }
 
-.header h2{
+.navbar h2{
+
 margin:0;
+
 font-size:18px;
+
 }
 
-.header p{
-margin:0;
+.navbar span{
+
+font-size:12px;
+
 color:#38bdf8;
-font-size:13px;
-}
 
+}
 
 #logoutBtn{
 
-position:absolute;
-right:10px;
-top:10px;
-
 background:#ef4444;
+
 border:none;
 
-padding:6px 10px;
+padding:8px 12px;
 
 border-radius:8px;
 
@@ -73,10 +72,11 @@ color:white;
 
 .card{
 
-margin-top:40px;
+margin:40px auto;
 
 width:90%;
-max-width:350px;
+
+max-width:360px;
 
 background:rgba(30,41,59,0.6);
 
@@ -86,37 +86,17 @@ border-radius:20px;
 
 padding:20px;
 
-box-shadow:0 10px 30px rgba(0,0,0,0.5);
+box-shadow:0 10px 30px black;
 
-animation:fadeUp 0.5s;
-
-}
-
-
-/* TEXT */
-
-#empName{
-font-size:14px;
-margin-bottom:5px;
-}
-
-#gpsStatus{
-color:#38bdf8;
-margin-bottom:15px;
 }
 
 
 /* INPUT */
 
 .inputBox{
-margin:10px 0;
-text-align:left;
-}
 
-.inputBox label{
-font-size:13px;
-display:block;
-margin-bottom:5px;
+margin:10px 0;
+
 }
 
 input[type=file]{
@@ -156,25 +136,23 @@ border-radius:12px;
 
 color:white;
 
-transition:0.3s;
-
-}
-
-.btn:active{
-transform:scale(0.96);
-}
-
-.btn:hover{
-background:#16a34a;
 }
 
 
-/* MESSAGE */
+/* TEXT */
+
+#gpsStatus{
+
+color:#38bdf8;
+
+}
 
 #msg{
-margin-top:10px;
-font-size:14px;
+
 color:yellow;
+
+margin-top:10px;
+
 }
 
 
@@ -185,6 +163,7 @@ color:yellow;
 position:fixed;
 
 top:50%;
+
 left:50%;
 
 transform:translate(-50%,-50%);
@@ -199,41 +178,10 @@ display:none;
 
 box-shadow:0 0 30px red;
 
-animation:fadeUp 0.3s;
-
 }
 
 .popup.show{
+
 display:block;
-}
-
-
-/* ANIMATION */
-
-@keyframes fadeUp{
-
-from{
-opacity:0;
-transform:translateY(20px);
-}
-
-to{
-opacity:1;
-transform:translateY(0);
-}
-
-}
-
-@keyframes fadeDown{
-
-from{
-opacity:0;
-transform:translateY(-20px);
-}
-
-to{
-opacity:1;
-transform:translateY(0);
-}
 
 }
