@@ -1,6 +1,6 @@
-// =====================================
+// =========================
 // FESTIVAL CONTROL
-// =====================================
+// =========================
 
 const festivalTheme = "ugadi"; // change to none after festival
 
@@ -12,14 +12,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
-/* ========= BACKGROUND ========= */
+/* ===== BACKGROUND ===== */
 
 document.body.style.background =
-"linear-gradient(135deg,#fff8e1,#ffe0b2,#fff3e0,#fffde7)";
+"linear-gradient(135deg,#fff8e1,#ffe0b2,#fff3e0)";
 
 
 
-/* ========= GOLD BORDER ========= */
+/* ===== GOLD LINE ===== */
 
 const gold=document.createElement("div");
 
@@ -27,95 +27,81 @@ gold.style.position="fixed";
 gold.style.top="0";
 gold.style.left="0";
 gold.style.width="100%";
-gold.style.height="6px";
+gold.style.height="4px";
 gold.style.background=
 "linear-gradient(90deg,gold,orange,gold)";
-gold.style.zIndex="99999";
+gold.style.zIndex="9999";
 
 document.body.appendChild(gold);
 
 
 
-/* ========= MANGO LEAVES ========= */
+/* ===== MANGO LEAVES SMALL ===== */
 
 const leaves=document.createElement("div");
 
-leaves.innerHTML=
-"🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿🌿";
+leaves.innerHTML="🌿 🌿 🌿 🌿 🌿 🌿 🌿";
 
 leaves.style.position="fixed";
-leaves.style.top="6px";
+leaves.style.top="4px";
 leaves.style.width="100%";
 leaves.style.textAlign="center";
-leaves.style.fontSize="26px";
+leaves.style.fontSize="18px";
 leaves.style.background="#2e7d32";
 leaves.style.color="white";
-leaves.style.zIndex="99999";
+leaves.style.zIndex="9999";
 
 document.body.appendChild(leaves);
 
 
 
-/* ========= OFFER BANNER ========= */
+/* ===== SMALL BANNER ===== */
 
 const banner=document.createElement("div");
 
 banner.innerHTML=
-"🌸 HAPPY UGADI 🌸 | Special Solar Offers ☀️ | Call 9154777773";
+"🌸 Happy Ugadi | Special Solar Offers | 9154777773";
 
 banner.style.position="fixed";
-banner.style.top="40px";
+banner.style.top="28px";
 banner.style.width="100%";
-banner.style.background=
-"linear-gradient(90deg,#ff9800,#ff5722)";
+banner.style.background="#ff6f00";
 banner.style.color="white";
 banner.style.textAlign="center";
-banner.style.padding="10px";
-banner.style.fontWeight="bold";
-banner.style.zIndex="99999";
+banner.style.padding="6px";
+banner.style.fontSize="14px";
+banner.style.zIndex="9999";
 
 document.body.appendChild(banner);
 
 
 
-/* ========= FULL SCREEN WELCOME ========= */
+/* ===== SMALL POPUP ===== */
 
-const welcome=document.createElement("div");
+setTimeout(()=>{
 
-welcome.innerHTML=
-"<h1>🌸 Happy Ugadi 🌸</h1>"+
-"<h2>M.R Solar Systems</h2>"+
-"<p>Bright & Prosperous New Year</p>"+
-"<button id='enterSite'>Enter Website</button>";
+const pop=document.createElement("div");
 
-welcome.style.position="fixed";
-welcome.style.top="0";
-welcome.style.left="0";
-welcome.style.width="100%";
-welcome.style.height="100%";
-welcome.style.background="rgba(0,0,0,0.8)";
-welcome.style.color="white";
-welcome.style.display="flex";
-welcome.style.flexDirection="column";
-welcome.style.justifyContent="center";
-welcome.style.alignItems="center";
-welcome.style.zIndex="999999";
+pop.innerHTML=
+"<b>Happy Ugadi</b><br>M.R Solar Systems";
 
-document.body.appendChild(welcome);
+pop.style.position="fixed";
+pop.style.bottom="20px";
+pop.style.right="20px";
+pop.style.background="white";
+pop.style.padding="10px";
+pop.style.boxShadow="0 0 10px black";
+pop.style.zIndex="99999";
 
-document.addEventListener("click",e=>{
+document.body.appendChild(pop);
 
-if(e.target.id==="enterSite"){
+setTimeout(()=>pop.remove(),4000);
 
-welcome.remove();
-
-}
-
-});
+},2000);
 
 
 
-/* ========= FLOWERS ========= */
+/* ===== FLOWER (LESS) ===== */
 
 function flower(){
 
@@ -126,14 +112,14 @@ f.innerHTML="🌸";
 f.style.position="fixed";
 f.style.top="-10px";
 f.style.left=Math.random()*100+"vw";
-f.style.fontSize="20px";
-f.style.zIndex="99999";
+f.style.fontSize="16px";
+f.style.zIndex="9999";
 
 document.body.appendChild(f);
 
 let fall=setInterval(()=>{
 
-f.style.top=f.offsetTop+3+"px";
+f.style.top=f.offsetTop+2+"px";
 
 if(f.offsetTop>window.innerHeight){
 
@@ -142,15 +128,15 @@ clearInterval(fall);
 
 }
 
-},20);
+},30);
 
 }
 
-setInterval(flower,250);
+setInterval(flower,900); // slower
 
 
 
-/* ========= CONFETTI ========= */
+/* ===== CONFETTI LESS ===== */
 
 function confetti(){
 
@@ -161,14 +147,14 @@ c.innerHTML="✨";
 c.style.position="fixed";
 c.style.top="-10px";
 c.style.left=Math.random()*100+"vw";
-c.style.fontSize="18px";
-c.style.zIndex="99999";
+c.style.fontSize="14px";
+c.style.zIndex="9999";
 
 document.body.appendChild(c);
 
 let fall=setInterval(()=>{
 
-c.style.top=c.offsetTop+4+"px";
+c.style.top=c.offsetTop+3+"px";
 
 if(c.offsetTop>window.innerHeight){
 
@@ -177,77 +163,29 @@ clearInterval(fall);
 
 }
 
-},20);
+},30);
 
 }
 
-setInterval(confetti,400);
+setInterval(confetti,1500);
 
 
 
-/* ========= FIREWORK ========= */
-
-function fire(){
-
-const f=document.createElement("div");
-
-f.innerHTML="🎆";
-
-f.style.position="fixed";
-f.style.left=Math.random()*100+"vw";
-f.style.top=Math.random()*100+"vh";
-f.style.fontSize="25px";
-f.style.zIndex="99999";
-
-document.body.appendChild(f);
-
-setTimeout(()=>f.remove(),800);
-
-}
-
-setInterval(fire,1200);
-
-
-
-/* ========= RANGOLI ========= */
+/* ===== RANGOLI SMALL ===== */
 
 const rangoli=document.createElement("div");
 
-rangoli.innerHTML=
-"🏵🏵🏵🏵🏵🏵🏵🏵🏵🏵🏵🏵";
+rangoli.innerHTML="🏵 🏵 🏵 🏵 🏵";
 
 rangoli.style.position="fixed";
 rangoli.style.bottom="0";
 rangoli.style.width="100%";
 rangoli.style.textAlign="center";
-rangoli.style.fontSize="24px";
+rangoli.style.fontSize="18px";
 rangoli.style.background="#ffcc80";
-rangoli.style.zIndex="99999";
+rangoli.style.zIndex="9999";
 
 document.body.appendChild(rangoli);
-
-
-
-/* ========= SOUND ========= */
-
-const audio=new Audio(
-"https://actions.google.com/sounds/v1/bells/temple_bell.ogg"
-);
-
-setTimeout(()=>audio.play(),1500);
-
-
-
-/* ========= LOGO GLOW ========= */
-
-const logo=document.querySelector("img");
-
-if(logo){
-
-logo.style.boxShadow=
-"0 0 20px gold";
-
-}
 
 
 
