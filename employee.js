@@ -138,7 +138,7 @@ document.getElementById(id).style.display="block";
 
 
 /* =========================
-   ADD CUSTOMER
+   ADD CUSTOMER (AUTO LOCK)
 ========================= */
 
 document
@@ -168,7 +168,9 @@ createdBy: uid,
 
 payments: [],
 status: "Pending",
-isLocked: false,
+
+// 🔴 IMPORTANT FIX
+isLocked: true,
 
 createdAt: serverTimestamp()
 }
@@ -286,14 +288,14 @@ document.getElementById("editPopup").style.display="none";
 
 
 /* =========================
-   SAVE EDIT
+   SAVE EDIT (NO DUPLICATE)
 ========================= */
 
 window.saveEdit = async ()=>{
 
-await updateDoc(
-doc(db,"customerPayments",editID),
-{
+const ref = doc(db,"customerPayments",editID);
+
+await updateDoc(ref,{
 customerName:
 document.getElementById("editName").value,
 
@@ -304,8 +306,8 @@ totalAmount:
 Number(
 document.getElementById("editTotal").value
 )
-}
-);
+
+});
 
 closePopup();
 
