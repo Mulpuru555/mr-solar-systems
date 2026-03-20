@@ -188,18 +188,23 @@ const month=now.getMonth()+1;
 
 /* working days till today */
 
-let workingDays=0;
-
 for(let d=1; d<=now.getDate(); d++){
 
-const date=
+const date =
 year+"-"+
 String(month).padStart(2,"0")+"-"+
 String(d).padStart(2,"0");
 
-const day=new Date(date);
+const day = new Date(date);
 
 if(day.getDay()===0) continue;
+
+// check holiday
+const holidaySnap = await getDoc(
+doc(db,"settings","holidays","holidayList",date)
+);
+
+if(holidaySnap.exists()) continue;
 
 workingDays++;
 
