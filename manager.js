@@ -39,17 +39,12 @@ document.getElementById("verifyStatus");
 /* ================= LOGIN ================= */
 
 onAuthStateChanged(auth,user=>{
-
-if(!user)
-window.location.href="index.html";
-
+if(!user) window.location.href="index.html";
 });
 
-window.logoutUser=async()=>{
-
+window.logoutUser = async()=>{
 await signOut(auth);
 window.location.href="index.html";
-
 };
 
 
@@ -57,7 +52,7 @@ window.location.href="index.html";
 
 function getDate(){
 
-const d=new Date();
+const d = new Date();
 
 return d.getFullYear()+"-"+
 String(d.getMonth()+1).padStart(2,"0")+"-"+
@@ -65,8 +60,8 @@ String(d.getDate()).padStart(2,"0");
 
 }
 
-const today=getDate();
-dateInput.value=today;
+const today = getDate();
+dateInput.value = today;
 
 
 /* ================= VERIFY ================= */
@@ -74,16 +69,13 @@ dateInput.value=today;
 onSnapshot(
 doc(db,"verificationRequests","chirala"),
 snap=>{
-
 if(!snap.exists()) return;
-
 verifyText.innerText =
 "Status : "+snap.data().status;
-
 }
 );
 
-window.sendVerify=async()=>{
+window.sendVerify = async()=>{
 
 await setDoc(
 doc(db,"verificationRequests","chirala"),
@@ -98,57 +90,41 @@ alert("Verification sent");
 };
 
 
-/* ================= ATTENDANCE ================= */
+/* ================= ATTENDANCE REPORT ================= */
 
 async function loadAttendance(date){
 
 attendanceBody.innerHTML="";
 
-const users=await getDocs(
+const users = await getDocs(
 query(
 collection(db,"users"),
 where("role","==","employee")
 )
 );
 
-const att=await getDocs(
-collection(db,"attendance")
-);
+for(const u of users.docs){
 
-const map={};
-
-att.forEach(d=>{
-
-const data=d.data();
-
-if(!data.date) return;
-
-if(
-data.date===date ||
-data.date.replaceAll("/","-")===date
-){
-map[data.employeeId]=data;
-}
-
-});
-
-
-users.forEach(u=>{
-
-const user=u.data();
+const user = u.data();
 
 let status="Absent";
 let time="-";
 
-if(map[u.id]){
+/* NEW STRUCTURE */
+
+const snap = await getDoc(
+doc(db,"attendance",u.id,date,"data")
+);
+
+if(snap.exists()){
 
 status="Present";
 
-const t=map[u.id].timestamp;
+const t = snap.data().time;
 
 if(t?.seconds){
 
-time=new Date(
+time = new Date(
 t.seconds*1000
 ).toLocaleTimeString("en-IN");
 
@@ -166,46 +142,42 @@ row.innerHTML=
 
 attendanceBody.appendChild(row);
 
-});
+}
 
 }
 
 
-/* ================= SUMMARY FIXED ================= */
+/* ================= SUMMARY FINAL ================= */
 
 async function loadSummary(){
 
 summaryBody.innerHTML="";
 
-const users=await getDocs(
+const users = await getDocs(
 query(
 collection(db,"users"),
 where("role","==","employee")
 )
 );
 
-const att=await getDocs(
-collection(db,"attendance")
-);
+const now = new Date();
 
-const now=new Date();
-
-const year=now.getFullYear();
-const month=now.getMonth()+1;
+const year = now.getFullYear();
+const month = now.getMonth()+1;
 
 
-/* ✅ working days till today */
+/* working days till today */
 
-let workingDays=0;
+let workingDays = 0;
 
 for(let d=1; d<=now.getDate(); d++){
 
-const date=
+const date =
 year+"-"+
 String(month).padStart(2,"0")+"-"+
 String(d).padStart(2,"0");
 
-const day=new Date(date);
+const day = new Date(date);
 
 if(day.getDay()===0) continue;
 
@@ -214,41 +186,37 @@ workingDays++;
 }
 
 
-/* present count */
+/* per user */
 
-const presentMap={};
+for(const u of users.docs){
 
-att.forEach(docSnap=>{
+const user = u.data();
 
-const data=docSnap.data();
+let present = 0;
 
-if(!data.date) return;
+for(let d=1; d<=now.getDate(); d++){
 
-const d=data.date.replaceAll("/","-");
+const date =
+year+"-"+
+String(month).padStart(2,"0")+"-"+
+String(d).padStart(2,"0");
 
-if(
-d.startsWith(
-year+"-"+String(month).padStart(2,"0")
-)
-){
+const day = new Date(date);
 
-presentMap[data.employeeId]=
-(presentMap[data.employeeId]||0)+1;
+if(day.getDay()===0) continue;
+
+const snap = await getDoc(
+doc(db,"attendance",u.id,date,"data")
+);
+
+if(snap.exists()) present++;
 
 }
 
-});
-
-
-users.forEach(u=>{
-
-const user=u.data();
-
-const present=
-presentMap[u.id]||0;
-
-const absent=
-Math.max(0,workingDays-present);
+const absent = Math.max(
+0,
+workingDays - present
+);
 
 const row=document.createElement("tr");
 
@@ -261,7 +229,7 @@ row.innerHTML=
 
 summaryBody.appendChild(row);
 
-});
+}
 
 }
 
@@ -272,7 +240,7 @@ async function loadBlocked(){
 
 blockedBody.innerHTML="";
 
-const snap=await getDocs(
+const snap = await getDocs(
 query(
 collection(db,"users"),
 where("accountStatus","==","blocked")
