@@ -17,8 +17,12 @@ onAuthStateChanged,
 signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+
 let uid = "";
 let editID = "";
+
+
+/* ================= AUTH ================= */
 
 onAuthStateChanged(auth, async (user)=>{
 
@@ -48,6 +52,8 @@ loadRecords(uid);
 });
 
 
+/* ================= BLOCKED ================= */
+
 function showBlockedScreen(){
 
 document.body.innerHTML = `
@@ -68,6 +74,8 @@ location.href="index.html";
 }
 
 
+/* ================= LOGOUT ================= */
+
 const logoutBtn = document.getElementById("logoutBtn");
 
 if(logoutBtn){
@@ -78,19 +86,28 @@ location.href="index.html";
 }
 
 
+/* ================= SECTION SWITCH ================= */
+
 window.openSection = (id)=>{
 
-document.getElementById("attendanceSection").style.display="none";
-document.getElementById("erpSection").style.display="none";
+const a = document.getElementById("attendanceSection");
+const b = document.getElementById("erpSection");
 
-document.getElementById(id).style.display="block";
+if(a) a.style.display="none";
+if(b) b.style.display="none";
+
+const target = document.getElementById(id);
+if(target) target.style.display="block";
 
 };
 
 
+/* ================= ADD PAYMENT ================= */
+
 const form = document.getElementById("paymentForm");
 
 if(form){
+
 form.onsubmit = async (e)=>{
 
 e.preventDefault();
@@ -102,7 +119,8 @@ const executiveName =
 document.getElementById("executiveName").value;
 
 const totalAmount =
-Number(document.getElementById("totalAmount").value);
+Number(document.getElementById("totalAmount").value) || 0;
+
 
 await addDoc(
 collection(db,"customerPayments"),
@@ -121,10 +139,20 @@ createdAt: serverTimestamp()
 loadRecords(uid);
 
 };
+
 }
 
 
+/* ================= LOAD RECORDS ================= */
+
 async function loadRecords(u){
+
+const table =
+document.getElementById("recordsTable");
+
+if(!table) return;
+
+table.innerHTML = "";
 
 const q = query(
 collection(db,"customerPayments"),
@@ -132,11 +160,6 @@ where("createdBy","==",u)
 );
 
 const snap = await getDocs(q);
-
-const table =
-document.getElementById("recordsTable");
-
-table.innerHTML = "";
 
 const docs = [];
 
@@ -159,21 +182,28 @@ const id = obj.id;
 
 let paid = 0;
 
-(data.payments || []).forEach(p=>paid += p.amount);
+(data.payments || []).forEach(p=>{
+paid += Number(p.amount) || 0;
+});
 
 const date =
 data.createdAt?.seconds
 ? new Date(data.createdAt.seconds*1000).toLocaleDateString()
 : "-";
 
-const locked = data.isLocked !== false;
+const locked =
+data.isLocked !== false;
+
 
 const editBtn =
 locked
 ? "Locked"
-: `<button onclick="openEdit('${id}','${data.customerName}','${data.executiveName}',${data.totalAmount})">Edit</button>`;
+: `<button data-id="${id}" class="editBtn">Edit</button>`;
 
-table.innerHTML += `
+
+table.insertAdjacentHTML(
+"beforeend",
+`
 <tr>
 <td>${i++}</td>
 <td>${data.customerName}</td>
@@ -185,12 +215,40 @@ table.innerHTML += `
 <td>${locked ? "Locked":"Editable"}</td>
 <td>${editBtn}</td>
 </tr>
-`;
+`
+);
+
+});
+
+
+/* attach edit buttons */
+
+document.querySelectorAll(".editBtn")
+.forEach(btn=>{
+
+btn.onclick = ()=>{
+
+const id = btn.dataset.id;
+
+const rec = docs.find(d=>d.id===id);
+
+if(!rec) return;
+
+openEdit(
+id,
+rec.data.customerName,
+rec.data.executiveName,
+rec.data.totalAmount
+);
+
+};
 
 });
 
 }
 
+
+/* ================= EDIT ================= */
 
 window.openEdit = (id,name,exec,total)=>{
 
@@ -212,12 +270,21 @@ document.getElementById("editPopup").style.display="none";
 
 window.saveEdit = async ()=>{
 
+if(!editID) return;
+
 const ref = doc(db,"customerPayments",editID);
 
 await updateDoc(ref,{
-customerName: document.getElementById("editName").value,
-executiveName: document.getElementById("editExec").value,
-totalAmount: Number(document.getElementById("editTotal").value)
+customerName:
+document.getElementById("editName").value,
+
+executiveName:
+document.getElementById("editExec").value,
+
+totalAmount:
+Number(
+document.getElementById("editTotal").value
+) || 0
 });
 
 closePopup();
