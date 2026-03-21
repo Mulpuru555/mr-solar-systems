@@ -4,15 +4,18 @@
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
 <title>Manager Portal</title>
 
-<link rel="stylesheet" href="manager.css">
+<link rel="stylesheet"
+href="manager.css">
 
 </head>
 
 <body>
+
 
 <div class="nav">
 
@@ -20,8 +23,12 @@
 Manager Dashboard
 </div>
 
-<button onclick="logoutUser()" class="logout">
+<button
+onclick="logoutUser()"
+class="logout">
+
 Logout
+
 </button>
 
 </div>
@@ -31,45 +38,41 @@ Logout
 <div class="container">
 
 
-<div class="card">
-
-<h2>Chirala Verification</h2>
-
-<p id="verifyStatus">
-Status : loading...
-</p>
-
-<button onclick="sendVerify()" class="btn">
-Send Verification
-</button>
-
-</div>
-
-
+<!-- ATTENDANCE -->
 
 <div class="card">
 
 <h2>Attendance Report</h2>
 
-<input type="date" id="attendanceDate">
+<input type="date"
+id="attendanceDate">
 
 <table>
 
 <thead>
+
 <tr>
+
 <th>Name</th>
 <th>Status</th>
+<th>Type</th>
 <th>Time</th>
+<th>Photo</th>
+
 </tr>
+
 </thead>
 
-<tbody id="attendanceTable"></tbody>
+<tbody id="attendanceTable">
+</tbody>
 
 </table>
 
 </div>
 
 
+
+<!-- SUMMARY -->
 
 <div class="card">
 
@@ -78,21 +81,28 @@ Send Verification
 <table>
 
 <thead>
+
 <tr>
+
 <th>Name</th>
 <th>Working</th>
 <th>Present</th>
 <th>Absent</th>
+
 </tr>
+
 </thead>
 
-<tbody id="summaryTable"></tbody>
+<tbody id="summaryTable">
+</tbody>
 
 </table>
 
 </div>
 
 
+
+<!-- BLOCKED -->
 
 <div class="card">
 
@@ -101,15 +111,20 @@ Send Verification
 <table>
 
 <thead>
+
 <tr>
+
 <th>Name</th>
 <th>Branch</th>
 <th>Reason</th>
 <th>Action</th>
+
 </tr>
+
 </thead>
 
-<tbody id="blockedTable"></tbody>
+<tbody id="blockedTable">
+</tbody>
 
 </table>
 
@@ -120,7 +135,22 @@ Send Verification
 </div>
 
 
-<script type="module" src="manager.js"></script>
+
+<!-- PHOTO POPUP -->
+
+<div id="photoPopup">
+
+<img id="popupImg">
+
+</div>
+
+
+
+<script
+type="module"
+src="manager.js">
+
+</script>
 
 </body>
 </html>
