@@ -12,13 +12,12 @@ getDocs,
 query,
 where,
 doc,
-updateDoc,
-getDoc,
-setDoc,
-onSnapshot
+updateDoc
 }
 from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+
+/* ELEMENTS */
 
 const attendanceBody =
 document.getElementById("attendanceTable");
@@ -32,27 +31,31 @@ document.getElementById("summaryTable");
 const dateInput =
 document.getElementById("attendanceDate");
 
-const verifyText =
-document.getElementById("verifyStatus");
 
-
-/* LOGIN */
+/* LOGIN CHECK */
 
 onAuthStateChanged(auth,user=>{
-if(!user) window.location.href="index.html";
+if(!user){
+window.location.href="index.html";
+}
 });
 
-window.logoutUser=async()=>{
+
+/* LOGOUT */
+
+window.logoutUser = async ()=>{
+
 await signOut(auth);
 window.location.href="index.html";
+
 };
 
 
 /* DATE */
 
-function getDate(){
+function getToday(){
 
-const d=new Date();
+const d = new Date();
 
 return d.getFullYear()+"-"+
 String(d.getMonth()+1).padStart(2,"0")+"-"+
@@ -60,34 +63,9 @@ String(d.getDate()).padStart(2,"0");
 
 }
 
-const today=getDate();
-dateInput.value=today;
+const today = getToday();
 
-
-/* VERIFY */
-
-onSnapshot(
-doc(db,"verificationRequests","chirala"),
-snap=>{
-if(!snap.exists()) return;
-verifyText.innerText =
-"Status : "+snap.data().status;
-}
-);
-
-window.sendVerify=async()=>{
-
-await setDoc(
-doc(db,"verificationRequests","chirala"),
-{
-request:true,
-status:"pending"
-});
-
-alert("Verification sent");
-
-};
-
+dateInput.value = today;
 
 
 /* ================= ATTENDANCE ================= */
@@ -96,64 +74,75 @@ async function loadAttendance(date){
 
 attendanceBody.innerHTML="";
 
-const users=await getDocs(
+const usersSnap = await getDocs(
 query(
 collection(db,"users"),
 where("role","==","employee")
 )
 );
 
-const att=await getDocs(
+const attSnap = await getDocs(
 collection(db,"attendance")
 );
 
-const map={};
+const map = {};
 
-att.forEach(docSnap=>{
+attSnap.forEach(docSnap=>{
 
-const data=docSnap.data();
+const data = docSnap.data();
 
 if(!data.date) return;
 
-if(data.date===date){
+if(data.date === date){
 
-map[data.employeeId]=data;
+map[data.employeeId] = data;
 
 }
 
 });
 
 
-users.forEach(u=>{
+usersSnap.forEach(u=>{
 
-const user=u.data();
+const user = u.data();
 
-let status="Absent";
-let time="-";
+let status = "Absent";
+let time = "-";
+let photo = "";
 
 if(map[u.id]){
 
-status="Present";
+status = "Present";
 
-const t=map[u.id].timestamp;
+const t = map[u.id].timestamp;
 
 if(t?.seconds){
 
-time=new Date(
+time = new Date(
 t.seconds*1000
 ).toLocaleTimeString("en-IN");
 
 }
 
+photo = map[u.id].photoURL || "";
+
 }
 
-const row=document.createElement("tr");
+const row = document.createElement("tr");
 
-row.innerHTML=
+row.innerHTML =
 
 `<td>${user.name}</td>
 <td>${status}</td>
-<td>${time}</td>`;
+<td>${time}</td>
+<td>
+${photo ?
+`<img src="${photo}"
+width="60"
+style="border-radius:6px">`
+:
+"-"}
+</td>`;
 
 attendanceBody.appendChild(row);
 
@@ -162,45 +151,32 @@ attendanceBody.appendChild(row);
 }
 
 
-
 /* ================= SUMMARY ================= */
 
 async function loadSummary(){
 
 summaryBody.innerHTML="";
 
-const users=await getDocs(
+const usersSnap = await getDocs(
 query(
 collection(db,"users"),
 where("role","==","employee")
 )
 );
 
-const att=await getDocs(
+const attSnap = await getDocs(
 collection(db,"attendance")
 );
 
-const now=new Date();
+const now = new Date();
 
-const year=now.getFullYear();
-const month=now.getMonth()+1;
+const year = now.getFullYear();
+const month = now.getMonth()+1;
 
 
-/* working days till today */
+/* working days */
 
 let workingDays = 0;
-
-// get holidays once
-const holidaySnap = await getDocs(
-collection(db,"settings","holidays","holidayList")
-);
-
-const holidaySet = new Set();
-
-holidaySnap.forEach(docSnap=>{
-holidaySet.add(docSnap.id);
-});
-
 
 for(let d=1; d<=now.getDate(); d++){
 
@@ -211,11 +187,7 @@ String(d).padStart(2,"0");
 
 const day = new Date(date);
 
-// skip sunday
-if(day.getDay()===0) continue;
-
-// skip holiday
-if(holidaySet.has(date)) continue;
+if(day.getDay() === 0) continue;
 
 workingDays++;
 
@@ -224,11 +196,11 @@ workingDays++;
 
 /* present count */
 
-const presentMap={};
+const presentMap = {};
 
-att.forEach(docSnap=>{
+attSnap.forEach(docSnap=>{
 
-const data=docSnap.data();
+const data = docSnap.data();
 
 if(!data.date) return;
 
@@ -246,19 +218,19 @@ presentMap[data.employeeId] =
 });
 
 
-users.forEach(u=>{
+usersSnap.forEach(u=>{
 
-const user=u.data();
+const user = u.data();
 
-const present=
+const present =
 presentMap[u.id] || 0;
 
 const absent =
 workingDays - present;
 
-const row=document.createElement("tr");
+const row = document.createElement("tr");
 
-row.innerHTML=
+row.innerHTML =
 
 `<td>${user.name}</td>
 <td>${workingDays}</td>
@@ -272,14 +244,13 @@ summaryBody.appendChild(row);
 }
 
 
-
-/* BLOCKED */
+/* ================= BLOCKED ================= */
 
 async function loadBlocked(){
 
 blockedBody.innerHTML="";
 
-const snap=await getDocs(
+const snap = await getDocs(
 query(
 collection(db,"users"),
 where("accountStatus","==","blocked")
@@ -288,11 +259,11 @@ where("accountStatus","==","blocked")
 
 snap.forEach(d=>{
 
-const user=d.data();
+const user = d.data();
 
-const row=document.createElement("tr");
+const row = document.createElement("tr");
 
-row.innerHTML=
+row.innerHTML =
 
 `<td>${user.name}</td>
 <td>${user.branch}</td>
@@ -312,7 +283,7 @@ document
 .querySelectorAll("button[data-id]")
 .forEach(btn=>{
 
-btn.onclick=async()=>{
+btn.onclick = async ()=>{
 
 await updateDoc(
 doc(db,"users",btn.dataset.id),
