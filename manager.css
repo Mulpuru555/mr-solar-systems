@@ -1,80 +1,188 @@
 body{
 margin:0;
 font-family:system-ui;
-background:#0b0f1a;
+background:linear-gradient(
+135deg,
+#020617,
+#0f172a,
+#020617
+);
 color:white;
+min-height:100vh;
 }
 
-.nav{
 
+/* NAV */
+
+.nav{
 display:flex;
 justify-content:space-between;
+align-items:center;
 padding:15px;
-background:#020617;
-
+background:rgba(0,0,0,0.4);
+backdrop-filter:blur(10px);
+box-shadow:0 5px 20px black;
 }
 
 .logo{
 font-size:18px;
 font-weight:bold;
+letter-spacing:1px;
 }
 
 .logout{
-
 background:#ef4444;
 border:none;
 padding:8px 12px;
 color:white;
+border-radius:8px;
+cursor:pointer;
+transition:.2s;
 }
 
+.logout:hover{
+transform:scale(1.05);
+}
+
+
+
+/* GRID */
 
 .container{
-
 padding:20px;
 display:grid;
-grid-template-columns:repeat(auto-fit,minmax(300px,1fr));
+grid-template-columns:
+repeat(auto-fit,minmax(320px,1fr));
 gap:20px;
-
 }
 
+
+
+/* CARD */
 
 .card{
-
-background:#111827;
+background:rgba(30,41,59,0.6);
+backdrop-filter:blur(15px);
 padding:20px;
-border-radius:12px;
-box-shadow:0 0 20px #000;
+border-radius:15px;
+box-shadow:0 10px 30px black;
+transition:.3s;
+}
 
+.card:hover{
+transform:translateY(-3px);
 }
 
 
-.btn{
 
+/* BUTTON */
+
+.btn{
 background:#22c55e;
 border:none;
 padding:10px;
 margin-top:10px;
 color:white;
+border-radius:8px;
+cursor:pointer;
+transition:.2s;
+}
+
+.btn:hover{
+transform:scale(1.05);
 }
 
 
-table{
 
+/* TABLE */
+
+table{
 width:100%;
 margin-top:10px;
-
+border-collapse:collapse;
 }
 
 th{
-
 background:#020617;
 color:#38bdf8;
 }
 
 td,th{
 padding:8px;
+border-bottom:1px solid #1f2937;
 }
 
-.present{color:#22c55e;}
-.absent{color:#ef4444;}
-.holiday{color:yellow;}
+
+
+/* STATUS */
+
+.present{
+color:#22c55e;
+font-weight:bold;
+}
+
+.absent{
+color:#ef4444;
+font-weight:bold;
+}
+
+.holiday{
+color:yellow;
+font-weight:bold;
+}
+
+
+
+/* IMAGE */
+
+img{
+cursor:pointer;
+transition:.2s;
+}
+
+img:hover{
+transform:scale(1.1);
+}
+
+
+
+/* PHOTO POPUP */
+
+#photoPopup{
+position:fixed;
+top:0;
+left:0;
+width:100%;
+height:100%;
+background:rgba(0,0,0,0.9);
+display:none;
+justify-content:center;
+align-items:center;
+z-index:200;
+}
+
+#photoPopup img{
+max-width:90%;
+max-height:90%;
+border-radius:10px;
+box-shadow:0 0 40px black;
+}
+
+
+
+/* LOADING */
+
+.loader{
+border:5px solid #334155;
+border-top:5px solid #22c55e;
+border-radius:50%;
+width:40px;
+height:40px;
+animation:spin 1s linear infinite;
+margin:auto;
+}
+
+@keyframes spin{
+0%{transform:rotate(0deg);}
+100%{transform:rotate(360deg);}
+}
