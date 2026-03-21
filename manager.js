@@ -29,6 +29,12 @@ document.getElementById("summaryTable");
 const dateInput =
 document.getElementById("attendanceDate");
 
+const popup =
+document.getElementById("photoPopup");
+
+const popupImg =
+document.getElementById("popupImg");
+
 
 /* LOGIN */
 
@@ -62,7 +68,7 @@ dateInput.value = today;
 
 
 
-/* ================= AUTO DELETE PHOTOS ================= */
+/* ================= AUTO DELETE ================= */
 
 async function cleanOldPhotos(){
 
@@ -171,6 +177,16 @@ r.timestamp.seconds*1000
 
 }
 
+const imgHTML =
+r.photoURL
+?
+`<img src="${r.photoURL}"
+width="60"
+style="border-radius:6px"
+class="photo">`
+:
+"-";
+
 const tr = document.createElement("tr");
 
 tr.innerHTML =
@@ -179,14 +195,7 @@ tr.innerHTML =
 <td>Present</td>
 <td>${r.type || "-"}</td>
 <td>${time}</td>
-<td>
-${r.photoURL ?
-`<img src="${r.photoURL}"
-width="60"
-style="border-radius:6px">`
-:
-"-"}
-</td>`;
+<td>${imgHTML}</td>`;
 
 attendanceBody.appendChild(tr);
 
@@ -194,7 +203,33 @@ attendanceBody.appendChild(tr);
 
 });
 
+
+/* popup click */
+
+document
+.querySelectorAll(".photo")
+.forEach(img=>{
+
+img.onclick = ()=>{
+
+popup.style.display="flex";
+
+popupImg.src = img.src;
+
+};
+
+});
+
 }
+
+
+/* close popup */
+
+popup.onclick = ()=>{
+
+popup.style.display="none";
+
+};
 
 
 
@@ -227,7 +262,7 @@ for(let d=1; d<=now.getDate(); d++){
 
 const date =
 year+"-"+
-String(month).padStart(2,"0")+"-"+
+String(month).padStart(2,"0")+"-"+ 
 String(d).padStart(2,"0");
 
 const day = new Date(date);
