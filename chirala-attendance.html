@@ -4,7 +4,6 @@
 <head>
 
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>Chirala Attendance</title>
@@ -21,14 +20,11 @@
 <div class="navbar">
 
 <div>
-
 <h2>M.R SOLAR SYSTEMS</h2>
-
 <span>Chirala Branch</span>
-
 </div>
 
-<button id="logoutBtn" onclick="logoutUser()">
+<button onclick="logoutUser()" class="logoutBtn">
 Logout
 </button>
 
@@ -36,47 +32,26 @@ Logout
 
 
 
-<!-- CARD -->
+<!-- MAIN CARD -->
 
 <div class="card">
 
-<p id="empName">Loading...</p>
+<h3 id="empName">Loading...</h3>
 
 <p id="gpsStatus">Checking GPS...</p>
 
 
-<div class="inputBox">
+<div class="btnGroup">
 
-<label>Selfie</label>
-
-<input type="file"
-id="selfie"
-accept="image/*"
-capture="user">
-
-</div>
-
-
-<div class="inputBox">
-
-<label>Office Photo</label>
-
-<input type="file"
-id="office"
-accept="image/*"
-capture="environment">
-
-</div>
-
-
-<button
-class="btn"
-onclick="markAttendance()">
-
-Mark Attendance
-
+<button id="morningBtn" class="btn">
+Morning Attendance
 </button>
 
+<button id="eveningBtn" class="btn">
+Evening Attendance
+</button>
+
+</div>
 
 <p id="msg"></p>
 
@@ -84,35 +59,65 @@ Mark Attendance
 
 
 
-<!-- POPUP -->
+<!-- CAMERA BOX -->
 
-<div id="verifyPopup" class="popup">
+<div id="cameraBox" class="cameraBox">
 
-<h3>Verification Required</h3>
+<video id="video" autoplay></video>
 
-<input
-type="file"
-id="verifyPhoto"
-accept="image/*">
+<canvas id="canvas"></canvas>
 
-<button
-class="btn"
-onclick="submitVerify()">
+<div class="camBtns">
 
-Submit
-
+<button id="captureBtn" class="btn">
+Capture
 </button>
+
+<button id="cancelBtn" class="btn cancel">
+Cancel
+</button>
+
+</div>
 
 </div>
 
 
 
-<script
-type="module"
-src="./chirala.js">
+<!-- VERIFY SCREEN -->
 
-</script>
+<div id="verifyScreen" class="verifyScreen">
+
+<div class="verifyCard">
+
+<div class="loader"></div>
+
+<p id="verifyText">
+Checking...
+</p>
+
+</div>
+
+</div>
+
+
+
+<!-- SUCCESS SCREEN -->
+
+<div id="successScreen" class="successScreen">
+
+<div class="successCard">
+
+<h2>✅ Verified</h2>
+
+<p>Attendance Recorded</p>
+
+</div>
+
+</div>
+
+
+
+<script type="module" src="./chirala.js"></script>
 
 </body>
-
 </html>
