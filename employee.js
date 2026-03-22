@@ -441,3 +441,41 @@ loadReport();
 }
 
 };
+/* ================= GPS STATUS UI ================= */
+
+const distBox =
+document.getElementById("distanceDisplay");
+
+const gpsStatus =
+document.getElementById("gpsStatus");
+
+
+if(distBox){
+
+const observer =
+new MutationObserver(()=>{
+
+const txt = distBox.innerText.toLowerCase();
+
+if(txt.includes("inside")){
+
+gpsStatus.innerText = "GPS: Inside Office";
+gpsStatus.className="gpsInside";
+
+}
+
+else if(txt.includes("outside")){
+
+gpsStatus.innerText = "GPS: Outside Office";
+gpsStatus.className="gpsOutside";
+
+}
+
+});
+
+observer.observe(
+distBox,
+{childList:true}
+);
+
+}
