@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+html- <!DOCTYPE html>
 <html>
 <head>
 
@@ -13,6 +13,7 @@
 
 <body>
 
+
 <div class="header">
 
 <h2>M.R Solar Systems Employee Portal</h2>
@@ -22,7 +23,9 @@
 </div>
 
 
+
 <div class="dashboard">
+
 
 <div class="cards">
 
@@ -32,14 +35,6 @@ Attendance
 
 <div class="card" onclick="openSection('erpSection')">
 Customer ERP
-</div>
-
-<div class="card" onclick="openSection('profileSection')">
-Profile
-</div>
-
-<div class="card" onclick="openSection('reportSection')">
-Report
 </div>
 
 </div>
@@ -98,6 +93,7 @@ Mark Attendance
 <thead>
 
 <tr>
+
 <th>S.No</th>
 <th>Customer</th>
 <th>Executive</th>
@@ -107,6 +103,7 @@ Mark Attendance
 <th>Date</th>
 <th>Lock</th>
 <th>Edit</th>
+
 </tr>
 
 </thead>
@@ -120,64 +117,32 @@ Mark Attendance
 </div>
 
 
-
-<!-- Profile -->
-
-<div id="profileSection" class="section" style="display:none">
-
-<div class="glass">
-
-<input id="profileName" placeholder="Name">
-<input id="profilePhone" placeholder="Phone">
-<input id="profileBranch" placeholder="Branch">
-<input id="profileAddress" placeholder="Address">
-
-<button id="saveProfileBtn">Save</button>
-
-<div id="profileMsg"></div>
-
-</div>
-
 </div>
 
 
 
-<!-- Report -->
-
-<div id="reportSection" class="section" style="display:none">
-
-<div class="glass">
-
-<div id="reportBox">
-Total Days : 0
-<br>
-Present : 0
-<br>
-Absent : 0
-</div>
-
-</div>
-
-</div>
-
-
-
-<!-- popup -->
+<!-- Edit Popup -->
 
 <div id="editPopup" class="popup">
 
 <div class="popupBox">
 
+<h3>Edit Customer</h3>
+
 <input id="editName">
+
 <input id="editExec">
+
 <input id="editTotal">
 
 <button onclick="saveEdit()">Save</button>
+
 <button onclick="closePopup()">Cancel</button>
 
 </div>
 
 </div>
+
 
 
 <script type="module" src="employee.js"></script>
