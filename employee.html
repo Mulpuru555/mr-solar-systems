@@ -12,38 +12,17 @@
 </head>
 
 <body>
-<div id="loadingScreen">
-Loading Portal...
-</div>
 
 <div class="header">
 
 <h2>M.R Solar Systems Employee Portal</h2>
 
-<div class="headerRight">
-
-<button id="themeBtn">Theme</button>
-
 <button id="logoutBtn">Logout</button>
 
 </div>
 
-</div>
-
-
 
 <div class="dashboard">
-<div class="topInfo">
-
-<div id="welcomeText">
-Welcome
-</div>
-
-<div id="liveClock">
-00:00
-</div>
-
-</div>
 
 <div class="cards">
 
@@ -59,10 +38,6 @@ Customer ERP
 Profile
 </div>
 
-<div class="card" onclick="openSection('notifySection')">
-Notifications
-</div>
-  
 <div class="card" onclick="openSection('reportSection')">
 Report
 </div>
@@ -77,13 +52,7 @@ Report
 
 <div class="glass">
 
-<div class="gpsBox">
-
-<div id="gpsStatus">GPS: Checking...</div>
-
 <div id="distanceDisplay">Checking location...</div>
-
-</div>
 
 <div id="countdownBox">Loading...</div>
 
@@ -129,7 +98,6 @@ Mark Attendance
 <thead>
 
 <tr>
-
 <th>S.No</th>
 <th>Customer</th>
 <th>Executive</th>
@@ -139,7 +107,6 @@ Mark Attendance
 <th>Date</th>
 <th>Lock</th>
 <th>Edit</th>
-
 </tr>
 
 </thead>
@@ -154,20 +121,18 @@ Mark Attendance
 
 
 
-<!-- PROFILE (NEW SAFE) -->
+<!-- Profile -->
 
 <div id="profileSection" class="section" style="display:none">
 
 <div class="glass">
-
-<h3>Employee Profile</h3>
 
 <input id="profileName" placeholder="Name">
 <input id="profilePhone" placeholder="Phone">
 <input id="profileBranch" placeholder="Branch">
 <input id="profileAddress" placeholder="Address">
 
-<button id="saveProfileBtn">Save Profile</button>
+<button id="saveProfileBtn">Save</button>
 
 <div id="profileMsg"></div>
 
@@ -177,22 +142,18 @@ Mark Attendance
 
 
 
-<!-- REPORT (NEW SAFE) -->
+<!-- Report -->
 
 <div id="reportSection" class="section" style="display:none">
 
 <div class="glass">
 
-<h3>Monthly Report</h3>
-
 <div id="reportBox">
-
-Total Days: -
+Total Days : 0
 <br>
-Present: -
+Present : 0
 <br>
-Absent: -
-
+Absent : 0
 </div>
 
 </div>
@@ -201,47 +162,23 @@ Absent: -
 
 
 
-</div>
-
-
-
-<!-- Edit Popup -->
+<!-- popup -->
 
 <div id="editPopup" class="popup">
 
 <div class="popupBox">
 
-<h3>Edit Customer</h3>
-
 <input id="editName">
-
 <input id="editExec">
-
 <input id="editTotal">
 
 <button onclick="saveEdit()">Save</button>
-
 <button onclick="closePopup()">Cancel</button>
 
 </div>
 
 </div>
 
-<!-- NOTIFICATION -->
-
-<div id="notifySection" class="section" style="display:none">
-
-<div class="glass">
-
-<h3>Notifications</h3>
-
-<div id="notifyBox">
-No messages
-</div>
-
-</div>
-
-</div>
 
 <script type="module" src="employee.js"></script>
 <script type="module" src="attendance.js"></script>
