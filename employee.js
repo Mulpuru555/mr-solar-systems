@@ -293,11 +293,13 @@ loadRecords(uid);
 
 };
 /* ================= PROFILE SAVE ================= */
+/* ================= PROFILE SAVE ================= */
 
 import {
 setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+let profileLoaded = false;
 
 const saveProfileBtn =
 document.getElementById("saveProfileBtn");
@@ -320,20 +322,21 @@ document.getElementById("profileBranch").value;
 const address =
 document.getElementById("profileAddress").value;
 
-
 await setDoc(
 doc(db,"employeeProfiles",uid),
 {
 name,
 phone,
 branch,
-address
+address,
+saved:true
 },
 {merge:true}
 );
 
-document.getElementById("profileMsg")
-.innerText="Saved";
+document.getElementById("profileMsg").innerText="Saved";
+
+profileLoaded = true;
 
 };
 
@@ -341,6 +344,39 @@ document.getElementById("profileMsg")
 
 
 
+/* ================= LOAD PROFILE ================= */
+
+async function loadProfile(){
+
+if(!uid) return;
+
+if(profileLoaded) return;
+
+const ref =
+doc(db,"employeeProfiles",uid);
+
+const snap =
+await getDoc(ref);
+
+if(!snap.exists()) return;
+
+const d = snap.data();
+
+document.getElementById("profileName").value =
+d.name || "";
+
+document.getElementById("profilePhone").value =
+d.phone || "";
+
+document.getElementById("profileBranch").value =
+d.branch || "";
+
+document.getElementById("profileAddress").value =
+d.address || "";
+
+profileLoaded = true;
+
+}
 /* ================= LOAD PROFILE ================= */
 
 async function loadProfile(){
@@ -401,7 +437,11 @@ total++;
 
 const d = doc.data();
 
-if(d.present === true || d.status==="Present"){
+if(
+d.status==="Present" ||
+d.present===true ||
+d.marked===true
+){
 present++;
 }
 
@@ -419,7 +459,6 @@ Absent : ${absent}
 `;
 
 }
-
 /* ================= SECTION HOOK ================= */
 
 let currentSection = "";
@@ -468,47 +507,45 @@ el.style.display="none";
 
 /* ================= GPS STATUS FIX ================= */
 
-function updateGpsStatus(text){
-
-const gpsStatus =
-document.getElementById("gpsStatus");
-
-if(!gpsStatus) return;
-
-const t = text.toLowerCase();
-
-if(t.includes("inside")){
-
-gpsStatus.innerText = "GPS: Inside Office";
-gpsStatus.className="gpsInside";
-
-}
-else if(t.includes("outside")){
-
-gpsStatus.innerText = "GPS: Outside Office";
-gpsStatus.className="gpsOutside";
-
-}
-else{
-
-gpsStatus.innerText = "GPS: Checking...";
-gpsStatus.className="";
-
-}
-
-}
-
+/* ================= GPS STATUS FIX ================= */
 
 const distBox =
 document.getElementById("distanceDisplay");
+
+const gpsStatus =
+document.getElementById("gpsStatus");
 
 if(distBox){
 
 setInterval(()=>{
 
-updateGpsStatus(distBox.innerText);
+const txt =
+distBox.innerText.toLowerCase();
 
-},500);
+if(txt.includes("inside")){
+
+gpsStatus.innerText =
+"GPS: Inside Office";
+
+gpsStatus.className="gpsInside";
+
+}
+else if(txt.includes("outside")){
+
+gpsStatus.innerText =
+"GPS: Outside Office";
+
+gpsStatus.className="gpsOutside";
+
+}
+else{
+
+gpsStatus.innerText =
+"GPS: Checking...";
+
+}
+
+},300);
 
 }
 /* ================= THEME SWITCH ================= */
