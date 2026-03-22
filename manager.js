@@ -234,6 +234,7 @@ popup.style.display="none";
 
 
 /* ================= SUMMARY ================= */
+/* ================= SUMMARY ================= */
 
 async function loadSummary(){
 
@@ -250,29 +251,60 @@ const attSnap = await getDocs(
 collection(db,"attendance")
 );
 
+
+/* ---------- load holidays ---------- */
+
+const holidaySnap = await getDocs(
+collection(
+db,
+"settings",
+"holidays",
+"holidayList"
+)
+);
+
+const holidays = {};
+
+holidaySnap.forEach(d=>{
+holidays[d.id] = true;
+});
+
+
+/* ---------- date ---------- */
+
 const now = new Date();
 
 const year = now.getFullYear();
 const month = now.getMonth()+1;
 
-
 let workingDays = 0;
+
+
+/* ---------- working days ---------- */
 
 for(let d=1; d<=now.getDate(); d++){
 
 const date =
 year+"-"+
-String(month).padStart(2,"0")+"-"+ 
+String(month).padStart(2,"0")+"-"+
 String(d).padStart(2,"0");
 
 const day = new Date(date);
 
+/* sunday */
+
 if(day.getDay()===0) continue;
+
+/* holiday */
+
+if(holidays[date]) continue;
 
 workingDays++;
 
 }
 
+
+/* ---------- present map ---------- */
 
 const presentMap = {};
 
@@ -282,29 +314,58 @@ const data = docSnap.data();
 
 if(!data.date) return;
 
+/* only this month */
+
 if(
-data.date.startsWith(
+!data.date.startsWith(
 year+"-"+String(month).padStart(2,"0")
 )
-){
+) return;
 
-presentMap[data.employeeId] =
-(presentMap[data.employeeId]||0)+1;
+/* only morning */
+
+if(data.type !== "morning") return;
+
+
+/* count once per day */
+
+const key =
+data.employeeId+"_"+data.date;
+
+if(!presentMap[key]){
+
+presentMap[key] = true;
 
 }
 
 });
 
 
+/* ---------- count per employee ---------- */
+
+const empCount = {};
+
+Object.keys(presentMap).forEach(k=>{
+
+const id = k.split("_")[0];
+
+empCount[id] =
+(empCount[id]||0)+1;
+
+});
+
+
+/* ---------- table ---------- */
+
 usersSnap.forEach(u=>{
 
 const user = u.data();
 
 const present =
-presentMap[u.id]||0;
+empCount[u.id] || 0;
 
 const absent =
-workingDays-present;
+workingDays - present;
 
 const tr = document.createElement("tr");
 
@@ -320,8 +381,6 @@ summaryBody.appendChild(tr);
 });
 
 }
-
-
 
 /* ================= BLOCKED ================= */
 
