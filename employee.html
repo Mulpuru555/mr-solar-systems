@@ -18,7 +18,13 @@
 
 <h2>M.R Solar Systems Employee Portal</h2>
 
+<div class="headerRight">
+
+<button id="themeBtn">Theme</button>
+
 <button id="logoutBtn">Logout</button>
+
+</div>
 
 </div>
 
@@ -35,6 +41,14 @@ Attendance
 
 <div class="card" onclick="openSection('erpSection')">
 Customer ERP
+</div>
+
+<div class="card" onclick="openSection('profileSection')">
+Profile
+</div>
+
+<div class="card" onclick="openSection('reportSection')">
+Report
 </div>
 
 </div>
@@ -115,6 +129,54 @@ Mark Attendance
 </div>
 
 </div>
+
+
+
+<!-- PROFILE (NEW SAFE) -->
+
+<div id="profileSection" class="section" style="display:none">
+
+<div class="glass">
+
+<h3>Employee Profile</h3>
+
+<input id="profileName" placeholder="Name">
+<input id="profilePhone" placeholder="Phone">
+<input id="profileBranch" placeholder="Branch">
+<input id="profileAddress" placeholder="Address">
+
+<button id="saveProfileBtn">Save Profile</button>
+
+<div id="profileMsg"></div>
+
+</div>
+
+</div>
+
+
+
+<!-- REPORT (NEW SAFE) -->
+
+<div id="reportSection" class="section" style="display:none">
+
+<div class="glass">
+
+<h3>Monthly Report</h3>
+
+<div id="reportBox">
+
+Total Days: -
+<br>
+Present: -
+<br>
+Absent: -
+
+</div>
+
+</div>
+
+</div>
+
 
 
 </div>
