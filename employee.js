@@ -570,3 +570,63 @@ loadNotifications();
 }
 
 };
+
+/* ================= LIVE CLOCK ================= */
+
+const clockBox =
+document.getElementById("liveClock");
+
+if(clockBox){
+
+setInterval(()=>{
+
+const d = new Date();
+
+clockBox.innerText =
+d.toLocaleTimeString();
+
+},1000);
+
+}
+
+
+
+/* ================= WELCOME NAME ================= */
+
+async function loadWelcome(){
+
+if(!uid) return;
+
+const snap =
+await getDoc(
+doc(db,"employeeProfiles",uid)
+);
+
+if(!snap.exists()) return;
+
+const d = snap.data();
+
+const box =
+document.getElementById("welcomeText");
+
+if(box){
+
+box.innerText =
+"Welcome " + (d.name || "");
+
+}
+
+}
+
+
+/* hook */
+
+const oldOpen3 = window.openSection;
+
+window.openSection = (id)=>{
+
+oldOpen3(id);
+
+loadWelcome();
+
+};
