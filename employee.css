@@ -610,3 +610,84 @@ animation:lineMove 3s infinite;
 100%{background-position:200px}
 
 }
+
+/* ===== top info bar ===== */
+
+.topInfo{
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+margin-bottom:15px;
+
+padding:10px 15px;
+
+border-radius:10px;
+
+background:rgba(0,0,0,0.3);
+
+border:1px solid rgba(255,255,255,0.2);
+
+box-shadow:0 0 10px orange;
+
+}
+
+
+#welcomeText{
+
+font-weight:600;
+color:#ffd000;
+text-shadow:0 0 5px orange;
+
+}
+
+
+#liveClock{
+
+font-weight:600;
+font-size:18px;
+
+color:lightgreen;
+
+text-shadow:0 0 5px green;
+
+}
+
+
+
+/* loading screen */
+
+#loadingScreen{
+
+position:fixed;
+top:0;
+left:0;
+right:0;
+bottom:0;
+
+background:black;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+font-size:22px;
+
+color:orange;
+
+z-index:9999;
+
+animation:fadeOut 1s forwards;
+animation-delay:1s;
+
+}
+
+@keyframes fadeOut{
+
+to{
+opacity:0;
+visibility:hidden;
+}
+
+}
