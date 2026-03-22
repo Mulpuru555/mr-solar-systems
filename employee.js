@@ -479,3 +479,94 @@ distBox,
 );
 
 }
+/* ================= THEME SWITCH ================= */
+
+const themeBtn =
+document.getElementById("themeBtn");
+
+let themeIndex = 0;
+
+const themes = [
+"solarMode",
+"darkMode",
+"lightMode"
+];
+
+if(themeBtn){
+
+themeBtn.onclick = ()=>{
+
+document.body.classList.remove(
+"solarMode",
+"darkMode",
+"lightMode"
+);
+
+themeIndex++;
+
+if(themeIndex>=themes.length)
+themeIndex=0;
+
+document.body.classList.add(
+themes[themeIndex]
+);
+
+};
+
+}
+
+
+
+/* ================= NOTIFICATIONS ================= */
+
+async function loadNotifications(){
+
+const box =
+document.getElementById("notifyBox");
+
+if(!box) return;
+
+const snap =
+await getDocs(
+collection(db,"notifications")
+);
+
+if(snap.empty){
+
+box.innerText="No messages";
+return;
+
+}
+
+let html="";
+
+snap.forEach(doc=>{
+
+const d = doc.data();
+
+html += `
+<div>
+${d.text || ""}
+</div>
+`;
+
+});
+
+box.innerHTML = html;
+
+}
+
+
+/* hook */
+
+const oldOpen2 = window.openSection;
+
+window.openSection = (id)=>{
+
+oldOpen2(id);
+
+if(id==="notifySection"){
+loadNotifications();
+}
+
+};
