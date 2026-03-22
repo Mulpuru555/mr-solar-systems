@@ -441,42 +441,50 @@ loadReport();
 }
 
 };
-/* ================= GPS STATUS UI ================= */
 
-const distBox =
-document.getElementById("distanceDisplay");
+/* ================= GPS STATUS FIX ================= */
+
+function updateGpsStatus(text){
 
 const gpsStatus =
 document.getElementById("gpsStatus");
 
+if(!gpsStatus) return;
 
-if(distBox){
+const t = text.toLowerCase();
 
-const observer =
-new MutationObserver(()=>{
-
-const txt = distBox.innerText.toLowerCase();
-
-if(txt.includes("inside")){
+if(t.includes("inside")){
 
 gpsStatus.innerText = "GPS: Inside Office";
 gpsStatus.className="gpsInside";
 
 }
-
-else if(txt.includes("outside")){
+else if(t.includes("outside")){
 
 gpsStatus.innerText = "GPS: Outside Office";
 gpsStatus.className="gpsOutside";
 
 }
+else{
 
-});
+gpsStatus.innerText = "GPS: Checking...";
+gpsStatus.className="";
 
-observer.observe(
-distBox,
-{childList:true}
-);
+}
+
+}
+
+
+const distBox =
+document.getElementById("distanceDisplay");
+
+if(distBox){
+
+setInterval(()=>{
+
+updateGpsStatus(distBox.innerText);
+
+},500);
 
 }
 /* ================= THEME SWITCH ================= */
