@@ -408,3 +408,205 @@ background:linear-gradient(135deg,#020024,#090979,#ff7b00);
 
 }
 
+/* ================= FUTURE ANIMATIONS ================= */
+
+
+/* section transition */
+
+.section{
+
+opacity:0;
+transform:translateY(10px);
+animation:sectionFade 0.4s forwards;
+
+}
+
+@keyframes sectionFade{
+
+to{
+
+opacity:1;
+transform:translateY(0);
+
+}
+
+}
+
+
+
+/* card glow pulse */
+
+.card{
+
+position:relative;
+
+}
+
+.card::after{
+
+content:"";
+
+position:absolute;
+
+inset:0;
+
+border-radius:12px;
+
+box-shadow:0 0 15px orange;
+
+opacity:0;
+
+transition:0.3s;
+
+}
+
+.card:hover::after{
+
+opacity:1;
+
+box-shadow:0 0 25px orange,
+0 0 40px #ff9900;
+
+}
+
+
+
+/* glass shine animation */
+
+.glass{
+
+position:relative;
+overflow:hidden;
+
+}
+
+.glass::before{
+
+content:"";
+
+position:absolute;
+
+top:-100%;
+left:-50%;
+
+width:200%;
+height:200%;
+
+background:linear-gradient(
+120deg,
+transparent,
+rgba(255,255,255,0.2),
+transparent
+);
+
+transform:rotate(25deg);
+
+animation:shine 6s infinite;
+
+}
+
+@keyframes shine{
+
+0%{top:-100%}
+
+100%{top:100%}
+
+}
+
+
+
+/* button glow */
+
+button{
+
+box-shadow:0 0 5px orange;
+
+}
+
+button:hover{
+
+box-shadow:
+0 0 10px orange,
+0 0 20px #ff9900,
+0 0 30px #ffaa00;
+
+}
+
+
+
+/* table glow */
+
+table{
+
+box-shadow:0 0 15px rgba(255,150,0,0.3);
+
+}
+
+
+
+/* popup animation */
+
+.popupBox{
+
+animation:popupAnim 0.3s;
+
+}
+
+@keyframes popupAnim{
+
+from{
+
+transform:scale(0.8);
+opacity:0;
+
+}
+
+to{
+
+transform:scale(1);
+opacity:1;
+
+}
+
+}
+
+
+
+/* header glow line */
+
+.header{
+
+position:relative;
+
+}
+
+.header::after{
+
+content:"";
+
+position:absolute;
+
+bottom:0;
+left:0;
+
+width:100%;
+height:2px;
+
+background:linear-gradient(
+90deg,
+transparent,
+orange,
+transparent
+);
+
+animation:lineMove 3s infinite;
+
+}
+
+@keyframes lineMove{
+
+0%{background-position:-200px}
+
+100%{background-position:200px}
+
+}
