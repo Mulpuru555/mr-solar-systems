@@ -11,7 +11,7 @@ overflow-x:hidden;
 /* ===== animated glow ===== */
 
 body::before{
-
+pointer-events:none;
 content:"";
 
 position:fixed;
@@ -412,26 +412,12 @@ background:linear-gradient(135deg,#020024,#090979,#ff7b00);
 
 
 /* section transition */
-
 .section{
 
-opacity:0;
-transform:translateY(10px);
-animation:sectionFade 0.4s forwards;
-
-}
-
-@keyframes sectionFade{
-
-to{
-
 opacity:1;
-transform:translateY(0);
+transform:none;
 
 }
-
-}
-
 
 
 /* card glow pulse */
@@ -481,7 +467,7 @@ overflow:hidden;
 }
 
 .glass::before{
-
+pointer-events:none;
 content:"";
 
 position:absolute;
