@@ -49,7 +49,7 @@ where("employeeId","==",uid)
 
 const snap = await getDocs(q);
 
-const snap =
+const snap2 =
 await getDocs(colRef);
 
 
