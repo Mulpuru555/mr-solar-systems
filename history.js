@@ -38,8 +38,7 @@ const today = new Date();
 
 for(let i=0;i<31;i++){
 
-const d =
-new Date();
+const d = new Date();
 
 d.setDate(today.getDate()-i);
 
@@ -59,14 +58,12 @@ dateStr,
 const snap =
 await getDoc(ref);
 
-if(!snap.exists())
-continue;
+if(!snap.exists()) continue;
 
 
 let time = "-";
 
-const t =
-snap.data().time;
+const t = snap.data().time;
 
 if(t?.seconds){
 
