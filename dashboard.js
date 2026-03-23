@@ -19,8 +19,6 @@ let uid = "";
 let userData = null;
 
 
-/* ================= AUTH ================= */
-
 onAuthStateChanged(auth, async (user)=>{
 
 if(!user){
@@ -34,81 +32,33 @@ const snap = await getDoc(
 doc(db,"users",uid)
 );
 
-if(!snap.exists()){
-location.href="index.html";
-return;
-}
+if(!snap.exists()) return;
 
 userData = snap.data();
 
-if(userData.accountStatus === "blocked"){
-showBlocked();
-return;
-}
+
+document.getElementById("welcomeName").innerText =
+"Welcome " + (userData.name || "");
 
 
-/* welcome */
-
-const w = document.getElementById("welcomeName");
-if(w){
-w.innerText = "Welcome " + (userData.name || "");
-}
-
-
-loadNotice();
 loadStats();
 
 });
 
 
-/* ================= LOGOUT ================= */
+/* logout */
 
-const logoutBtn = document.getElementById("logoutBtn");
+const logoutBtn =
+document.getElementById("logoutBtn");
 
 if(logoutBtn){
+
 logoutBtn.onclick = async ()=>{
+
 await signOut(auth);
 location.href="index.html";
+
 };
-}
-
-
-/* ================= BLOCKED ================= */
-
-function showBlocked(){
-
-document.body.innerHTML = `
-<div style="height:100vh;display:flex;justify-content:center;align-items:center;background:black;color:white">
-<div style="background:#111;padding:40px;border:2px solid red;border-radius:10px;text-align:center">
-<h2>ACCOUNT BLOCKED</h2>
-<button id="logoutBtn2">Logout</button>
-</div>
-</div>
-`;
-
-document.getElementById("logoutBtn2").onclick = async ()=>{
-await signOut(auth);
-location.href="index.html";
-};
-
-}
-
-
-/* ================= NOTICE ================= */
-
-async function loadNotice(){
-
-const snap = await getDoc(
-doc(db,"settings","notice")
-);
-
-if(!snap.exists()) return;
-
-const bar = document.getElementById("noticeBar");
-
-if(bar){
-bar.innerText = snap.data().text || "";
-}
 
 }
 
@@ -117,10 +67,11 @@ bar.innerText = snap.data().text || "";
 
 async function loadStats(){
 
-/* ERP */
-
 let total = 0;
 let pending = 0;
+
+
+/* ERP */
 
 const q = query(
 collection(db,"customerPayments"),
@@ -153,18 +104,21 @@ new Date().toISOString().split("T")[0];
 
 let todayStatus = "NO";
 
-const aQ = query(
-collection(db,"attendance"),
-where("employeeId","==",uid),
-where("date","==",today)
+const ref = doc(
+db,
+"attendance",
+uid,
+today,
+"data"
 );
 
-const aSnap = await getDocs(aQ);
+const aSnap = await getDoc(ref);
 
-if(!aSnap.empty){
+if(aSnap.exists()){
 todayStatus = "YES";
 }
 
-document.getElementById("todayBox").innerText = todayStatus;
+document.getElementById("todayBox").innerText =
+todayStatus;
 
 }
