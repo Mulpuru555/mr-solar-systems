@@ -201,7 +201,6 @@ async function startCountdown() {
 /* ===========================
    LOCATION TRACKING
 =========================== */
-
 function startLocationTracking() {
 
   if (!navigator.geolocation) {
@@ -225,22 +224,21 @@ function startLocationTracking() {
           officeLon
         );
 
+      distanceDisplay.innerText =
+        "Dist: " + Math.round(distance) +
+        " | Rad: " + allowedRadius +
+        " | lat:" + lat +
+        " | lon:" + lon;
+
       if (distance <= allowedRadius) {
 
-        distanceDisplay.innerText =
-          "Inside Office Zone";
-
         btn.disabled = false;
-        statusBox.innerText = "";
+        statusBox.innerText = "Inside";
 
       } else {
 
-        distanceDisplay.innerText =
-          "Outside Office Zone";
-
         btn.disabled = true;
-        statusBox.innerText =
-          "You are outside office";
+        statusBox.innerText = "Outside";
 
       }
 
@@ -260,8 +258,6 @@ function startLocationTracking() {
   );
 
 }
-
-
 /* ===========================
    MARK ATTENDANCE
 =========================== */
