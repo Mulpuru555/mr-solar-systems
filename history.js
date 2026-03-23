@@ -2,9 +2,7 @@ import { auth, db } from "./firebase-config.js";
 
 import {
 doc,
-getDoc,
-getDocs,
-collection
+getDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -36,40 +34,34 @@ if(!table) return;
 table.innerHTML = "";
 
 
-/* get user doc */
+const today = new Date();
 
-const userRef =
-doc(db,"attendance",uid);
+for(let i=0;i<31;i++){
 
+const d =
+new Date();
 
-/* get dates collection */
+d.setDate(today.getDate()-i);
 
-const datesSnap =
-await getDocs(
-collection(userRef)
-);
-
-
-for(const d of datesSnap.docs){
-
-const date = d.id;
+const dateStr =
+d.toISOString().split("T")[0];
 
 
-/* get data doc */
-
-const dataRef =
+const ref =
 doc(
 db,
 "attendance",
 uid,
-date,
+dateStr,
 "data"
 );
 
 const snap =
-await getDoc(dataRef);
+await getDoc(ref);
 
-if(!snap.exists()) continue;
+if(!snap.exists())
+continue;
+
 
 let time = "-";
 
@@ -90,7 +82,7 @@ t.seconds*1000
 
 table.innerHTML += `
 <tr>
-<td>${date}</td>
+<td>${dateStr}</td>
 <td>${time}</td>
 </tr>
 `;
