@@ -3,7 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<title>Employee Dashboard</title>
+<title>Employee Portal</title>
 
 <link rel="stylesheet" href="employee.css">
 
@@ -14,44 +14,118 @@
 <body>
 
 
-<div class="header">
+<!-- LOADING -->
 
-<h2>M.R Solar Systems Employee Portal</h2>
+<div id="loadingScreen">
 
-<button id="logoutBtn">Logout</button>
+<div class="loader"></div>
+<h2>Loading Portal...</h2>
 
 </div>
 
 
+
+<!-- HEADER -->
+
+<div class="header">
+
+<div>
+
+<h2>M.R Solar Systems</h2>
+<div id="welcomeName">Welcome</div>
+
+</div>
+
+<div class="headerRight">
+
+<div id="liveClock">00:00</div>
+
+<button id="logoutBtn">
+Logout
+</button>
+
+</div>
+
+</div>
+
+
+
+<!-- NOTICE -->
+
+<div id="noticeBar">
+Notice loading...
+</div>
+
+
+
+<!-- DASHBOARD -->
 
 <div class="dashboard">
 
 
+<!-- STATS -->
+
+<div class="stats">
+
+<div class="statBox">
+<div>Today</div>
+<div id="todayStat">0</div>
+</div>
+
+<div class="statBox">
+<div>Monthly %</div>
+<div id="percentStat">0%</div>
+</div>
+
+<div class="statBox">
+<div>Total</div>
+<div id="totalStat">0</div>
+</div>
+
+<div class="statBox">
+<div>Pending</div>
+<div id="pendingStat">0</div>
+</div>
+
+</div>
+
+
+
+<!-- CARDS -->
+
 <div class="cards">
 
-<div class="card" onclick="openSection('attendanceSection')">
+<div class="card" onclick="toggleSection('attendanceSection')">
 Attendance
 </div>
 
-<div class="card" onclick="openSection('erpSection')">
-Customer ERP
+<div class="card" onclick="toggleSection('erpSection')">
+ERP
+</div>
+
+<div class="card" onclick="toggleSection('historySection')">
+History
 </div>
 
 </div>
 
 
 
-<!-- Attendance -->
+<!-- ================= ATTENDANCE ================= -->
 
-<div id="attendanceSection" class="section" style="display:none">
+<div id="attendanceSection" class="section">
 
 <div class="glass">
 
-<div id="distanceDisplay">Checking location...</div>
+<div id="distanceDisplay">
+Checking location...
+</div>
 
-<div id="countdownBox">Loading...</div>
+<div id="countdownBox">
+Time loading...
+</div>
 
-<button id="attendanceBtn" onclick="markAttendance()">
+<button id="attendanceBtn">
 Mark Attendance
 </button>
 
@@ -63,30 +137,33 @@ Mark Attendance
 
 
 
-<!-- ERP -->
+<!-- ================= ERP ================= -->
 
-<div id="erpSection" class="section" style="display:none">
+<div id="erpSection" class="section">
+
 
 <div class="glass">
 
 <form id="paymentForm">
 
-<input id="customerName" placeholder="Customer Name">
+<input id="customerName" placeholder="Customer">
 
-<input id="executiveName" placeholder="Executive Name">
+<input id="executiveName" placeholder="Executive">
 
-<input id="totalAmount" placeholder="Total Amount">
+<input id="totalAmount" placeholder="Total">
 
-<button type="submit">Add</button>
+<button type="submit">
+Add
+</button>
 
 </form>
-
-<div id="paymentMessage"></div>
 
 </div>
 
 
 <div class="glass">
+
+<input id="searchInput" placeholder="Search...">
 
 <table>
 
@@ -117,17 +194,45 @@ Mark Attendance
 </div>
 
 
+
+<!-- ================= HISTORY ================= -->
+
+<div id="historySection" class="section">
+
+<div class="glass">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Date</th>
+<th>Time</th>
+</tr>
+
+</thead>
+
+<tbody id="historyTable"></tbody>
+
+</table>
+
+</div>
+
 </div>
 
 
 
-<!-- Edit Popup -->
+</div>
+
+
+
+<!-- EDIT POPUP -->
 
 <div id="editPopup" class="popup">
 
 <div class="popupBox">
 
-<h3>Edit Customer</h3>
+<h3>Edit</h3>
 
 <input id="editName">
 
@@ -135,9 +240,13 @@ Mark Attendance
 
 <input id="editTotal">
 
-<button onclick="saveEdit()">Save</button>
+<button id="saveEditBtn">
+Save
+</button>
 
-<button onclick="closePopup()">Cancel</button>
+<button onclick="closePopup()">
+Cancel
+</button>
 
 </div>
 
@@ -145,8 +254,13 @@ Mark Attendance
 
 
 
-<script type="module" src="employee.js"></script>
-<script type="module" src="attendance.js"></script>
+<script src="employee.js"></script>
+<script src="attendance.js"></script>
+<script src="erp.js"></script>
+<script src="dashboard.js"></script>
+<script src="history.js"></script>
+<script src="ui.js"></script>
+
 
 </body>
 </html>
