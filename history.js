@@ -42,12 +42,12 @@ table.innerHTML = "";
 
 // attendance / uid /
 
-const colRef =
-collection(
-db,
-"attendance",
-uid
+const q = query(
+collection(db,"attendance"),
+where("employeeId","==",uid)
 );
+
+const snap = await getDocs(q);
 
 const snap =
 await getDocs(colRef);
