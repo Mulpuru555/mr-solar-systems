@@ -124,9 +124,104 @@ console.log(e);
 
 /* ================= STATS ================= */
 
-async function loadStats(){
+import { auth, db } from "./firebase-config.js";
 
-try{
+import {
+collection,
+query,
+where,
+getDocs,
+doc,
+getDoc
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+import {
+onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+
+onAuthStateChanged(auth, async (user)=>{
+
+if(!user) return;
+
+const uid = user.uid;
+
+
+/* welcome name */
+
+const userSnap =
+await getDoc(
+doc(db,"users",uid)
+);
+
+if(userSnap.exists()){
+
+const name =
+userSnap.data().name || "";
+
+const el =
+document.getElementById("welcomeName");
+
+if(el) el.innerText = name;
+
+}
+
+
+/* ===== ERP STATS ===== */
+
+let total = 0;
+let pending = 0;
+
+const q = query(
+collection(db,"customerPayments"),
+where("createdBy","==",uid)
+);
+
+const snap = await getDocs(q);
+
+snap.forEach(d=>{
+
+total++;
+
+if(
+(d.data().status || "")
+.toLowerCase() == "pending"
+){
+pending++;
+}
+
+});
+
+
+document.getElementById("totalBox").innerText = total;
+document.getElementById("pendingBox").innerText = pending;
+
+
+
+/* ===== TODAY ATTENDANCE ===== */
+
+const today =
+new Date().toISOString().split("T")[0];
+
+let todayStatus = "NO";
+
+const aQ = query(
+collection(db,"attendance"),
+where("employeeId","==",uid),
+where("date","==",today)
+);
+
+const aSnap =
+await getDocs(aQ);
+
+if(!aSnap.empty){
+todayStatus = "YES";
+}
+
+document.getElementById("todayBox")
+.innerText = todayStatus;
+
+});
 
 /* ---------- TODAY ATTENDANCE ---------- */
 
