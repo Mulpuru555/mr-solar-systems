@@ -411,9 +411,8 @@ percent.toFixed(1);
 }
 
 
-document.getElementById("monthlyStat").innerText =
+document.getElementById("percentStat").innerText =
 percent + "%";
-
 }
 
 /* ===========================
