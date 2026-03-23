@@ -9,20 +9,24 @@ import {
   getDocs,
   doc,
   getDoc,
-  updateDoc
+  updateDoc,
+  setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
+
 /* ===========================
-   OFFICE SETTINGS
+   OFFICE SETTINGS FROM DB
 =========================== */
 
-const officeLat = 16.236719;
-const officeLon = 80.647476;
-const allowedRadius = 200;
+let officeLat = 0;
+let officeLon = 0;
+let allowedRadius = 0;
+let userBranch = "";
+
 
 /* ===========================
    ELEMENTS
@@ -33,14 +37,39 @@ const statusBox = document.getElementById("attendanceStatus");
 const distanceDisplay = document.getElementById("distanceDisplay");
 const countdownBox = document.getElementById("countdownBox");
 
+
 /* ===========================
    AUTH SAFE INIT
 =========================== */
 
 onAuthStateChanged(auth, async (user) => {
+
   if (!user) return;
+
+  const userSnap = await getDoc(
+    doc(db, "users", user.uid)
+  );
+
+  if (!userSnap.exists()) return;
+
+  userBranch = userSnap.data().branch;
+
+  const locSnap = await getDoc(
+    doc(db, "settings", userBranch)
+  );
+
+  if (locSnap.exists()) {
+
+    officeLat = locSnap.data().point.latitude;
+    officeLon = locSnap.data().point.longitude;
+    allowedRadius = locSnap.data().radius;
+
+  }
+
   await initializeAttendance(user);
+
 });
+
 
 /* ===========================
    INITIALIZE
@@ -64,6 +93,7 @@ async function initializeAttendance(user) {
   setInterval(() => checkAndHandleAbsence(user), 60000);
 }
 
+
 /* ===========================
    CHECK IF TODAY WORKING
 =========================== */
@@ -84,8 +114,9 @@ async function isTodayWorking() {
   return true;
 }
 
+
 /* ===========================
-   GET MONTH HOLIDAYS (OPTIMIZED)
+   GET MONTH HOLIDAYS
 =========================== */
 
 async function getMonthHolidays(year, monthIndex) {
@@ -107,13 +138,16 @@ async function getMonthHolidays(year, monthIndex) {
   return holidaySet;
 }
 
+
 /* ===========================
    GET CLOSING TIME
 =========================== */
 
 async function getClosingTime() {
 
-  const snap = await getDoc(doc(db, "settings", "attendance"));
+  const snap = await getDoc(
+    doc(db, "settings", "attendance")
+  );
 
   if (snap.exists()) {
     return {
@@ -124,6 +158,7 @@ async function getClosingTime() {
 
   return { hour: 10, minute: 0 };
 }
+
 
 /* ===========================
    COUNTDOWN
@@ -147,9 +182,9 @@ async function startCountdown() {
       return;
     }
 
-    const h = Math.floor(diff / (1000 * 60 * 60));
-    const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-    const s = Math.floor((diff % (1000 * 60)) / 1000);
+    const h = Math.floor(diff / 3600000);
+    const m = Math.floor(diff % 3600000 / 60000);
+    const s = Math.floor(diff % 60000 / 1000);
 
     countdownBox.innerText =
       `Closes at ${hour}:${minute.toString().padStart(2, "0")} | ${h}h ${m}m ${s}s`;
@@ -159,6 +194,7 @@ async function startCountdown() {
   setInterval(update, 1000);
 }
 
+
 /* ===========================
    LOCATION TRACKING
 =========================== */
@@ -167,37 +203,61 @@ function startLocationTracking() {
 
   if (!navigator.geolocation) {
     distanceDisplay.innerText = "Geolocation not supported";
-    distanceDisplay.className = "distance-box red";
+    btn.disabled = true;
     return;
   }
 
   navigator.geolocation.watchPosition(
+
     (pos) => {
 
       const lat = pos.coords.latitude;
       const lon = pos.coords.longitude;
-      const distance = calculateDistance(lat, lon, officeLat, officeLon);
+
+      const distance =
+        calculateDistance(
+          lat,
+          lon,
+          officeLat,
+          officeLon
+        );
 
       if (distance <= allowedRadius) {
-        distanceDisplay.innerText = "🟢 Inside Office Zone";
-        distanceDisplay.className = "distance-box green";
+
+        distanceDisplay.innerText =
+          "Inside Office Zone";
+
         btn.disabled = false;
         statusBox.innerText = "";
+
       } else {
-        distanceDisplay.innerText = "🔴 Outside Office Zone";
-        distanceDisplay.className = "distance-box red";
+
+        distanceDisplay.innerText =
+          "Outside Office Zone";
+
         btn.disabled = true;
-        statusBox.innerText = "You are outside office location";
+        statusBox.innerText =
+          "You are outside office";
+
       }
+
     },
+
     () => {
-      distanceDisplay.innerText = "Location permission denied";
-      distanceDisplay.className = "distance-box red";
+
+      distanceDisplay.innerText =
+        "Location denied";
+
       btn.disabled = true;
+
     },
+
     { enableHighAccuracy: true }
+
   );
+
 }
+
 
 /* ===========================
    MARK ATTENDANCE
@@ -208,7 +268,8 @@ window.markAttendance = async function () {
   const user = auth.currentUser;
   if (!user) return;
 
-  const today = new Date().toISOString().split("T")[0];
+  const today =
+    new Date().toISOString().split("T")[0];
 
   const ref = doc(
     db,
@@ -221,25 +282,36 @@ window.markAttendance = async function () {
   const snap = await getDoc(ref);
 
   if (snap.exists()) {
-    statusBox.innerText = "Attendance already marked today.";
+
+    statusBox.innerText =
+      "Already marked";
+
     btn.disabled = true;
     return;
+
   }
 
   await setDoc(ref, {
+
     status: "present",
     time: serverTimestamp()
+
   });
 
-  statusBox.innerText = "✔ Attendance Marked Successfully";
+  statusBox.innerText =
+    "Attendance Marked";
+
   btn.disabled = true;
 
   loadMonthlySummary(user);
+
 };
 
+
 /* ===========================
-   ACCURATE MONTHLY SUMMARY
+   MONTH SUMMARY
 =========================== */
+
 async function loadMonthlySummary(user) {
 
   const today = new Date();
@@ -249,16 +321,30 @@ async function loadMonthlySummary(user) {
   let present = 0;
 
   const holidaySet =
-    await getMonthHolidays(year, monthIndex);
+    await getMonthHolidays(
+      year,
+      monthIndex
+    );
 
   let workingDays = 0;
 
-  for (let d = 1; d <= today.getDate(); d++) {
+  for (
+    let d = 1;
+    d <= today.getDate();
+    d++
+  ) {
 
-    const dateObj = new Date(year, monthIndex, d);
+    const dateObj =
+      new Date(
+        year,
+        monthIndex,
+        d
+      );
 
     const dateStr =
-      dateObj.toISOString().split("T")[0];
+      dateObj
+        .toISOString()
+        .split("T")[0];
 
     if (
       dateObj.getDay() !== 0 &&
@@ -277,107 +363,163 @@ async function loadMonthlySummary(user) {
         )
       );
 
-      if (snap.exists()) present++;
+      if (snap.exists())
+        present++;
+
     }
+
   }
 
-  const percent = workingDays
-    ? ((present / workingDays) * 100).toFixed(1)
-    : 0;
+  const percent =
+    workingDays
+      ? ((present / workingDays) * 100).toFixed(1)
+      : 0;
 
   const oldSummary =
-    document.getElementById("monthlySummary");
+    document.getElementById(
+      "monthlySummary"
+    );
 
-  if (oldSummary) oldSummary.remove();
+  if (oldSummary)
+    oldSummary.remove();
 
-  const summaryDiv =
+  const div =
     document.createElement("div");
 
-  summaryDiv.id = "monthlySummary";
-  summaryDiv.style.marginTop = "15px";
-  summaryDiv.style.fontWeight = "600";
+  div.id = "monthlySummary";
 
-  summaryDiv.innerText =
-    `📊 This Month: ${present}/${workingDays} Working Days (${percent}%)`;
+  div.innerText =
+    `This Month: ${present}/${workingDays} (${percent}%)`;
 
-  statusBox.appendChild(summaryDiv);
+  statusBox.appendChild(div);
+
 }
 
+
 /* ===========================
-   AUTO BLOCK (SINGLE DAY STRICT)
+   AUTO BLOCK
 =========================== */
 
 async function checkAndHandleAbsence(user) {
 
-  // Check if today is working
-  if (!(await isTodayWorking())) return;
+  if (!(await isTodayWorking()))
+    return;
 
-  const { hour, minute } = await getClosingTime();
+  const { hour, minute } =
+    await getClosingTime();
 
   const now = new Date();
+
   const close = new Date();
+
   close.setHours(hour, minute, 0, 0);
 
-  // Wait until attendance closes
-  if (now < close) return;
+  if (now < close)
+    return;
 
-  const today = new Date().toISOString().split("T")[0];
+  const today =
+    new Date()
+      .toISOString()
+      .split("T")[0];
 
-  // Check if attendance marked
   const ref = doc(
-  db,
-  "attendance",
-  user.uid,
-  today,
-  "data"
-);
+    db,
+    "attendance",
+    user.uid,
+    today,
+    "data"
+  );
 
-const snap = await getDoc(ref);
+  const snap =
+    await getDoc(ref);
 
-if (snap.exists()) return;
+  if (snap.exists())
+    return;
 
-  const userRef = doc(db, "users", user.uid);
-  const userSnap = await getDoc(userRef);
+  const userRef =
+    doc(
+      db,
+      "users",
+      user.uid
+    );
 
-  if (!userSnap.exists()) return;
+  const userSnap =
+    await getDoc(userRef);
 
-  const userData = userSnap.data();
+  if (!userSnap.exists())
+    return;
 
-  // Prevent multiple blocking updates same day
-  if (userData.lastAbsentDate === today) return;
+  const data =
+    userSnap.data();
+
+  if (
+    data.lastAbsentDate === today
+  ) return;
 
   await updateDoc(userRef, {
-    absenceCount: (userData.absenceCount || 0) + 1,
+
+    absenceCount:
+      (data.absenceCount || 0) + 1,
+
     lastAbsentDate: today,
+
     accountStatus: "blocked"
+
   });
 
-  alert("Your account has been blocked due to absence recorded from your account,contact branch Manager.");
+  alert(
+    "Blocked due to absence"
+  );
+
   location.reload();
+
 }
 
+
 /* ===========================
-   DISTANCE CALCULATION
+   DISTANCE
 =========================== */
 
-function calculateDistance(lat1, lon1, lat2, lon2) {
+function calculateDistance(
+  lat1,
+  lon1,
+  lat2,
+  lon2
+) {
 
   const R = 6371e3;
 
-  const φ1 = lat1 * Math.PI / 180;
-  const φ2 = lat2 * Math.PI / 180;
+  const φ1 =
+    lat1 *
+    Math.PI / 180;
 
-  const Δφ = (lat2 - lat1) * Math.PI / 180;
-  const Δλ = (lon2 - lon1) * Math.PI / 180;
+  const φ2 =
+    lat2 *
+    Math.PI / 180;
+
+  const Δφ =
+    (lat2 - lat1) *
+    Math.PI / 180;
+
+  const Δλ =
+    (lon2 - lon1) *
+    Math.PI / 180;
 
   const a =
-    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.sin(Δφ / 2) *
+    Math.sin(Δφ / 2) +
     Math.cos(φ1) *
     Math.cos(φ2) *
     Math.sin(Δλ / 2) *
     Math.sin(Δλ / 2);
 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const c =
+    2 *
+    Math.atan2(
+      Math.sqrt(a),
+      Math.sqrt(1 - a)
+    );
 
   return R * c;
+
 }
