@@ -3,8 +3,8 @@ import { auth, db } from "./firebase-config.js";
 import {
 doc,
 getDoc,
-collection,
-getDocs
+getDocs,
+collection
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
@@ -14,8 +14,6 @@ onAuthStateChanged
 
 let uid = "";
 
-
-/* ================= AUTH ================= */
 
 onAuthStateChanged(auth, async (user)=>{
 
@@ -28,8 +26,6 @@ loadHistory();
 });
 
 
-/* ================= LOAD HISTORY ================= */
-
 async function loadHistory(){
 
 const table =
@@ -40,56 +36,61 @@ if(!table) return;
 table.innerHTML = "";
 
 
-// attendance / uid /
-
-const q = query(
-collection(db,"attendance"),
-where("employeeId","==",uid)
+const colRef =
+collection(
+db,
+"attendance",
+uid
 );
 
-const snap = await getDocs(q);
-
-const snap2 =
+const snap =
 await getDocs(colRef);
 
 
-let rows = [];
+snap.forEach(async d=>{
 
+const date = d.id;
 
-snap.forEach(d=>{
+const dataRef =
+doc(
+db,
+"attendance",
+uid,
+date,
+"data"
+);
 
-rows.push({
-date:d.id,
-data:d.data()
-});
+const dataSnap =
+await getDoc(dataRef);
 
-});
+let time = "-";
 
+if(
+dataSnap.exists()
+){
 
-rows.sort((a,b)=>{
+const t =
+dataSnap.data().time;
 
-return b.date.localeCompare(a.date);
+if(t?.seconds){
 
-});
-
-
-rows.forEach(r=>{
-
-const time =
-r.data?.data?.time?.seconds
-? new Date(
-r.data.data.time.seconds*1000
+time =
+new Date(
+t.seconds*1000
 ).toLocaleTimeString(
 [],
-{ hour12:true }
-)
+{hour12:true}
+);
 
+}
+
+}
 
 table.insertAdjacentHTML(
 "beforeend",
 `
 <tr>
-<td>${r.date}</td>
+<td>${date}</td>
 <td>${time}</td>
 </tr>
 `
