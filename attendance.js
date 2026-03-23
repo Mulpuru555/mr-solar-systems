@@ -52,14 +52,21 @@ onAuthStateChanged(auth, async (user) => {
 
   if (!userSnap.exists()) return;
 
- userBranch = userSnap.data().branch;
+userBranch = userSnap.data().branch;
 
-// TEMP FIX
 userBranch = "tenali";
 
 const locSnap = await getDoc(
   doc(db, "settings", userBranch)
 );
+
+if (locSnap.exists()) {
+
+  officeLat = locSnap.data().point.latitude;
+  officeLon = locSnap.data().point.longitude;
+  allowedRadius = locSnap.data().radius;
+
+}
 
   if (locSnap.exists()) {
 
