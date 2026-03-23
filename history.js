@@ -37,50 +37,36 @@ table.innerHTML = "";
 
 
 const colRef =
-collection(
-db,
-"attendance",
-uid
-);
+collection(db,"attendance",uid);
 
 const snap =
 await getDocs(colRef);
 
 
-snap.forEach(async d=>{
+for (const d of snap.docs){
 
 const date = d.id;
 
 const dataRef =
-doc(
-db,
-"attendance",
-uid,
-date,
-"data"
-);
+doc(db,"attendance",uid,date,"data");
 
 const dataSnap =
 await getDoc(dataRef);
 
 let time = "-";
 
-if(
-dataSnap.exists()
-){
+if(dataSnap.exists()){
 
-const t =
-dataSnap.data().time;
+const t = dataSnap.data().time;
 
 if(t?.seconds){
 
 time =
 new Date(
 t.seconds*1000
-).toLocaleTimeString(
-[],
-{hour12:true}
-);
+).toLocaleTimeString([],{
+hour12:true
+});
 
 }
 
@@ -96,6 +82,6 @@ table.insertAdjacentHTML(
 `
 );
 
-});
+}
 
 }
