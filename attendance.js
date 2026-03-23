@@ -311,90 +311,110 @@ window.markAttendance = async function () {
 /* ===========================
    MONTH SUMMARY
 =========================== */
-
 async function loadMonthlySummary(user) {
 
-  const today = new Date();
-  const year = today.getFullYear();
-  const monthIndex = today.getMonth();
+const today = new Date();
 
-  let present = 0;
+const year = today.getFullYear();
+const month = today.getMonth();
 
-  const holidaySet =
-    await getMonthHolidays(
-      year,
-      monthIndex
-    );
+let workingDays = 0;
+let present = 0;
 
-  let workingDays = 0;
 
-  for (
-    let d = 1;
-    d <= today.getDate();
-    d++
-  ) {
+/* holidays */
 
-    const dateObj =
-      new Date(
-        year,
-        monthIndex,
-        d
-      );
+const holidaySnap =
+await getDocs(
+collection(
+db,
+"settings",
+"holidays",
+"holidayList"
+)
+);
 
-    const dateStr =
-      dateObj
-        .toISOString()
-        .split("T")[0];
+const holidaySet = new Set();
 
-    if (
-      dateObj.getDay() !== 0 &&
-      !holidaySet.has(dateStr)
-    ) {
+holidaySnap.forEach(d=>{
+holidaySet.add(d.id);
+});
 
-      workingDays++;
 
-      const snap = await getDoc(
-        doc(
-          db,
-          "attendance",
-          user.uid,
-          dateStr,
-          "data"
-        )
-      );
+for(
+let d=1;
+d<=today.getDate();
+d++
+){
 
-      if (snap.exists())
-        present++;
+const dateObj =
+new Date(year,month,d);
 
-    }
+const dateStr =
+dateObj
+.toISOString()
+.split("T")[0];
 
-  }
 
-  const percent =
-    workingDays
-      ? ((present / workingDays) * 100).toFixed(1)
-      : 0;
+/* skip sunday */
 
-  const oldSummary =
-    document.getElementById(
-      "monthlySummary"
-    );
+if(dateObj.getDay()===0)
+continue;
 
-  if (oldSummary)
-    oldSummary.remove();
 
-  const div =
-    document.createElement("div");
+/* skip holiday */
 
-  div.id = "monthlySummary";
+if(holidaySet.has(dateStr))
+continue;
 
-  div.innerText =
-    `This Month: ${present}/${workingDays} (${percent}%)`;
 
-  statusBox.appendChild(div);
+workingDays++;
+
+
+/* check attendance */
+
+const ref =
+doc(
+db,
+"attendance",
+user.uid,
+dateStr,
+"data"
+);
+
+const snap =
+await getDoc(ref);
+
+if(snap.exists()){
+present++;
+}
 
 }
 
+
+/* percentage from 100 */
+
+let percent = 100;
+
+if(workingDays>0){
+
+const absent =
+workingDays - present;
+
+percent =
+100 -
+(absent / workingDays * 100);
+
+percent =
+percent.toFixed(1);
+
+}
+
+
+document.getElementById("monthlyStat").innerText =
+percent + "%";
+
+}
 
 /* ===========================
    AUTO BLOCK
