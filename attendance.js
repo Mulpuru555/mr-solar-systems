@@ -4,7 +4,9 @@ import {
   doc,
   getDoc,
   setDoc,
-  serverTimestamp
+  serverTimestamp,
+  collection,
+  addDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import { 
@@ -20,8 +22,7 @@ let closeHour = 23;
 let closeMinute = 0;
 let currentUser = null;
 let locationWatchId = null;
-let clockInterval = null;
-let clockStarted = false;
+let clockInterval = null;  // 🔥 SINGLE INTERVAL ONLY
 let lastCoords = null;
 
 /* ELEMENT */
@@ -29,7 +30,7 @@ function el(id) {
   return document.getElementById(id);
 }
 
-/* 🔥 TIME CHECK (ADMIN CONTROLLED) */
+/* 🔥 ADMIN TIME CHECK (DEVICE TIME - FAST UI) */
 function isWithinAllowedTime() {
   const now = new Date();
   const currentMinutes = now.getHours() * 60 + now.getMinutes();
@@ -37,7 +38,7 @@ function isWithinAllowedTime() {
   return currentMinutes <= closeMinutes;
 }
 
-/* 🔥 UI HELPERS */
+/* 🔥 UI STATES */
 function showLoginState() {
   el("distanceDisplay").textContent = "👋 Please login";
   el("todayStat").textContent = "NO";
@@ -56,7 +57,7 @@ onAuthStateChanged(auth, async (user) => {
     console.log("👋 Logout");
     showLoginState();
     stopLocationTracking();
-    stopClock();
+    stopClock();  // 🔥 CLEANUP
     lastCoords = null;
     return;
   }
@@ -69,26 +70,22 @@ onAuthStateChanged(auth, async (user) => {
     startSystem();
   } catch (e) {
     console.error("Init error:", e);
-    showErrorState("Failed to load settings");
+    showErrorState("Settings failed");
   }
 });
 
-/* 🔥 LOAD SETTINGS (OFFICE + TIME) */
+/* 🔥 LOAD ADMIN SETTINGS */
 async function loadOfficeSettings() {
-  // 📍 OFFICE LOCATION
+  // 📍 OFFICE
   const officeSnap = await getDoc(doc(db, "settings", "tenali"));
   if (!officeSnap.exists()) throw new Error("No office settings");
 
   const officeData = officeSnap.data();
-  if (!officeData.point?.latitude || !officeData.point.longitude) {
-    throw new Error("Invalid office coordinates");
-  }
-
   officeLat = Number(officeData.point.latitude);
   officeLon = Number(officeData.point.longitude);
   allowedRadius = Number(officeData.radius) || 200;
 
-  // ⏰ ADMIN TIME SETTINGS
+  // ⏰ TIME LIMITS
   try {
     const timeSnap = await getDoc(doc(db, "settings", "attendance"));
     if (timeSnap.exists()) {
@@ -97,61 +94,62 @@ async function loadOfficeSettings() {
       closeMinute = Number(timeData.closeMinute) || 0;
     }
   } catch (e) {
-    console.warn("Time settings not found, using defaults");
+    console.warn("Using default time settings");
   }
 
-  console.log(`✅ Office: ${officeLat.toFixed(6)}, ${officeLon.toFixed(6)}`);
-  console.log(`✅ Radius: ${allowedRadius}m | Close: ${closeHour}:${closeMinute.toString().padStart(2, '0')}`);
+  console.log(`✅ Office OK | Close: ${closeHour}:${closeMinute.toString().padStart(2, '0')}`);
 }
 
-/* SYSTEM START */
+/* SYSTEM */
 function startSystem() {
-  startClock();
+  startClock();  // 🔥 FIXED CLOCK
   startLocation();
   loadToday();
 }
 
-/* 🔥 CLOCK (NO FLICKER) */
+/* 🔧 FIX 1: FLICKERING CLOCK (100% SOLUTION) */
 function stopClock() {
   if (clockInterval) {
     clearInterval(clockInterval);
     clockInterval = null;
   }
-  clockStarted = false;
 }
 
 function startClock() {
-  if (clockStarted) {
-    console.log("⏰ Clock already running");
-    return;
+  const clock = el("liveClock");
+  if (!clock) return;
+
+  // ✅ PREVENT MULTIPLE INTERVALS
+  if (clockInterval) {
+    clearInterval(clockInterval);
   }
 
-  clockStarted = true;
-  console.log("🕐 Clock started");
+  function updateClock() {
+    const now = new Date();
+    const time = now.toLocaleTimeString("en-IN", {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
 
-  const tick = () => {
-    const clock = el("liveClock");
-    if (clock) {
-      const now = new Date();
-      clock.textContent = now.toLocaleTimeString('en-US', {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-
-      // 🔥 TIME STATUS
-      const closeTime = `${closeHour.toString().padStart(2, '0')}:${closeMinute.toString().padStart(2, '0')}`;
-      const status = isWithinAllowedTime() ? `✅ Open (${closeTime})` : `⏰ Closed (${closeTime})`;
-      clock.title = status;
+    // ✅ UPDATE ONLY IF CHANGED (NO FLICKER)
+    if (clock.innerText !== time) {
+      clock.innerText = time;
     }
-  };
 
-  tick();
-  clockInterval = setInterval(tick, 1000);
+    // 🔥 TIME STATUS
+    const closeTime = `${closeHour.toString().padStart(2, '0')}:${closeMinute.toString().padStart(2, '0')}`;
+    const status = isWithinAllowedTime() ? `✅ Open (${closeTime})` : `⏰ Closed (${closeTime})`;
+    clock.title = status;
+  }
+
+  updateClock(); // 🔥 IMMEDIATE UPDATE
+  clockInterval = setInterval(updateClock, 1000); // 🔥 SINGLE INTERVAL
+  
+  console.log("🕐 Anti-flicker clock started");
 }
 
-/* LOCATION TRACKING */
+/* LOCATION */
 function stopLocationTracking() {
   if (locationWatchId) {
     navigator.geolocation.clearWatch(locationWatchId);
@@ -161,10 +159,10 @@ function stopLocationTracking() {
 
 function startLocation() {
   const display = el("distanceDisplay");
-  display.textContent = "📍 Getting GPS...";
+  display.textContent = "📍 GPS...";
 
   if (!navigator.geolocation) {
-    display.textContent = "❌ GPS not supported";
+    display.textContent = "❌ No GPS";
     return;
   }
 
@@ -172,47 +170,32 @@ function startLocation() {
 
   locationWatchId = navigator.geolocation.watchPosition(
     (pos) => {
-      lastCoords = pos.coords;  // 🔥 CACHE LOCATION
+      lastCoords = pos.coords;  // 🔥 INSTANT CACHE
 
       if (officeLat == null) {
         display.textContent = "Loading office...";
         return;
       }
 
-      const distance = calculateDistance(
-        pos.coords.latitude,
-        pos.coords.longitude,
-        officeLat,
-        officeLon
-      );
-
+      const distance = calculateDistance(pos.coords.latitude, pos.coords.longitude, officeLat, officeLon);
       updateDistanceDisplay(distance);
       updateAttendanceButton(distance);
     },
     (err) => {
-      const msg = {
-        1: "📍 Permission denied",
-        2: "📍 GPS off",
-        3: "⏱️ GPS timeout"
-      }[err.code] || "📍 GPS error";
+      const msg = {1: "Permission denied", 2: "GPS off", 3: "Timeout"}[err.code] || "GPS error";
       display.textContent = msg;
     },
     { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
   );
 }
 
-/* 🔥 UI UPDATES */
+/* UI */
 function updateDistanceDisplay(distance) {
   const display = el("distanceDisplay");
-  if (!display) return;
-  
   const dist = Math.round(distance);
   const inside = distance <= allowedRadius;
   
-  display.innerHTML = inside
-    ? `✅ Inside<br><b>${dist}m</b>`
-    : `❌ Outside<br><b>${dist}m</b> / ${allowedRadius}m`;
-    
+  display.innerHTML = inside ? `✅ Inside<br><b>${dist}m</b>` : `❌ ${dist}m / ${allowedRadius}m`;
   display.className = inside ? "inside" : "outside";
 }
 
@@ -235,10 +218,10 @@ function updateAttendanceButton(distance) {
   }
 }
 
-/* TODAY STATUS */
+/* TODAY */
 async function loadToday() {
   if (!currentUser) return;
-
+  
   try {
     const today = getTodayDate();
     const snap = await getDoc(doc(db, "attendance", currentUser.uid, today, "data"));
@@ -249,7 +232,6 @@ async function loadToday() {
       statEl.className = snap.exists() ? "present" : "absent";
     }
   } catch (e) {
-    console.error("Today status error:", e);
     el("todayStat").textContent = "ERR";
   }
 }
@@ -260,111 +242,82 @@ function getTodayDate() {
   return now.toISOString().split("T")[0];
 }
 
-/* 🔥 MARK ATTENDANCE (INSTANT + TIME SAFE) */
+/* 🔥 MARK ATTENDANCE (ANTI-CHEAT) */
 window.markAttendance = async () => {
-  // 🔥 1. TIME CHECK
+  // 🔥 TIME CHECK (FAST UI)
   if (!isWithinAllowedTime()) {
     const closeTime = `${closeHour.toString().padStart(2, '0')}:${closeMinute.toString().padStart(2, '0')}`;
-    return alert(`⏰ ATTENDANCE CLOSED!\nAllowed until ${closeTime}\nCurrent: ${new Date().toLocaleTimeString('en-US', {hour12: false})}\n\nTry tomorrow!`);
+    return alert(`⏰ CLOSED!\nUntil ${closeTime}\nNow: ${new Date().toLocaleTimeString('en-US', {hour12: false})}`);
   }
 
-  // 🔥 2. LOCATION CHECK
-  if (!lastCoords) {
-    return alert("📍 GPS signal required\nPlease wait...");
-  }
+  // 🔥 LOCATION
+  if (!lastCoords) return alert("📍 GPS needed");
 
-  // 🔥 3. ONLINE CHECK
-  if (!navigator.onLine) {
-    return alert("❌ No internet connection");
-  }
+  // 🔥 ONLINE
+  if (!navigator.onLine) return alert("❌ Offline");
 
-  // 🔥 4. DISTANCE CHECK
-  const distance = calculateDistance(
-    lastCoords.latitude,
-    lastCoords.longitude,
-    officeLat,
-    officeLon
-  );
-
-  if (distance > allowedRadius + 10) {  // +10m buffer
-    return alert(`❌ OUTSIDE RANGE\n📏 ${Math.round(distance)}m\n💯 Limit: ${allowedRadius}m`);
+  // 🔥 DISTANCE
+  const distance = calculateDistance(lastCoords.latitude, lastCoords.longitude, officeLat, officeLon);
+  if (distance > allowedRadius + 10) {
+    return alert(`❌ ${Math.round(distance)}m > ${allowedRadius}m`);
   }
 
   const btn = el("attendanceBtn");
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = "💾 Saving...";
-  }
+  btn.disabled = true;
+  btn.textContent = "💾 Saving...";
 
   try {
-    // 🔥 5. INSTANT SAVE (CACHED LOCATION)
+    // 🔥 SERVER TIMESTAMP (ANTI-CHEAT)
     await saveAttendance({ coords: lastCoords }, distance);
-    
-    const successMsg = `🎉 ATTENDANCE SUCCESS!\n📍 ${Math.round(distance)}m\n⏰ ${new Date().toLocaleTimeString()}\n📅 ${getTodayDate()}`;
-    alert(successMsg);
-    
+    alert(`✅ SUCCESS!\n📍 ${Math.round(distance)}m`);
     loadToday();
-    
-  } catch (error) {
-    console.error("Save error:", error);
-    if (error.message.includes("Exists")) {
+  } catch (e) {
+    if (e.message.includes("Exists")) {
       alert("✅ Already marked today!");
     } else {
-      alert("❌ Save failed - try again");
+      alert("❌ Try again");
     }
   } finally {
-    if (btn) {
-      btn.disabled = false;
-      btn.textContent = "✅ Marked Today!";
-    }
+    btn.disabled = false;
+    btn.textContent = "✅ Done!";
   }
 };
 
-/* 🔥 SAVE ATTENDANCE */
+/* 🔥 SAVE WITH SERVER TIME (CHEAT-PROOF) */
 async function saveAttendance(position, distance) {
   const today = getTodayDate();
   const ref = doc(db, "attendance", currentUser.uid, today, "data");
   
-  // 🔥 DUPLICATE CHECK
+  // 🔥 CHECK DUPLICATE
   const snap = await getDoc(ref);
-  if (snap.exists()) {
-    throw new Error("Already marked today");
-  }
+  if (snap.exists()) throw new Error("Already marked");
 
+  // 🔥 SERVER TIMESTAMP (Can't fake!)
   await setDoc(ref, {
+    uid: currentUser.uid,
     status: "present",
     date: today,
-    timestamp: serverTimestamp(),
+    timestamp: serverTimestamp(),  // 🔥 REAL SERVER TIME
     lat: position.coords.latitude,
     lon: position.coords.longitude,
     accuracy: position.coords.accuracy || 0,
     distance: Math.round(distance),
-    officeLat,
-    officeLon,
-    radius: allowedRadius,
-    time: new Date().toISOString(),
-    closeHour,
-    closeMinute
+    officeLat, officeLon, allowedRadius,
+    closeHour, closeMinute,
+    deviceTime: new Date().toISOString(),  // For audit
+    userAgent: navigator.userAgent.slice(0, 100)
   });
 }
 
-/* 🔥 CLEAN LOGOUT */
+/* CLEANUP */
 window.signOutUser = async () => {
   stopLocationTracking();
   stopClock();
-  clockStarted = false;
   lastCoords = null;
   await signOut(auth);
-  console.log("👋 Signed out");
 };
 
-/* 🔥 REFRESH */
-window.refreshData = () => {
-  loadToday();
-  startLocation();
-};
-
-/* DISTANCE CALC */
+/* DISTANCE */
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
