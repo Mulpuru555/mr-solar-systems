@@ -35,21 +35,29 @@ window.addEventListener("load", () => {
 // ===== COUNT ANIMATION =====
 
 function animateValue(id, start, end, duration) {
+
+    if (isNaN(end)) end = 0;
+
+    if (start === end) {
+        document.getElementById(id).innerText = end;
+        return;
+    }
+
     let range = end - start;
-    let stepTime = Math.abs(Math.floor(duration / range));
     let current = start;
     let increment = end > start ? 1 : -1;
+
+    let stepTime = Math.max(10, Math.floor(duration / Math.abs(range)));
 
     let timer = setInterval(() => {
         current += increment;
         document.getElementById(id).innerText = current;
 
-        if (current == end) {
+        if (current === end) {
             clearInterval(timer);
         }
     }, stepTime);
 }
-
 
 // ===== APPLY ANIMATION AFTER LOAD =====
 
