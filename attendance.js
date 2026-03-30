@@ -45,44 +45,38 @@ function isWithinAllowedTime() {
 }
 
 /* 🔥 MONTHLY STATS 👈 FIXED WITH YOUR DATE */
+/* 🔥 FULL MONTH STATS */
 async function loadMonthlyStats() {
   if (!currentUser) return;
 
-  try {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth();
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();  // 🔥 31
+  
+  let presentDays = 0;
+  let totalWorkingDays = 0;
 
-    let presentDays = 0;
-    let totalDays = 0;
+  for (let d = 1; d <= daysInMonth; d++) {  // 🔥 To end of month
+    const date = new Date(year, month, d);
+    const day = date.getDay();
 
-    for (let d = 1; d <= now.getDate(); d++) {
-      const date = new Date(year, month, d);
-      const day = date.getDay();
+    // Skip weekends
+    if (day === 0 || day === 6) continue;
 
-      if (day === 0) continue;  // Skip Sunday
+    totalWorkingDays++;
+    const dateStr = getTodayDateForDay(date);
+    const snap = await getDoc(doc(db, "attendance", currentUser.uid, dateStr, "data"));
 
-      totalDays++;
-
-      // 👈 YOUR FIXED DATE FUNCTION
-      const dateStr = getTodayDateForDay(date);
-      const snap = await getDoc(doc(db, "attendance", currentUser.uid, dateStr, "data"));
-
-      if (snap.exists()) presentDays++;
-    }
-
-    const percent = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
-    const percentEl = el("percentStat");
-    if (percentEl) {
-      percentEl.textContent = percent + "%";
-      percentEl.title = `${presentDays}/${totalDays}`;
-    }
-  } catch (e) {
-    console.error("Monthly error:", e);
+    if (snap.exists()) presentDays++;
   }
+
+  const percent = totalWorkingDays > 0 ? Math.round((presentDays / totalWorkingDays) * 100) : 0;
+  el("percentStat").textContent = percent + "%";
+  el("percentStat").title = `${presentDays}/${totalWorkingDays} (${daysInMonth} days)`;
 }
 
-// 🔥 HELPER FOR MONTHLY (same logic)
+// 🔥 DATE HELPER
 function getTodayDateForDay(date) {
   return date.getFullYear() + "-" +
     String(date.getMonth() + 1).padStart(2, '0') + "-" +
