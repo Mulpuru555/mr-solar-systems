@@ -36,6 +36,49 @@ function isWithinAllowedTime() {
   return currentMinutes <= closeMinutes;
 }
 
+/* 🔥 MONTHLY STATS 👈 YOUR NEW FUNCTION */
+async function loadMonthlyStats() {
+  if (!currentUser) return;
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth();
+
+  let presentDays = 0;
+  let totalDays = 0;
+
+  // Loop from 1 → today
+  for (let d = 1; d <= now.getDate(); d++) {
+    const date = new Date(year, month, d);
+    const day = date.getDay();
+
+    // Skip Sunday (optional - remove if you want Sundays)
+    if (day === 0) continue;
+
+    totalDays++;
+
+    const dateStr = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
+  .toISOString()
+  .split("T")[0];
+    const snap = await getDoc(doc(db, "attendance", currentUser.uid, dateStr, "data"));
+
+    if (snap.exists()) {
+      presentDays++;
+    }
+  }
+
+  const percent = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
+  
+  // 👈 UPDATE UI
+  const percentEl = el("percentStat");
+  if (percentEl) {
+    percentEl.textContent = percent + "%";
+    percentEl.title = `${presentDays}/${totalDays} days`;
+  }
+
+  console.log(`📊 Monthly: ${percent}% (${presentDays}/${totalDays})`);
+}
+
 /* UI STATES */
 function showLoginState() {
   el("distanceDisplay").textContent = "👋 Please login";
@@ -43,6 +86,7 @@ function showLoginState() {
   el("todayStat").className = "absent";
   const btn = el("attendanceBtn");
   if (btn) btn.textContent = "Login required";
+  el("percentStat").textContent = "--";
 }
 
 function showErrorState(msg) {
@@ -96,14 +140,15 @@ async function loadOfficeSettings() {
   console.log(`✅ Office OK | Close: ${closeHour}:${closeMinute.toString().padStart(2, '0')}`);
 }
 
-/* SYSTEM */
+/* SYSTEM 👈 YOUR CALL ADDED */
 function startSystem() {
   startClock();
   startLocation();
   loadToday();
+  loadMonthlyStats();  // 👈 YOUR NEW CALL
 }
 
-/* 🔥 PERFECT CLOCK (NO FLICKER) */
+/* 🔥 CLOCK */
 function stopClock() {
   if (clockInterval) {
     clearInterval(clockInterval);
@@ -115,10 +160,7 @@ function startClock() {
   const clock = el("liveClock");
   if (!clock) return;
 
-  // ✅ PREVENT MULTIPLE INTERVALS
-  if (clockInterval) {
-    clearInterval(clockInterval);
-  }
+  if (clockInterval) clearInterval(clockInterval);
 
   function updateClock() {
     const now = new Date();
@@ -128,7 +170,6 @@ function startClock() {
       second: '2-digit'
     });
 
-    // ✅ UPDATE ONLY IF CHANGED (NO FLICKER)
     if (clock.innerText !== time) {
       clock.innerText = time;
     }
@@ -234,7 +275,7 @@ function getTodayDate() {
   return now.toISOString().split("T")[0];
 }
 
-/* 🔥 MARK ATTENDANCE */
+/* 🔥 ATTENDANCE 👈 UPDATE CALL ADDED */
 window.markAttendance = async () => {
   if (!isWithinAllowedTime()) {
     const closeTime = `${closeHour.toString().padStart(2, '0')}:${closeMinute.toString().padStart(2, '0')}`;
@@ -257,13 +298,13 @@ window.markAttendance = async () => {
     await saveAttendance({ coords: lastCoords }, distance);
     alert(`✅ SUCCESS!\n📍 ${Math.round(distance)}m`);
     loadToday();
+    loadMonthlyStats();  // 👈 YOUR UPDATE CALL
   } catch (e) {
-    /* 🔥 YOUR PERFECT CONSOLE FIX */
     if (e.message.includes("Already") || e.message.includes("Exists")) {
-      console.log("ℹ️ Already marked today");  // ✅ GREEN INFO
+      console.log("ℹ️ Already marked today");
       alert("✅ Already marked today!");
     } else {
-      console.error("Real save error:", e);    // ✅ RED ONLY FOR REAL ERRORS
+      console.error("Save error:", e);
       alert("❌ Save failed");
     }
   } finally {
@@ -278,7 +319,7 @@ async function saveAttendance(position, distance) {
   const ref = doc(db, "attendance", currentUser.uid, today, "data");
   
   const snap = await getDoc(ref);
-  if (snap.exists()) throw new Error("Already marked");  // ✅ Clean message
+  if (snap.exists()) throw new Error("Already marked");
 
   await setDoc(ref, {
     status: "present",
