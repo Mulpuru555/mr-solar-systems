@@ -49,17 +49,18 @@ async function loadMonthlyStats() {
 
   // Loop from 1 → today
   for (let d = 1; d <= now.getDate(); d++) {
-    const date = new Date(year, month, d);
-    const day = date.getDay();
+const date = new Date(year, month, d);
+const day = date.getDay();
 
-    // Skip Sunday (optional - remove if you want Sundays)
-    if (day === 0) continue;
+// Skip Sunday (optional)
+if (day === 0) continue;
 
-    totalDays++;
+totalDays++;
 
-    const dateStr = new Date(date.getTime() - date.getTimezoneOffset() * 60000)
-  .toISOString()
-  .split("T")[0];
+// 🔥 SAFE DATE FORMAT (NO TIMEZONE ISSUE)
+const dayStr = String(d).padStart(2, '0');
+const monthStr = String(month + 1).padStart(2, '0');
+const dateStr = `${year}-${monthStr}-${dayStr}`;
     const snap = await getDoc(doc(db, "attendance", currentUser.uid, dateStr, "data"));
 
     if (snap.exists()) {
