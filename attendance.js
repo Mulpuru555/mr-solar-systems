@@ -183,25 +183,25 @@ async function startCountdown() {
 
   function update() {
 
-    const now = new Date();
-    const close = new Date();
-    close.setHours(hour, minute, 0, 0);
+  const now = new Date();
+  const close = new Date();
+  close.setHours(hour, minute, 0, 0);
 
-    const diff = close - now;
+  const diff = close - now;
 
-    if (diff <= 0) {
-      countdownBox.innerText = "Attendance Closed";
-      btn.disabled = true;
-      return;
-    }
-
-    const h = Math.floor(diff / 3600000);
-    const m = Math.floor(diff % 3600000 / 60000);
-    const s = Math.floor(diff % 60000 / 1000);
-
-    countdownBox.innerText =
-      `Closes at ${hour}:${minute.toString().padStart(2, "0")} | ${h}h ${m}m ${s}s`;
+  if (diff <= 0) {
+    countdownBox.innerText = "⛔ Attendance Closed";
+    btn.disabled = true;
+    return;
   }
+
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+
+  countdownBox.innerText =
+    `⏳ Closes at ${hour}:${minute.toString().padStart(2, "0")} | ${h}h ${m}m ${s}s`;
+}
 
   update();
   setInterval(update, 1000);
@@ -234,33 +234,42 @@ function startLocationTracking() {
           officeLon
         );
 
-      distanceDisplay.innerText =
-        "Dist: " + Math.round(distance) +
-        " | Rad: " + allowedRadius +
-        " | lat:" + lat +
-        " | lon:" + lon;
+      if (distance <= allowedRadius) {
 
-     if (distance <= allowedRadius) {
+        distanceDisplay.innerHTML =
+          "📍 <b>Location Verified</b><br>" +
+          "Distance: " + Math.round(distance) + "m";
 
-  distanceDisplay.innerHTML =
-    "📍 <b>Location Verified</b><br>" +
-    "Distance: " + Math.round(distance) + "m ✅";
+        btn.disabled = false;
 
-  btn.disabled = false;
+        statusBox.innerHTML = "🟢 Inside Office Range";
+        statusBox.style.color = "#00ff88";
 
-  statusBox.innerHTML = "🟢 Inside Office Range";
-  statusBox.style.color = "#00ff88";
+      } else {
 
-} else {
+        distanceDisplay.innerHTML =
+          "⚠️ <b>Outside Office Area</b><br>" +
+          "Distance: " + Math.round(distance) + "m";
 
-  distanceDisplay.innerHTML =
-    "⚠️ <b>Outside Office Area</b><br>" +
-    "Distance: " + Math.round(distance) + "m";
+        btn.disabled = true;
 
-  btn.disabled = true;
+        statusBox.innerHTML = "🔴 Move closer to mark attendance";
+        statusBox.style.color = "red";
 
-  statusBox.innerHTML = "🔴 Move closer to mark attendance";
-  statusBox.style.color = "red";
+      }
+
+    },
+
+    () => {
+
+      distanceDisplay.innerText = "❌ Location permission denied";
+      btn.disabled = true;
+
+    },
+
+    { enableHighAccuracy: true }
+
+  );
 
 }
 /* ===========================
@@ -553,5 +562,5 @@ function calculateDistance(
     );
 
   return R * c;
-
+console.log("✅ Attendance system loaded");
 }
