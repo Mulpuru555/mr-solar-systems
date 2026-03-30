@@ -247,6 +247,7 @@ async function loadMonthlySummary(user) {
   let working = 0;
   let present = 0;
 
+  // 🔹 holidays
   const holidaySnap = await getDocs(
     collection(db, "settings", "holidays", "holidayList")
   );
@@ -254,23 +255,9 @@ async function loadMonthlySummary(user) {
   const holidays = new Set();
   holidaySnap.forEach(d => holidays.add(d.id));
 
-  const datesSnap = await getDocs(
-    collection(db, "attendance", user.uid)
-  );
-
   const presentDates = new Set();
 
-  for (const docSnap of datesSnap.docs) {
-
-    const dataRef = doc(db, "attendance", user.uid, docSnap.id, "data");
-    const dataSnap = await getDoc(dataRef);
-
-    if (dataSnap.exists()) {
-      const data = dataSnap.data();
-      if (data.date) presentDates.add(data.date);
-    }
-  }
-
+  // 🔹 LOOP THROUGH DAYS (correct way)
   for (let d = 1; d <= today.getDate(); d++) {
 
     const dateObj = new Date(year, month, d);
@@ -281,17 +268,20 @@ async function loadMonthlySummary(user) {
 
     working++;
 
-    if (presentDates.has(dateStr)) present++;
+    const ref = doc(db, "attendance", user.uid, dateStr, "data");
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      present++;
+    }
   }
 
   const percent =
     working > 0 ? ((present / working) * 100).toFixed(1) : 0;
 
-  if (el("percentStat")) {
-    el("percentStat").innerText = percent + "%";
-  }
+  document.getElementById("percentStat").innerText =
+    percent + "%";
 }
-
 
 /* ================= DISTANCE ================= */
 
