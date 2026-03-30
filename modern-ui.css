@@ -1,0 +1,216 @@
+/* ===== GLOBAL ===== */
+
+body {
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    background: radial-gradient(circle at top, #0a0f2c, #000000);
+    color: #fff;
+    overflow-x: hidden;
+}
+
+/* ===== HEADER ===== */
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.header h2 {
+    color: #00eaff;
+    letter-spacing: 1px;
+}
+
+#welcomeName {
+    font-size: 13px;
+    opacity: 0.7;
+}
+
+.headerRight {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+#logoutBtn {
+    background: transparent;
+    border: 1px solid #00eaff;
+    color: #00eaff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+#logoutBtn:hover {
+    background: #00eaff;
+    color: #000;
+}
+
+/* ===== NOTICE ===== */
+
+#noticeBar {
+    padding: 10px;
+    text-align: center;
+    background: linear-gradient(90deg, #00eaff, #00ff88);
+    color: #000;
+    font-weight: 600;
+}
+
+/* ===== DASHBOARD ===== */
+
+.dashboard {
+    padding: 20px;
+}
+
+/* ===== STATS ===== */
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px,1fr));
+    gap: 15px;
+}
+
+.statBox {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: 0.3s;
+}
+
+.statBox:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0 20px #00eaff55;
+}
+
+/* ===== CARDS ===== */
+
+.cards {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.card {
+    flex: 1;
+    padding: 20px;
+    text-align: center;
+    border-radius: 15px;
+    cursor: pointer;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(10px);
+    transition: 0.3s;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px #00eaff88;
+}
+
+/* ===== GLASS BOX ===== */
+
+.glass {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 15px;
+    backdrop-filter: blur(12px);
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* ===== BUTTON ===== */
+
+button {
+    margin-top: 10px;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(45deg, #00eaff, #00ff88);
+    color: #000;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+/* ===== INPUT ===== */
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+}
+
+/* ===== TABLE ===== */
+
+table {
+    width: 100%;
+    margin-top: 15px;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 10px;
+    text-align: center;
+}
+
+th {
+    background: rgba(255,255,255,0.1);
+}
+
+/* ===== POPUP ===== */
+
+.popup {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    justify-content: center;
+    align-items: center;
+}
+
+.popupBox {
+    background: #111;
+    padding: 20px;
+    border-radius: 15px;
+}
+
+/* ===== LOADER ===== */
+
+#loadingScreen {
+    position: fixed;
+    inset: 0;
+    background: #000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.loader {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #00eaff;
+    border-top: 5px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
