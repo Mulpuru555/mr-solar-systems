@@ -71,11 +71,21 @@ async function loadMonthlyStats() {
     if (snap.exists()) presentDays++;
   }
 
-  const percent = totalWorkingDays > 0 ? Math.round((presentDays / totalWorkingDays) * 100) : 0;
-  el("percentStat").textContent = percent + "%";
-  el("percentStat").title = `${presentDays}/${totalWorkingDays} (${daysInMonth} days)`;
+  let percent = 0;
+
+// 👇 Beginner-friendly logic
+let percent = 0;
+
+if (presentDays === 0) {
+  percent = 0;
+} else if (presentDays === 1) {
+  percent = 100;
+} else {
+  percent = Math.round((presentDays / totalDays) * 100);
 }
 
+el("percentStat").textContent = percent + "%";
+el("percentStat").title = `${presentDays}/${totalDays} days`;
 // 🔥 DATE HELPER
 function getTodayDateForDay(date) {
   return date.getFullYear() + "-" +
