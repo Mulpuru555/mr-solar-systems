@@ -240,32 +240,27 @@ function startLocationTracking() {
         " | lat:" + lat +
         " | lon:" + lon;
 
-      if (distance <= allowedRadius) {
+     if (distance <= allowedRadius) {
 
-        btn.disabled = false;
-        statusBox.innerText = "Inside";
+  distanceDisplay.innerHTML =
+    "📍 <b>Location Verified</b><br>" +
+    "Distance: " + Math.round(distance) + "m ✅";
 
-      } else {
+  btn.disabled = false;
 
-        btn.disabled = true;
-        statusBox.innerText = "Outside";
+  statusBox.innerHTML = "🟢 Inside Office Range";
+  statusBox.style.color = "#00ff88";
 
-      }
+} else {
 
-    },
+  distanceDisplay.innerHTML =
+    "⚠️ <b>Outside Office Area</b><br>" +
+    "Distance: " + Math.round(distance) + "m";
 
-    () => {
+  btn.disabled = true;
 
-      distanceDisplay.innerText =
-        "Location denied";
-
-      btn.disabled = true;
-
-    },
-
-    { enableHighAccuracy: true }
-
-  );
+  statusBox.innerHTML = "🔴 Move closer to mark attendance";
+  statusBox.style.color = "red";
 
 }
 /* ===========================
