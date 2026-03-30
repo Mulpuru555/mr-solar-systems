@@ -18,6 +18,7 @@ let officeLon = null;
 let allowedRadius = 200;
 let currentUser = null;
 let locationWatchId = null;
+let clockInterval = null;
 
 /* ELEMENT */
 function el(id) {
@@ -30,6 +31,7 @@ onAuthStateChanged(auth, async (user) => {
     console.log("User not authenticated");
     showLoginState();
     stopLocationTracking();
+    stopClock();
     return;
   }
 
@@ -45,7 +47,7 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-/* OFFICE SETTINGS - ✅ FIXED */
+/* OFFICE SETTINGS */
 async function loadOfficeSettings() {
   const snap = await getDoc(doc(db, "settings", "tenali"));
   
@@ -53,7 +55,6 @@ async function loadOfficeSettings() {
   
   const data = snap.data();
   
-  // ✅ FIXED: Proper null/undefined checks
   if (
     data.point &&
     data.point.latitude != null &&
@@ -79,7 +80,38 @@ function startSystem() {
   }
 }
 
-/* LOCATION TRACKING - ✅ FULLY FIXED */
+/* CLOCK - ✅ FIXED FLICKERING */
+function stopClock() {
+  if (clockInterval) {
+    clearInterval(clockInterval);
+    clockInterval = null;
+  }
+}
+
+function startClock() {
+  stopClock(); // Clear any existing interval
+  
+  const tick = () => {
+    const clock = el("liveClock");
+    if (clock) {
+      const now = new Date();
+      clock.textContent = now.toLocaleTimeString('en-US', {
+        hour12: false,
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+      });
+    }
+  };
+  
+  // Initial call
+  tick();
+  
+  // ✅ FIXED: Single interval reference
+  clockInterval = setInterval(tick, 1000);
+}
+
+/* LOCATION TRACKING - ✅ FIXED PERMISSION */
 function stopLocationTracking() {
   if (locationWatchId !== null) {
     navigator.geolocation.clearWatch(locationWatchId);
@@ -87,23 +119,42 @@ function stopLocationTracking() {
   }
 }
 
-async function checkLocationPermission() {
-  if (!navigator.permissions) return true;
-  
-  try {
-    const permission = await navigator.permissions.query({name: 'geolocation'});
-    return permission.state === 'granted';
-  } catch (e) {
-    console.warn("Permission check failed:", e);
-    return true;
-  }
+// ✅ FIXED: Force permission request
+function requestLocationPermission() {
+  return new Promise((resolve) => {
+    const display = el("distanceDisplay");
+    if (display) display.textContent = "📍 Requesting location access...";
+    
+    // Force permission prompt by using getCurrentPosition first
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        console.log("✅ Location permission granted");
+        resolve(true);
+      },
+      (error) => {
+        console.log("Permission status:", error.code);
+        if (error.code === 1) {
+          // Permission denied
+          resolve(false);
+        } else {
+          // Other error, try again
+          resolve("retry");
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    );
+  });
 }
 
 async function startLocation() {
   const display = el("distanceDisplay");
   const btn = el("attendanceBtn");
   
-  if (display) display.textContent = "Checking permissions...";
+  if (display) display.textContent = "Initializing location...";
   if (btn) {
     btn.disabled = true;
     btn.textContent = "Loading...";
@@ -114,22 +165,28 @@ async function startLocation() {
     return;
   }
 
-  // ✅ Check permission first
-  const hasPermission = await checkLocationPermission();
-  if (!hasPermission) {
-    if (display) display.textContent = "📍 Enable location permission";
-    return;
-  }
-
-  if (display) display.textContent = "Getting GPS location...";
-  
   stopLocationTracking();
   
-  // ✅ FIXED: Single options object + longer timeout
+  // ✅ FIXED: Force permission request first
+  const permissionResult = await requestLocationPermission();
+  
+  if (permissionResult === false) {
+    if (display) display.textContent = "📍 Location permission denied";
+    if (btn) btn.textContent = "Enable location permission";
+    return;
+  }
+  
+  if (permissionResult === "retry") {
+    if (display) display.textContent = "🔄 Retrying location...";
+  }
+
+  if (display) display.textContent = "Tracking location...";
+  
+  // Start continuous tracking
   const options = {
     enableHighAccuracy: true,
-    timeout: 15000,      // 15 seconds
-    maximumAge: 30000    // 30 seconds cache
+    timeout: 15000,
+    maximumAge: 30000
   };
   
   locationWatchId = navigator.geolocation.watchPosition(
@@ -141,8 +198,10 @@ async function startLocation() {
 
 function handleLocationError(error) {
   console.error("Location error:", error);
-  let msg;
+  const display = el("distanceDisplay");
+  if (!display) return;
   
+  let msg;
   switch(error.code) {
     case 1: 
       msg = "📍 Location permission denied";
@@ -152,18 +211,18 @@ function handleLocationError(error) {
       break;
     case 3: 
       msg = "⏱️ GPS timeout - retrying...";
-      // ✅ Auto-retry after timeout
       setTimeout(() => {
         if (officeLat !== null && officeLon !== null) {
           startLocation();
         }
-      }, 3000);
+      }, 5000);
       break;
     default: 
       msg = "📍 Location error";
   }
   
-  updateDistanceDisplay(msg, "error");
+  display.textContent = msg;
+  display.className = "error";
 }
 
 function handleLocationUpdate(coords) {
@@ -256,7 +315,7 @@ function getTodayDate() {
   return now.toISOString().split("T")[0];
 }
 
-/* MARK ATTENDANCE - ✅ IMPROVED */
+/* MARK ATTENDANCE */
 async function markAttendance() {
   if (!navigator.onLine) {
     alert("❌ No internet connection");
@@ -283,15 +342,13 @@ async function markAttendance() {
       officeLon
     );
 
-    console.log(`📍 Distance: ${Math.round(distance)}m, Accuracy: ${position.coords.accuracy?.toFixed(0)}m`);
-
     if (distance > allowedRadius + 10) {
       alert(`❌ Too far!\n${Math.round(distance)}m > ${allowedRadius}m limit`);
       return;
     }
 
     await saveAttendance(position, distance);
-    alert(`✅ Attendance marked!\n📍 ${Math.round(distance)}m from office\n📏 Accuracy: ${position.coords.accuracy?.toFixed(0) || 'N/A'}m`);
+    alert(`✅ Attendance marked!\n📍 ${Math.round(distance)}m from office`);
     
     loadToday();
     
@@ -300,11 +357,10 @@ async function markAttendance() {
     const msg = error.code === 1 ? 
       "📍 Location permission needed" : 
       error.code === 3 ? 
-      "⏱️ GPS timeout - try again in open area" :
+      "⏱️ GPS timeout - try outdoors" : 
       "❌ Failed to mark attendance";
     alert(msg);
   } finally {
-    // Safe button reset
     if (btn) {
       btn.disabled = false;
       const display = el("distanceDisplay");
@@ -317,20 +373,18 @@ async function markAttendance() {
   }
 }
 
-// ✅ FIXED: Better geolocation promise
 function getCurrentPosition() {
   return new Promise((resolve, reject) => {
     const options = {
       enableHighAccuracy: true,
-      timeout: 20000,      // 20 seconds for precise location
-      maximumAge: 0        // Fresh location only
+      timeout: 20000,
+      maximumAge: 0
     };
     
     navigator.geolocation.getCurrentPosition(resolve, reject, options);
   });
 }
 
-// ✅ IMPROVED: Better duplicate check
 async function saveAttendance(position, distance) {
   const today = getTodayDate();
   const ref = doc(db, "attendance", currentUser.uid, today, "data");
@@ -351,8 +405,7 @@ async function saveAttendance(position, distance) {
     distance: Math.round(distance),
     officeLat: officeLat,
     officeLon: officeLon,
-    radius: allowedRadius,
-    device: navigator.userAgent.slice(0, 100)
+    radius: allowedRadius
   }, { merge: true });
 }
 
@@ -360,6 +413,7 @@ async function saveAttendance(position, distance) {
 window.markAttendance = markAttendance;
 window.signOutUser = async () => {
   stopLocationTracking();
+  stopClock();
   await signOut(auth);
 };
 
@@ -370,26 +424,9 @@ window.refreshData = () => {
   }
 };
 
-/* CLOCK */
-function startClock() {
-  const tick = () => {
-    const clock = el("liveClock");
-    if (clock) {
-      clock.textContent = new Date().toLocaleTimeString('en-US', {
-        hour12: false,
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit'
-      });
-    }
-  };
-  tick();
-  setInterval(tick, 1000);
-}
-
-/* DISTANCE CALCULATION */
+/* DISTANCE */
 function calculateDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371000; // Earth radius in meters
+  const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
   const a = Math.sin(dLat/2)**2 + 
