@@ -225,3 +225,15 @@ th {
     margin-top: 15px;
     color: #00ff88;
 }
+#distanceDisplay {
+    font-size: 15px;
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,0.05);
+}
+
+#attendanceStatus {
+    margin-top: 10px;
+    font-weight: bold;
+}
