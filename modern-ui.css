@@ -214,3 +214,14 @@ th {
 @keyframes spin {
     100% { transform: rotate(360deg); }
 }
+.activeCard {
+    box-shadow: 0 0 30px #00ff88 !important;
+    transform: scale(1.05);
+}
+
+#streakBox {
+    text-align: center;
+    font-size: 18px;
+    margin-top: 15px;
+    color: #00ff88;
+}
