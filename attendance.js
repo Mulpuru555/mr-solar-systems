@@ -10,22 +10,20 @@ import {
   setDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* ================= OFFICE SETTINGS ================= */
+/* ================= SETTINGS ================= */
 
-let officeLat = 0;
-let officeLon = 0;
+let officeLat = null;
+let officeLon = null;
 let allowedRadius = 0;
 
-/* ================= ELEMENTS ================= */
+/* ================= SAFE ELEMENT GET ================= */
 
-const btn = document.getElementById("attendanceBtn");
-const statusBox = document.getElementById("attendanceStatus");
-const distanceDisplay = document.getElementById("distanceDisplay");
-const countdownBox = document.getElementById("countdownBox");
+function el(id) {
+  return document.getElementById(id);
+}
 
 /* ================= AUTH ================= */
 
@@ -46,18 +44,18 @@ onAuthStateChanged(auth, async (user) => {
     allowedRadius = locSnap.data().radius;
   }
 
-  await initializeAttendance(user);
+  initializeAttendance(user);
 });
 
-/* ================= INITIALIZE ================= */
+/* ================= INIT ================= */
 
 async function initializeAttendance(user) {
 
   const working = await isTodayWorking();
 
   if (!working) {
-    countdownBox.innerText = "Today is Holiday";
-    btn.disabled = true;
+    if (el("countdownBox")) el("countdownBox").innerText = "Holiday";
+    if (el("attendanceBtn")) el("attendanceBtn").disabled = true;
     return;
   }
 
@@ -70,7 +68,7 @@ async function initializeAttendance(user) {
   setInterval(() => checkAndHandleAbsence(user), 60000);
 }
 
-/* ================= TODAY STATUS ================= */
+/* ================= TODAY ================= */
 
 async function loadTodayStatus(user) {
 
@@ -79,11 +77,12 @@ async function loadTodayStatus(user) {
   const ref = doc(db, "attendance", user.uid, today, "data");
   const snap = await getDoc(ref);
 
-  document.getElementById("todayStat").innerText =
-    snap.exists() ? 1 : 0;
+  if (el("todayStat")) {
+    el("todayStat").innerText = snap.exists() ? 1 : 0;
+  }
 }
 
-/* ================= CHECK WORKING ================= */
+/* ================= WORKING DAY ================= */
 
 async function isTodayWorking() {
 
@@ -117,8 +116,8 @@ async function startCountdown() {
     const diff = close - now;
 
     if (diff <= 0) {
-      countdownBox.innerText = "⛔ Closed";
-      btn.disabled = true;
+      if (el("countdownBox")) el("countdownBox").innerText = "Closed";
+      if (el("attendanceBtn")) el("attendanceBtn").disabled = true;
       return;
     }
 
@@ -126,8 +125,9 @@ async function startCountdown() {
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
 
-    countdownBox.innerText =
-      `⏳ ${h}h ${m}m ${s}s`;
+    if (el("countdownBox")) {
+      el("countdownBox").innerText = `${h}h ${m}m ${s}s`;
+    }
   }
 
   update();
@@ -139,60 +139,64 @@ async function startCountdown() {
 function startLocationTracking() {
 
   if (!navigator.geolocation) {
-    distanceDisplay.innerText = "No GPS";
-    btn.disabled = true;
+    el("distanceDisplay").innerText = "GPS not supported";
     return;
   }
-if (!officeLat || !officeLon) {
-  distanceDisplay.innerText = "Loading office location...";
-  btn.disabled = true;
-  return;
-}
-  navigator.geolocation.getCurrentPosition(
 
-    (pos) => {
+  let lastStatus = null; // prevent flicker
 
-      const lat = pos.coords.latitude;
-      const lon = pos.coords.longitude;
+  function updateLocation(pos) {
 
-      const dist = calculateDistance(lat, lon, officeLat, officeLon);
+    if (!officeLat || !officeLon) {
+      el("distanceDisplay").innerText = "Loading office...";
+      el("attendanceBtn").disabled = true;
+      return;
+    }
 
-      if (dist <= allowedRadius) {
+    const lat = pos.coords.latitude;
+    const lon = pos.coords.longitude;
 
-        distanceDisplay.innerHTML =
-          "📍 Verified<br>" + Math.round(dist) + "m";
+    const dist = calculateDistance(lat, lon, officeLat, officeLon);
 
-        statusBox.innerHTML = "🟢 Inside";
-        statusBox.style.color = "#00ff88";
+    const inside = dist <= allowedRadius;
 
-        btn.disabled = false;
+    // 🔥 prevent UI flicker (update only if changed)
+    if (lastStatus === inside) return;
+    lastStatus = inside;
 
-      } else {
+    if (inside) {
 
-        distanceDisplay.innerHTML =
-          "⚠️ Outside<br>" + Math.round(dist) + "m";
+      el("distanceDisplay").innerHTML =
+        "📍 Verified<br>" + Math.round(dist) + "m";
 
-        statusBox.innerHTML = "🔴 Move closer";
-        statusBox.style.color = "red";
+      el("attendanceStatus").innerHTML = "🟢 Inside Office Range";
+      el("attendanceStatus").style.color = "#00ff88";
 
-        btn.disabled = true;
-      }
+      el("attendanceBtn").disabled = false;
 
-    },
+    } else {
 
-    () => {
-      distanceDisplay.innerText = "Location denied";
-      btn.disabled = true;
-    },
+      el("distanceDisplay").innerHTML =
+        "⚠️ Outside Area<br>" + Math.round(dist) + "m";
 
-    { enableHighAccuracy: true }
+      el("attendanceStatus").innerHTML = "🔴 Move closer";
+      el("attendanceStatus").style.color = "red";
 
-  );
-  setInterval(() => {
-  navigator.geolocation.getCurrentPosition(successCallback, errorCallback, {
-    enableHighAccuracy: true
+      el("attendanceBtn").disabled = true;
+    }
+  }
+
+  function error(err) {
+    el("distanceDisplay").innerText = "Location denied / slow";
+    el("attendanceBtn").disabled = true;
+  }
+
+  // 🔥 BEST METHOD → continuous tracking (no delay)
+  navigator.geolocation.watchPosition(updateLocation, error, {
+    enableHighAccuracy: true,
+    maximumAge: 2000,
+    timeout: 10000
   });
-}, 5000);
 }
 
 /* ================= MARK ================= */
@@ -209,29 +213,29 @@ window.markAttendance = async function () {
   const snap = await getDoc(ref);
 
   if (snap.exists()) {
-    statusBox.innerText = "Already Marked";
+    if (el("attendanceStatus")) el("attendanceStatus").innerText = "Already marked";
     return;
   }
 
   await setDoc(ref, {
     status: "present",
     time: serverTimestamp(),
-    date: today,
-    employeeId: user.uid
+    date: today
   });
 
-  statusBox.innerHTML = "✅ Marked";
-  statusBox.style.color = "#00ff88";
+  if (el("attendanceStatus")) {
+    el("attendanceStatus").innerHTML = "✅ Marked";
+    el("attendanceStatus").style.color = "#00ff88";
+  }
 
-  btn.disabled = true;
+  if (el("attendanceBtn")) el("attendanceBtn").disabled = true;
 
-  loadMonthlySummary(user);
-  loadTodayStatus(user);
+  setTimeout(() => {
+    loadMonthlySummary(user);
+    loadTodayStatus(user);
+  }, 500);
 };
-setTimeout(() => {
-  loadMonthlySummary(user);
-  loadTodayStatus(user);
-}, 500);
+
 /* ================= MONTHLY ================= */
 
 async function loadMonthlySummary(user) {
@@ -250,30 +254,22 @@ async function loadMonthlySummary(user) {
   const holidays = new Set();
   holidaySnap.forEach(d => holidays.add(d.id));
 
-  const monthRef = collection(db, "attendance", user.uid);
+  const datesSnap = await getDocs(
+    collection(db, "attendance", user.uid)
+  );
 
-const datesSnap = await getDocs(monthRef);
-
-const presentDates = new Set();
-
-for (const docSnap of datesSnap.docs) {
-
-  const dataRef = doc(db, "attendance", user.uid, docSnap.id, "data");
-  const dataSnap = await getDoc(dataRef);
-
-  if (dataSnap.exists()) {
-    const data = dataSnap.data();
-    if (data.date) {
-      presentDates.add(data.date);
-    }
-  }
-}
   const presentDates = new Set();
 
-  attSnap.forEach(d => {
-    const data = d.data();
-    if (data.date) presentDates.add(data.date);
-  });
+  for (const docSnap of datesSnap.docs) {
+
+    const dataRef = doc(db, "attendance", user.uid, docSnap.id, "data");
+    const dataSnap = await getDoc(dataRef);
+
+    if (dataSnap.exists()) {
+      const data = dataSnap.data();
+      if (data.date) presentDates.add(data.date);
+    }
+  }
 
   for (let d = 1; d <= today.getDate(); d++) {
 
@@ -291,8 +287,9 @@ for (const docSnap of datesSnap.docs) {
   const percent =
     working > 0 ? ((present / working) * 100).toFixed(1) : 0;
 
-  document.getElementById("percentStat").innerText =
-    percent + "%";
+  if (el("percentStat")) {
+    el("percentStat").innerText = percent + "%";
+  }
 }
 
 
