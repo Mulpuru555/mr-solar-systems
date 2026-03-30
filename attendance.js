@@ -74,8 +74,6 @@ async function loadMonthlyStats() {
   let percent = 0;
 
 // 👇 Beginner-friendly logic
-let percent = 0;
-
 if (presentDays === 0) {
   percent = 0;
 } else if (presentDays === 1) {
@@ -84,8 +82,11 @@ if (presentDays === 0) {
   percent = Math.round((presentDays / totalDays) * 100);
 }
 
-el("percentStat").textContent = percent + "%";
-el("percentStat").title = `${presentDays}/${totalDays} days`;
+const percentEl = el("percentStat");
+if (percentEl) {
+  percentEl.textContent = percent + "%";
+  percentEl.title = `${presentDays}/${totalDays} days`;
+}
 // 🔥 DATE HELPER
 function getTodayDateForDay(date) {
   return date.getFullYear() + "-" +
