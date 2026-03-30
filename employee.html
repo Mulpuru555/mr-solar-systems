@@ -7,264 +7,183 @@
 
 <link rel="stylesheet" href="employee.css">
 <link rel="stylesheet" href="modern-ui.css">
-  
+
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 </head>
 
 <body>
 
-
 <!-- LOADING -->
-
 <div id="loadingScreen">
-
-<div class="loader"></div>
-<h2>Loading Portal...</h2>
-
+  <div class="loader"></div>
+  <h2>Loading Portal...</h2>
 </div>
-
-
 
 <!-- HEADER -->
-
 <div class="header">
+  <div>
+    <h2>M.R Solar Systems</h2>
+    <div id="welcomeName">Welcome</div>
+  </div>
 
-<div>
-
-<h2>M.R Solar Systems</h2>
-<div id="welcomeName">Welcome</div>
-
+  <div class="headerRight">
+    <div id="liveClock">00:00</div>
+    <button id="logoutBtn">Logout</button>
+  </div>
 </div>
-
-<div class="headerRight">
-
-<div id="liveClock">00:00</div>
-
-<button id="logoutBtn">
-Logout
-</button>
-
-</div>
-
-</div>
-
-
 
 <!-- NOTICE -->
-
 <div id="noticeBar">
-Notice loading...
+  Notice loading...
 </div>
-
-
 
 <!-- DASHBOARD -->
-
 <div class="dashboard">
 
-
 <!-- STATS -->
-
 <div class="stats">
 
-<div class="statBox">
-<div>Today</div>
-<div id="todayStat">0</div>
+  <div class="statBox">
+    <div>Today</div>
+    <div id="todayStat">0</div>
+  </div>
+
+  <div class="statBox">
+    <div>Monthly %</div>
+    <div id="percentStat">0%</div>
+  </div>
+
+  <div class="statBox">
+    <div>Total</div>
+    <div id="totalStat">0</div>
+  </div>
+
+  <div class="statBox">
+    <div>Pending</div>
+    <div id="pendingStat">0</div>
+  </div>
+
 </div>
 
-<div class="statBox">
-<div>Monthly %</div>
-<div id="percentStat">0%</div>
-</div>
-
-<div class="statBox">
-<div>Total</div>
-<div id="totalStat">0</div>
-</div>
-
-<div class="statBox">
-<div>Pending</div>
-<div id="pendingStat">0</div>
-</div>
+<!-- STREAK (MOVED OUTSIDE) -->
 <div class="glass" id="streakBox">
-    🔥 Attendance Streak: <span id="streakCount">0</span> days
+  🔥 Attendance Streak: <span id="streakCount">0</span> days
 </div>
-</div>
-
-
 
 <!-- CARDS -->
-
 <div class="cards">
 
-<div class="card" onclick="toggleSection('attendanceSection')">
-Attendance
+  <div class="card" onclick="toggleSection('attendanceSection')">
+    Attendance
+  </div>
+
+  <div class="card" onclick="toggleSection('erpSection')">
+    ERP
+  </div>
+
+  <div class="card" onclick="toggleSection('historySection')">
+    History
+  </div>
+
 </div>
-
-<div class="card" onclick="toggleSection('erpSection')">
-ERP
-</div>
-
-<div class="card" onclick="toggleSection('historySection')">
-History
-</div>
-
-</div>
-
-
 
 <!-- ================= ATTENDANCE ================= -->
-
 <div id="attendanceSection" class="section">
 
-<div class="glass">
+  <div class="glass">
 
-<div id="distanceDisplay">
-Checking location...
-</div>
+    <div id="distanceDisplay">Checking location...</div>
 
-<div id="countdownBox">
-Time loading...
-</div>
+    <div id="countdownBox">Time loading...</div>
 
-<button id="attendanceBtn" onclick="markAttendance()">
-Mark Attendance
-</button>
+    <button id="attendanceBtn" onclick="markAttendance()">
+      Mark Attendance
+    </button>
 
-<div id="attendanceStatus"></div>
+    <div id="attendanceStatus"></div>
+
+  </div>
 
 </div>
-
-</div>
-
-
 
 <!-- ================= ERP ================= -->
+<div id="erpSection" class="section" style="display:none;">
 
-<div id="erpSection" class="section">
+  <div class="glass">
+    <form id="paymentForm">
+      <input id="customerName" placeholder="Customer">
+      <input id="executiveName" placeholder="Executive">
+      <input id="totalAmount" placeholder="Total">
+      <button type="submit">Add</button>
+    </form>
+  </div>
 
-<div class="glass">
+  <div class="glass">
+    <input id="searchInput" placeholder="Search...">
 
-<form id="paymentForm">
-
-<input id="customerName" placeholder="Customer">
-
-<input id="executiveName" placeholder="Executive">
-
-<input id="totalAmount" placeholder="Total">
-
-<button type="submit">
-Add
-</button>
-
-</form>
-
-</div>
-
-
-<div class="glass">
-
-<input id="searchInput" placeholder="Search...">
-
-<table>
-
-<thead>
-
-<tr>
-
-<th>S.No</th>
-<th>Customer</th>
-<th>Executive</th>
-<th>Total</th>
-<th>Paid</th>
-<th>Status</th>
-<th>Date</th>
-<th>Lock</th>
-<th>Edit</th>
-
-</tr>
-
-</thead>
-
-<tbody id="recordsTable"></tbody>
-
-</table>
+    <table>
+      <thead>
+        <tr>
+          <th>S.No</th>
+          <th>Customer</th>
+          <th>Executive</th>
+          <th>Total</th>
+          <th>Paid</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th>Lock</th>
+          <th>Edit</th>
+        </tr>
+      </thead>
+      <tbody id="recordsTable"></tbody>
+    </table>
+  </div>
 
 </div>
-
-</div>
-
-
 
 <!-- ================= HISTORY ================= -->
+<div id="historySection" class="section" style="display:none;">
 
-<div id="historySection" class="section">
-
-<div class="glass">
-
-<table>
-
-<thead>
-
-<tr>
-<th>Date</th>
-<th>Time</th>
-</tr>
-
-</thead>
-
-<tbody id="historyTable"></tbody>
-
-</table>
+  <div class="glass">
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody id="historyTable"></tbody>
+    </table>
+  </div>
 
 </div>
 
 </div>
-
-
-
-</div>
-
-
 
 <!-- EDIT POPUP -->
-
 <div id="editPopup" class="popup">
-
-<div class="popupBox">
-
-<h3>Edit</h3>
-
-<input id="editName">
-
-<input id="editExec">
-
-<input id="editTotal">
-
-<button id="saveEditBtn">
-Save
-</button>
-
-<button onclick="closePopup()">
-Cancel
-</button>
-
+  <div class="popupBox">
+    <h3>Edit</h3>
+    <input id="editName">
+    <input id="editExec">
+    <input id="editTotal">
+    <button id="saveEditBtn">Save</button>
+    <button onclick="closePopup()">Cancel</button>
+  </div>
 </div>
-
-</div>
-
-
 
 <!-- SCRIPTS -->
 
+<!-- 🔥 LOAD THIS FIRST -->
+<script src="animations.js"></script>
+
+<!-- MODULES -->
 <script type="module" src="ui.js"></script>
 <script type="module" src="dashboard.js"></script>
 <script type="module" src="attendance.js"></script>
 <script type="module" src="erp.js"></script>
 <script type="module" src="history.js"></script>
-<script src="animations.js"></script>  
-
 
 </body>
 </html>
