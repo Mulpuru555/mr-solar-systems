@@ -23,6 +23,14 @@ let locationWatchId = null;
 let clockInterval = null;
 let lastCoords = null;
 
+/* 🔥 FIXED DATE FUNCTION 👈 YOUR EXACT FIX */
+function getTodayDate() {
+  const now = new Date();
+  return now.getFullYear() + "-" +
+    String(now.getMonth() + 1).padStart(2, '0') + "-" +
+    String(now.getDate()).padStart(2, '0');
+}
+
 /* ELEMENT */
 function el(id) {
   return document.getElementById(id);
@@ -36,68 +44,61 @@ function isWithinAllowedTime() {
   return currentMinutes <= closeMinutes;
 }
 
-/* 🔥 MONTHLY STATS 👈 YOUR NEW FUNCTION */
+/* 🔥 MONTHLY STATS 👈 FIXED WITH YOUR DATE */
 async function loadMonthlyStats() {
   if (!currentUser) return;
 
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
+  try {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
 
-  let presentDays = 0;
-  let totalDays = 0;
+    let presentDays = 0;
+    let totalDays = 0;
 
-  // Loop from 1 → today
-  for (let d = 1; d <= now.getDate(); d++) {
-const date = new Date(year, month, d);
-const day = date.getDay();
+    for (let d = 1; d <= now.getDate(); d++) {
+      const date = new Date(year, month, d);
+      const day = date.getDay();
 
-// Skip Sunday (optional)
-if (day === 0) continue;
+      if (day === 0) continue;  // Skip Sunday
 
-totalDays++;
+      totalDays++;
 
-// 🔥 SAFE DATE FORMAT (NO TIMEZONE ISSUE)
-const dayStr = String(d).padStart(2, '0');
-const monthStr = String(month + 1).padStart(2, '0');
-const dateStr = `${year}-${monthStr}-${dayStr}`;
-    const snap = await getDoc(doc(db, "attendance", currentUser.uid, dateStr, "data"));
+      // 👈 YOUR FIXED DATE FUNCTION
+      const dateStr = getTodayDateForDay(date);
+      const snap = await getDoc(doc(db, "attendance", currentUser.uid, dateStr, "data"));
 
-    if (snap.exists()) {
-      presentDays++;
+      if (snap.exists()) presentDays++;
     }
-  }
 
-  const percent = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
-  
-  // 👈 UPDATE UI
-  const percentEl = el("percentStat");
-  if (percentEl) {
-    percentEl.textContent = percent + "%";
-    percentEl.title = `${presentDays}/${totalDays} days`;
+    const percent = totalDays > 0 ? Math.round((presentDays / totalDays) * 100) : 0;
+    const percentEl = el("percentStat");
+    if (percentEl) {
+      percentEl.textContent = percent + "%";
+      percentEl.title = `${presentDays}/${totalDays}`;
+    }
+  } catch (e) {
+    console.error("Monthly error:", e);
   }
-
-  console.log(`📊 Monthly: ${percent}% (${presentDays}/${totalDays})`);
 }
 
-/* UI STATES */
+// 🔥 HELPER FOR MONTHLY (same logic)
+function getTodayDateForDay(date) {
+  return date.getFullYear() + "-" +
+    String(date.getMonth() + 1).padStart(2, '0') + "-" +
+    String(date.getDate()).padStart(2, '0');
+}
+
+/* UI */
 function showLoginState() {
-  el("distanceDisplay").textContent = "👋 Please login";
+  el("distanceDisplay").textContent = "👋 Login";
   el("todayStat").textContent = "NO";
-  el("todayStat").className = "absent";
-  const btn = el("attendanceBtn");
-  if (btn) btn.textContent = "Login required";
-  el("percentStat").textContent = "--";
-}
-
-function showErrorState(msg) {
-  el("distanceDisplay").textContent = msg;
+  el("percentStat").textContent = "--%";
 }
 
 /* AUTH */
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    console.log("👋 Logout");
     showLoginState();
     stopLocationTracking();
     stopClock();
@@ -106,78 +107,54 @@ onAuthStateChanged(auth, async (user) => {
   }
 
   currentUser = user;
-  console.log("✅ Login:", user.uid);
-
   try {
     await loadOfficeSettings();
     startSystem();
   } catch (e) {
-    console.error("Init error:", e);
-    showErrorState("Settings failed");
+    showErrorState("Settings error");
   }
 });
 
-/* 🔥 SETTINGS */
+/* SETTINGS */
 async function loadOfficeSettings() {
-  const officeSnap = await getDoc(doc(db, "settings", "tenali"));
-  if (!officeSnap.exists()) throw new Error("No office settings");
+  const snap = await getDoc(doc(db, "settings", "tenali"));
+  const data = snap.data();
+  officeLat = Number(data.point.latitude);
+  officeLon = Number(data.point.longitude);
+  allowedRadius = Number(data.radius) || 200;
 
-  const officeData = officeSnap.data();
-  officeLat = Number(officeData.point.latitude);
-  officeLon = Number(officeData.point.longitude);
-  allowedRadius = Number(officeData.radius) || 200;
-
-  try {
-    const timeSnap = await getDoc(doc(db, "settings", "attendance"));
-    if (timeSnap.exists()) {
-      const timeData = timeSnap.data();
-      closeHour = Number(timeData.closeHour) || 23;
-      closeMinute = Number(timeData.closeMinute) || 0;
-    }
-  } catch (e) {
-    console.warn("Time settings default");
+  const timeSnap = await getDoc(doc(db, "settings", "attendance"));
+  if (timeSnap.exists()) {
+    const timeData = timeSnap.data();
+    closeHour = Number(timeData.closeHour) || 23;
+    closeMinute = Number(timeData.closeMinute) || 0;
   }
-
-  console.log(`✅ Office OK | Close: ${closeHour}:${closeMinute.toString().padStart(2, '0')}`);
 }
 
-/* SYSTEM 👈 YOUR CALL ADDED */
+/* SYSTEM */
 function startSystem() {
   startClock();
   startLocation();
   loadToday();
-  loadMonthlyStats();  // 👈 YOUR NEW CALL
+  setTimeout(loadMonthlyStats, 1500);  // 🔥 Sync delay
 }
 
-/* 🔥 CLOCK */
+/* CLOCK */
 function stopClock() {
-  if (clockInterval) {
-    clearInterval(clockInterval);
-    clockInterval = null;
-  }
+  if (clockInterval) clearInterval(clockInterval);
 }
 
 function startClock() {
   const clock = el("liveClock");
-  if (!clock) return;
-
   if (clockInterval) clearInterval(clockInterval);
 
-  function updateClock() {
+  const updateClock = () => {
     const now = new Date();
     const time = now.toLocaleTimeString("en-IN", {
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
-
-    if (clock.innerText !== time) {
-      clock.innerText = time;
-    }
-
-    const closeTime = `${closeHour.toString().padStart(2, '0')}:${closeMinute.toString().padStart(2, '0')}`;
-    clock.title = isWithinAllowedTime() ? `✅ Open (${closeTime})` : `⏰ Closed (${closeTime})`;
-  }
+    if (clock.innerText !== time) clock.innerText = time;
+  };
 
   updateClock();
   clockInterval = setInterval(updateClock, 1000);
@@ -203,114 +180,86 @@ function startLocation() {
   stopLocationTracking();
 
   locationWatchId = navigator.geolocation.watchPosition(
-    (pos) => {
+    pos => {
       lastCoords = pos.coords;
-
-      if (officeLat == null) {
-        display.textContent = "Loading office...";
-        return;
+      if (officeLat) {
+        const distance = calculateDistance(pos.coords.latitude, pos.coords.longitude, officeLat, officeLon);
+        updateDistanceDisplay(distance);
+        updateAttendanceButton(distance);
       }
-
-      const distance = calculateDistance(pos.coords.latitude, pos.coords.longitude, officeLat, officeLon);
-      updateDistanceDisplay(distance);
-      updateAttendanceButton(distance);
     },
-    (err) => {
-      const msg = {1: "Permission denied", 2: "GPS off", 3: "Timeout"}[err.code] || "GPS error";
-      display.textContent = msg;
-    },
-    { enableHighAccuracy: true, timeout: 15000, maximumAge: 30000 }
+    () => display.textContent = "GPS error",
+    { enableHighAccuracy: true }
   );
 }
 
 /* UI */
 function updateDistanceDisplay(distance) {
   const display = el("distanceDisplay");
-  const dist = Math.round(distance);
   const inside = distance <= allowedRadius;
-  
-  display.innerHTML = inside ? `✅ Inside<br><b>${dist}m</b>` : `❌ ${dist}m / ${allowedRadius}m`;
-  display.className = inside ? "inside" : "outside";
+  display.innerHTML = inside ? `✅ ${Math.round(distance)}m` : `❌ ${Math.round(distance)}m`;
 }
 
 function updateAttendanceButton(distance) {
   const btn = el("attendanceBtn");
-  if (!btn) return;
-
-  const inside = distance <= allowedRadius;
-  const timeOK = isWithinAllowedTime();
-  const ready = inside && timeOK;
-
+  const ready = distance <= allowedRadius && isWithinAllowedTime();
   btn.disabled = !ready;
-  
-  if (!timeOK) {
-    btn.textContent = `⏰ Closed ${closeHour}:${closeMinute.toString().padStart(2, '0')}`;
-  } else if (!inside) {
-    btn.textContent = `📍 ${Math.round(distance)}m`;
-  } else {
-    btn.textContent = "✅ Mark Attendance";
-  }
+  btn.textContent = ready ? "✅ Mark" : "Outside/Closed";
 }
 
 /* TODAY */
 async function loadToday() {
   if (!currentUser) return;
-  
-  try {
-    const today = getTodayDate();
-    const snap = await getDoc(doc(db, "attendance", currentUser.uid, today, "data"));
-    
-    const statEl = el("todayStat");
-    if (statEl) {
-      statEl.textContent = snap.exists() ? "1" : "0";
-      statEl.className = snap.exists() ? "present" : "absent";
-    }
-  } catch (e) {
-    el("todayStat").textContent = "ERR";
-  }
+  const today = getTodayDate();  // 👈 YOUR FIXED FUNCTION
+  const snap = await getDoc(doc(db, "attendance", currentUser.uid, today, "data"));
+  el("todayStat").textContent = snap.exists() ? "1" : "0";
 }
 
-function getTodayDate() {
-  const now = new Date();
-
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
-  const day = String(now.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
-}
-
-/* 🔥 ATTENDANCE 👈 UPDATE CALL ADDED */
+/* 🔥 ATTENDANCE */
 window.markAttendance = async () => {
-  if (!isWithinAllowedTime()) {
-    const closeTime = `${closeHour.toString().padStart(2, '0')}:${closeMinute.toString().padStart(2, '0')}`;
-    return alert(`⏰ CLOSED!\nUntil ${closeTime}`);
-  }
-
-  if (!lastCoords) return alert("📍 GPS needed");
+  if (!isWithinAllowedTime()) return alert("⏰ Closed");
+  if (!lastCoords) return alert("📍 GPS");
   if (!navigator.onLine) return alert("❌ Offline");
 
   const distance = calculateDistance(lastCoords.latitude, lastCoords.longitude, officeLat, officeLon);
-  if (distance > allowedRadius + 10) {
-    return alert(`❌ ${Math.round(distance)}m > ${allowedRadius}m`);
-  }
+  if (distance > allowedRadius) return alert("❌ Outside");
 
   const btn = el("attendanceBtn");
   btn.disabled = true;
-  btn.textContent = "💾 Saving...";
+  btn.textContent = "Saving...";
 
   try {
-    await saveAttendance({ coords: lastCoords }, distance);
-    alert(`✅ SUCCESS!\n📍 ${Math.round(distance)}m`);
-    loadToday();
-    loadMonthlyStats();  // 👈 YOUR UPDATE CALL
+    // 👈 YOUR FIXED DATE
+    const today = getTodayDate();
+    const ref = doc(db, "attendance", currentUser.uid, today, "data");
+    
+    const snap = await getDoc(ref);
+    if (snap.exists()) throw new Error("Already marked");
+
+    await setDoc(ref, {
+      status: "present",
+      date: today,
+      timestamp: serverTimestamp(),
+      lat: lastCoords.latitude,
+      lon: lastCoords.longitude,
+      distance: Math.round(distance)
+    });
+
+    alert("✅ Marked!");
+    
+    // 🔥 UPDATE WITH DELAY
+    setTimeout(() => {
+      loadToday();
+      loadMonthlyStats();
+    }, 1200);
+    
   } catch (e) {
-    if (e.message.includes("Already") || e.message.includes("Exists")) {
-      console.log("ℹ️ Already marked today");
-      alert("✅ Already marked today!");
+    if (e.message.includes("Already")) {
+      console.log("ℹ️ Already marked");
+      alert("✅ Already marked!");
     } else {
-      console.error("Save error:", e);
-      alert("❌ Save failed");
+      console.error("Error:", e);
+      alert("❌ Failed");
     }
   } finally {
     btn.disabled = false;
@@ -318,31 +267,10 @@ window.markAttendance = async () => {
   }
 };
 
-/* SAVE */
-async function saveAttendance(position, distance) {
-  const today = getTodayDate();
-  const ref = doc(db, "attendance", currentUser.uid, today, "data");
-  
-  const snap = await getDoc(ref);
-  if (snap.exists()) throw new Error("Already marked");
-
-  await setDoc(ref, {
-    status: "present",
-    date: today,
-    timestamp: serverTimestamp(),
-    lat: position.coords.latitude,
-    lon: position.coords.longitude,
-    accuracy: position.coords.accuracy || 0,
-    distance: Math.round(distance),
-    officeLat, officeLon, allowedRadius
-  });
-}
-
 /* LOGOUT */
 window.signOutUser = async () => {
   stopLocationTracking();
   stopClock();
-  lastCoords = null;
   await signOut(auth);
 };
 
@@ -351,10 +279,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + 
-            Math.cos(lat1 * Math.PI / 180) * 
-            Math.cos(lat2 * Math.PI / 180) * 
-            Math.sin(dLon / 2) ** 2;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
