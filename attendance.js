@@ -46,52 +46,53 @@ function isWithinAllowedTime() {
 
 /* 🔥 MONTHLY STATS 👈 FIXED WITH YOUR DATE */
 /* 🔥 FULL MONTH STATS */
+/* 🔥 MONTHLY STATS - 100% TO 0% (Skip Sundays + Holidays) */
 async function loadMonthlyStats() {
   if (!currentUser) return;
 
   const now = new Date();
   const year = now.getFullYear();
   const month = now.getMonth();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();  // 🔥 31
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
   
   let presentDays = 0;
   let totalWorkingDays = 0;
+  let adminHolidays = 0;
 
-  for (let d = 1; d <= daysInMonth; d++) {  // 🔥 To end of month
+  // 🔥 Load holidays
+  const holidaysSnap = await getDoc(doc(db, "settings", "holidays"));
+  const holidaysData = holidaysSnap.exists() ? holidaysSnap.data() : {};
+
+  for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(year, month, d);
     const day = date.getDay();
+    const dateStr = getTodayDateForDay(date);
 
-    // Skip weekends
-    if (day === 0 || day === 6) continue;
+    // 🔥 Skip Sundays (day 0)
+    if (day === 0) continue;
+
+    // 🔥 Skip Admin Holidays
+    if (holidaysData[dateStr]) {
+      adminHolidays++;
+      continue;
+    }
 
     totalWorkingDays++;
-    const dateStr = getTodayDateForDay(date);
     const snap = await getDoc(doc(db, "attendance", currentUser.uid, dateStr, "data"));
-
     if (snap.exists()) presentDays++;
   }
 
-  let percent = 0;
+  // 🔥 100% - Absences (Perfect!)
+  let percent = 100;
+  if (totalWorkingDays > 0) {
+    percent = Math.max(0, Math.round((presentDays / totalWorkingDays) * 100));
+  }
 
-// 👇 Beginner-friendly logic
-if (presentDays === 0) {
-  percent = 0;
-} else if (presentDays === 1) {
-  percent = 100;
-} else {
-  percent = Math.round((presentDays / totalDays) * 100);
-}
-
-const percentEl = el("percentStat");
-if (percentEl) {
-  percentEl.textContent = percent + "%";
-  percentEl.title = `${presentDays}/${totalDays} days`;
-}
-// 🔥 DATE HELPER
-function getTodayDateForDay(date) {
-  return date.getFullYear() + "-" +
-    String(date.getMonth() + 1).padStart(2, '0') + "-" +
-    String(date.getDate()).padStart(2, '0');
+  const percentEl = el("percentStat");
+  if (percentEl) {
+    percentEl.textContent = percent + "%";
+    percentEl.title = `${presentDays}/${totalWorkingDays} days (${adminHolidays} holidays)`;
+  }
 }
 
 /* UI */
