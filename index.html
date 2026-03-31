@@ -15,45 +15,50 @@
 <body>
 
 <header class="header">
+
     <!-- CENTERED BRAND BLOCK -->
     <div class="brand-wrapper">
+
         <img src="images/mr-logo.jpeg" class="mr-logo" alt="M.R Solar Logo">
+
         <h1 class="brand-title">
             M.R <span class="highlight-solar">SOLAR</span> SYSTEMS
         </h1>
+
         <div class="dealer-text">
             Authorized Dealer of 
             <span class="tata-highlight">Tata Power Solar</span>
         </div>
+
     </div>
-    
-    <!-- NAVIGATION - ✅ FIXED LOGIN BUTTON -->
-    <nav class="nav-menu">
-        <button class="login-btn" onclick="openLoginModal()">
-            Login
-        </button>
-        <a href="#systems">Systems</a>
-        <a href="#technology">Technology</a>
-        <a href="#emi">EMI</a>
-        <a href="#service">Service</a>
-        <a href="#leadership">Leadership</a>
-        <a href="#location">Location</a>
-    </nav>
+<!-- NAVIGATION -->
+<nav class="nav-menu">
+    <button class="login-btn"
+onclick="document.getElementById('loginModal').style.display='flex'">
+Login
+</button>
+    <a href="#systems">Systems</a>
+    <a href="#technology">Technology</a>
+    <a href="#emi">EMI</a>
+    <a href="#service">Service</a>
+    <a href="#leadership">Leadership</a>
+    <a href="#location">Location</a>
+</nav>
 </header>
+
+
 
 <section class="hero">
     <div class="hero-content">
         <h2>Best Solar Dealer in Tenali – Powering Homes With Smart Solar Energy</h2>
-        <p>Authorized Dealer of Tata Power Solar | 200+ Installations Across Tenali, Bapatla, Repalle & Chirala</p>
+<p>Authorized Dealer of Tata Power Solar | 200+ Installations Across Tenali, Bapatla, Repalle & Chirala</p>
         <a href="#systems" class="btn-primary">Explore Systems</a>
     </div>
 </section>
-
 <section class="light-section" style="text-align:center;">
-    <h2 class="section-title">Install Solar From Just ₹2,999 / Month*</h2>
-    <p>Easy EMI options available for residential & commercial solar systems in Tenali.</p>
+<h2 class="section-title">Install Solar From Just ₹2,999 / Month*</h2>
+<p>Easy EMI options available for residential & commercial solar systems in Tenali.</p>
 </section>
-
 <!-- SYSTEMS SECTION -->
 <section id="systems" class="dark-section">
     <h2 class="section-title">Solar Product Series</h2>
@@ -91,14 +96,16 @@
 
 <section class="light-section">
     <h2 class="section-title">Engineering & Installation Excellence</h2>
+
     <div class="product-card">
         <p>
-        At <strong>M.R Solar Systems</strong>, we don't just install solar panels —
+        At <strong>M.R Solar Systems</strong>, we don’t just install solar panels —
         we deliver complete engineered solar solutions. Every project is executed
         using industry-grade components, structured safety standards, and
         professional workmanship to ensure long-term performance, durability,
         and reliability.
         </p>
+
         <ul style="margin-top:20px; line-height:1.8;">
             <li>Heavy-Duty Hot Dip Galvanized Mounting Structure</li>
             <li>ISI Certified DC Cables with Premium MC4 Connectors</li>
@@ -107,6 +114,7 @@
             <li>Neat & Secure Cable Routing & Management</li>
             <li>Performance-Oriented System Design & Testing</li>
         </ul>
+
         <p style="margin-top:20px;">
         Our installation standards ensure safety, structural strength, and
         maximum energy generation for both residential and commercial
@@ -151,10 +159,12 @@
 
 <section class="dark-section">
     <h2 class="section-title">Our Solar Projects</h2>
+
     <div class="product-card gallery-trigger" onclick="openGallery('residential')">
         <h3>Residential Installations</h3>
         <p>Click to view our completed residential solar projects.</p>
     </div>
+
     <div class="product-card gallery-trigger" onclick="openGallery('commercial')">
         <h3>Commercial Installations</h3>
         <p>Click to view our completed commercial solar projects.</p>
@@ -243,92 +253,90 @@
     <p>Branches: Tenali | Bapatla | Repalle | Chirala</p>
     <p>© 2026 M.R Solar Systems. All Rights Reserved.</p>
 </footer>
-
 <!-- PROJECT GALLERY POPUP -->
 <div id="galleryOverlay" class="gallery-overlay">
+
    <div class="gallery-box">
     <span class="gallery-close" onclick="closeGallery()">×</span>
+
     <div class="gallery-view">
         <img id="galleryImage" src="" alt="Solar Project">
     </div>
+
     <div id="comingSoonText" class="coming-soon-text" style="display:none;">
         Commercial project images will be updated soon.
     </div>
+
     <div class="gallery-controls">
         <button onclick="prevImage()">❮</button>
         <button onclick="nextImage()">❯</button>
     </div>
 </div>
-</div>
 
+</div>
 <!-- SMART LEAD POPUP -->
 <div id="leadPopupOverlay" class="lead-popup-overlay">
     <div class="lead-popup-box">
         <span class="lead-close-btn" onclick="closeLeadPopup()">×</span>
+
         <h2>Get Free Solar Site Visit</h2>
         <p>Book a free consultation for Tata DCR & N-Type TOPCon solar systems in Tenali & nearby areas.</p>
+
         <input type="text" id="leadName" placeholder="Your Name">
         <input type="number" id="leadMobile" placeholder="Mobile Number">
         <input type="text" id="leadLocation" placeholder="Your Location">
+
         <button onclick="sendLeadToWhatsApp()">Get Free Consultation</button>
     </div>
 </div>
+<script src="script.js"></script>
 
-<!-- ✅ FIXED LOGIN MODAL (100% WORKING) -->
-<div id="loginModal" class="login-overlay" style="display:none;">
-  <div class="login-box">
-    <h2>M.R Solar Systems</h2>
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginPassword" placeholder="Password">
-    
-    <!-- ✅ FIXED: Complete button with onclick + text -->
-    <button id="loginBtn" class="login-submit" onclick="loginUser()">Login</button>
-    
-    <div class="links">
-      <p onclick="resetPassword()">Forgot Password?</p>
-      <p onclick="closeLogin()">Close</p>
-    </div>
+<script type="module" src="auth.js"></script>
+
+<div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; z-index:9999;">
+
+  <div style="background:#111; padding:30px; width:300px; border-radius:10px; text-align:center;">
+
+    <h3 style="color:#ff8c00;">M.R Solar systems Login</h3>
+
+    <input type="email" id="loginEmail" placeholder="Email"
+      style="width:100%;padding:10px;margin:10px 0;">
+
+    <input type="password" id="loginPassword" placeholder="Password"
+      style="width:100%;padding:10px;margin:10px 0;">
+
+    <button onclick="loginUser()"
+      style="width:100%;padding:10px;background:#ff8c00;color:white;border:none;">
+      Login
+    </button>
+
+    <p onclick="resetPassword()" style="color:#ff8c00;cursor:pointer;margin-top:10px;">
+      Forgot Password?
+    </p>
+
+    <button onclick="document.getElementById('loginModal').style.display='none'"
+      style="background:none;border:none;color:white;margin-top:10px;">
+      Close
+    </button>
+
   </div>
 </div>
-
-<!-- AI LOADER -->
-<div id="aiLoader" class="ai-loader" style="display:none;">
-  <div class="scanner-box">
-    <div class="scan-line"></div>
-    <h3>Authenticating...</h3>
-    <p id="aiStatus">Initializing AI System</p>
-  </div>
-</div>
-
-<!-- FIXED POSITION CALL BUTTON -->
 <a href="tel:9154777773" 
-style="position:fixed;bottom:20px;right:20px;background:#00c853;color:white;padding:15px 20px;border-radius:50px;font-weight:600;text-decoration:none;box-shadow:0 5px 15px rgba(0,0,0,0.4);z-index:9999;">
+style="position:fixed;
+bottom:20px;
+right:20px;
+background:#00c853;
+color:white;
+padding:15px 20px;
+border-radius:50px;
+font-weight:600;
+text-decoration:none;
+box-shadow:0 5px 15px rgba(0,0,0,0.4);
+z-index:9999;">
 📞 Call Now
 </a>  
 
-<!-- SCRIPTS (CORRECT ORDER) -->
-<script src="script.js"></script>
-<script type="module" src="auth.js"></script>
-<script src="festival.js"></script>
-
-<!-- ✅ INLINE LOGIN FUNCTIONS (GUARANTEED TO WORK) -->
-<script>
-function openLoginModal() {
-    document.getElementById('loginModal').style.display = 'flex';
-}
-
-function closeLogin() {
-    document.getElementById('loginModal').style.display = 'none';
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-    const modal = document.getElementById('loginModal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
-    }
-}
-</script>
-
+  <script src="festival.js"></script>  
+    
 </body>
 </html>
