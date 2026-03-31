@@ -3,7 +3,7 @@
 <head>
 
 <meta charset="UTF-8">
-<title>Chirala Employee Portal</title>
+<title>Chirala Portal</title>
 
 <link rel="stylesheet" href="chirala.css">
 
@@ -18,24 +18,18 @@
 </div>
 
 <div class="dashboard">
-
-  <div class="card" onclick="showSection('attendance')">Attendance</div>
-  <div class="card" onclick="showSection('history')">History</div>
-
+  <div class="card" id="attendanceCard">Attendance</div>
+  <div class="card" id="historyCard">History</div>
 </div>
 
 <!-- ATTENDANCE -->
 <div id="attendance" class="section">
-
-  <button onclick="markAttendance()">Mark Attendance</button>
-
+  <button id="attendanceBtn">Mark Attendance</button>
   <div id="attendanceStatus"></div>
-
 </div>
 
 <!-- HISTORY -->
 <div id="history" class="section" style="display:none;">
-
   <table>
     <thead>
       <tr>
@@ -45,19 +39,10 @@
     </thead>
     <tbody id="historyTable"></tbody>
   </table>
-
 </div>
 
+<!-- ✅ ONLY THIS SCRIPT -->
 <script type="module" src="chirala.js"></script>
-
-<script>
-function showSection(sec) {
-  document.getElementById("attendance").style.display = "none";
-  document.getElementById("history").style.display = "none";
-
-  document.getElementById(sec).style.display = "block";
-}
-</script>
 
 </body>
 </html>
