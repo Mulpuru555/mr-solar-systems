@@ -1,410 +1,67 @@
-import { auth, db, storage }
-from "./firebase-config.js";
+// chirala.js - 🔥 FULL PROFESSIONAL ATTENDANCE SYSTEM
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { 
+  getAuth, 
+  onAuthStateChanged, 
+  signOut 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { 
+  getFirestore, 
+  doc, 
+  getDoc, 
+  setDoc, 
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-import {
-onAuthStateChanged,
-signOut
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-import {
-doc,
-getDoc,
-addDoc,
-collection,
-serverTimestamp
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-import {
-ref,
-uploadString,
-getDownloadURL
-}
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
-
-
-const empName =
-document.getElementById("empName");
-
-const gpsStatus =
-document.getElementById("gpsStatus");
-
-const morningBtn =
-document.getElementById("morningBtn");
-
-const eveningBtn =
-document.getElementById("eveningBtn");
-
-const cameraBox =
-document.getElementById("cameraBox");
-
-const video =
-document.getElementById("video");
-
-const canvas =
-document.getElementById("canvas");
-
-const captureBtn =
-document.getElementById("captureBtn");
-
-const cancelBtn =
-document.getElementById("cancelBtn");
-
-const verifyScreen =
-document.getElementById("verifyScreen");
-
-const verifyText =
-document.getElementById("verifyText");
-
-const successScreen =
-document.getElementById("successScreen");
-
-
-let currentUser;
-let stream;
-let typeSelected = "";
-
-
-/* LOGIN */
-
-onAuthStateChanged(auth,
-async user => {
-
-if (!user) {
-
-window.location.href =
-"index.html";
-
-return;
-
-}
-
-currentUser = user;
-
-const snap =
-await getDoc(
-doc(db,"users",user.uid)
-);
-
-empName.innerText =
-snap.data().name;
-
-checkGPS();
-
-});
-
-
-window.logoutUser =
-async ()=>{
-
-await signOut(auth);
-
-window.location.href =
-"index.html";
-
+// 🔥 YOUR FIREBASE CONFIG (REPLACE)
+const firebaseConfig = {
+  apiKey: "your-api-key-here",
+  authDomain: "your-project.firebaseapp.com",
+  projectId: "your-project-id",
+  storageBucket: "your-project.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:abcdef"
 };
 
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
+/* 🔥 STATE */
+let currentUser = null;
+let officeLat = 16.24, officeLon = 80.35; // Chirala coords
+let allowedRadius = 200; // meters
+let closeHour = 23, closeMinute = 0;
+let locationWatchId = null;
+let clockInterval = null;
+let lastCoords = null;
 
-/* GPS */
+/* 🔥 DOM */
+const el = id => document.getElementById(id);
 
-async function checkGPS(){
-
-try{
-
-const snap =
-await getDoc(
-doc(db,"settings","location")
-);
-
-const data =
-snap.data();
-
-const lat =
-data.point.latitude;
-
-const lng =
-data.point.longitude;
-
-gpsStatus.innerText =
-"GPS OK";
-
-}catch(e){
-
-gpsStatus.innerText =
-"GPS check skipped";
-
-}
-
-}
-
-
-
-/* BUTTON */
-
-morningBtn.onclick = ()=>{
-
-typeSelected = "morning";
-
-openCamera();
-
+/* 🔥 DATE */
+const getTodayDate = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 };
 
-eveningBtn.onclick = ()=>{
-
-typeSelected = "evening";
-
-openCamera();
-
+const getDateForDay = date => {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 };
 
-
-
-/* CAMERA */
-
-async function openCamera(){
-
-cameraBox.style.display =
-"flex";
-
-stream =
-await navigator
-.mediaDevices
-.getUserMedia({
-video:true
-});
-
-video.srcObject = stream;
-
-}
-
-
-cancelBtn.onclick = ()=>{
-
-cameraBox.style.display =
-"none";
-
-if(stream){
-
-stream
-.getTracks()
-.forEach(
-t=>t.stop()
-);
-
-}
-
+/* 🔥 TIME CHECK */
+const isWithinAllowedTime = () => {
+  const now = new Date();
+  const currentMin = now.getHours() * 60 + now.getMinutes();
+  const closeMin = closeHour * 60 + closeMinute;
+  return currentMin <= closeMin;
 };
 
-
-
-/* CAPTURE */
-
-captureBtn.onclick =
-async ()=>{
-
-canvas.width =
-video.videoWidth;
-
-canvas.height =
-video.videoHeight;
-
-const ctx =
-canvas.getContext("2d");
-
-ctx.drawImage(
-video,
-0,
-0
-);
-
-cameraBox.style.display =
-"none";
-
-if(stream){
-
-stream
-.getTracks()
-.forEach(
-t=>t.stop()
-);
-
-}
-
-verify();
-
-};
-
-
-
-/* VERIFY */
-
-async function verify(){
-
-verifyScreen.style.display =
-"flex";
-
-const steps = [
-
-"Checking GPS...",
-"Capturing...",
-"Verifying face...",
-"Processing..."
-
-];
-
-for (let s of steps){
-
-verifyText.innerText = s;
-
-await delay(800);
-
-}
-
-try{
-
-await saveAttendance();
-
-verifyText.innerText =
-"Success";
-
-}catch(e){
-
-console.log(e);
-
-verifyText.innerText =
-"Saved";
-
-}
-
-await delay(800);
-
-verifyScreen.style.display =
-"none";
-
-successScreen.style.display =
-"flex";
-
-setTimeout(()=>{
-
-successScreen.style.display =
-"none";
-
-},1500);
-
-}
-
-
-function delay(ms){
-
-return new Promise(
-r=>setTimeout(r,ms)
-);
-
-}
-
-
-
-/* SAVE */
-
-async function saveAttendance(){
-
-try{
-
-const dataURL =
-canvas.toDataURL(
-"image/jpeg"
-);
-
-const fileName =
-Date.now()+".jpg";
-
-let url = "";
-
-
-/* upload */
-
-try{
-
-const storageRef =
-ref(
-storage,
-"attendance/"+fileName
-);
-
-await uploadString(
-storageRef,
-dataURL,
-"data_url"
-);
-
-url =
-await getDownloadURL(
-storageRef
-);
-
-}catch(e){
-
-console.log(
-"upload failed"
-);
-
-}
-
-
-/* date */
-
-const today =
-new Date()
-.toISOString()
-.slice(0,10);
-
-const del =
-new Date();
-
-del.setDate(
-del.getDate()+1
-);
-
-const deleteAfter =
-del.toISOString()
-.slice(0,10);
-
-
-/* save */
-
-await addDoc(
-collection(
-db,
-"attendance"
-),
-{
-employeeId:
-currentUser.uid,
-
-date: today,
-
-type:
-typeSelected,
-
-timestamp:
-serverTimestamp(),
-
-photoURL: url,
-
-deleteAfter:
-deleteAfter
-}
-);
-
-}catch(err){
-
-console.log(
-"attendance error",
-err
-);
-
-}
-
-}
+/* 🔥 LOADING */
+const showLoading = () => el('loadingScreen')?.classList.remove('hidden');
+const hideLoading = () => el('loadingScreen')?.classList.add('hidden');
+
+/* 🔥 SETTINGS */
+const loadOfficeSettings = async () => {
+  try {
+    const snap =
