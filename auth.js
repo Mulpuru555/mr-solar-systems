@@ -120,10 +120,20 @@ modal.style.display = "none";
 /* FIX BUTTON CLICK */
 document.addEventListener("DOMContentLoaded", () => {
 
+console.log("DOM ready");
+
 const btn = document.getElementById("loginBtn");
 
 if(btn){
-btn.addEventListener("click", loginUser);
+console.log("Button connected");
+
+btn.addEventListener("click", () => {
+console.log("Clicked");
+loginUser();
+});
+
+}else{
+console.log("Button NOT found");
 }
 
 });
