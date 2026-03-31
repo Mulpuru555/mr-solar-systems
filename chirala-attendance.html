@@ -1,123 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Chirala Attendance</title>
-
-<link rel="stylesheet" href="chirala.css">
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#facc15">
+  <title>M.R Solar Systems - Chirala Employee Portal</title>
+  
+  <!-- CSS -->
+  <link rel="stylesheet" href="chirala.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- PWA (Optional Enhancement) -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 </head>
 
 <body>
+  <!-- 🌞 SOLAR BACKGROUND -->
+  <div class="solar-bg">
+    <div class="sun"></div>
+    <div class="house">
+      <div class="roof">
+        <div class="panel"></div>
+        <div class="panel"></div>
+      </div>
+      <div class="body"></div>
+    </div>
+    <div class="energy-flow"></div>
+  </div>
 
+  <!-- LOADING SCREEN -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader"></div>
+    <div class="loading-text">
+      <h2>Loading Portal...</h2>
+      <p>Chirala Branch</p>
+    </div>
+  </div>
 
-<!-- NAVBAR -->
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <h1>M.R Solar Systems</h1>
+      <span class="branch">Chirala Branch</span>
+    </div>
 
-<div class="navbar">
+    <div class="header-right">
+      <div id="clock" class="live-clock">00:00:00</div>
+      <button id="logoutBtn" class="logout-btn" onclick="signOutUser()">
+        🚪 Logout
+      </button>
+    </div>
+  </header>
 
-<div>
-<h2>M.R SOLAR SYSTEMS</h2>
-<span>Chirala Branch</span>
-</div>
+  <!-- STATUS BAR -->
+  <div id="statusBar" class="status-bar">
+    <span id="connectionStatus">🟢 Online</span>
+    <span id="attendanceStatus">⏰ Loading...</span>
+  </div>
 
-<button onclick="logoutUser()" class="logoutBtn">
-Logout
-</button>
+  <!-- MAIN CONTENT -->
+  <main class="main-container">
+    
+    <!-- EMPLOYEE INFO -->
+    <div class="glass employee-card">
+      <div class="emp-info">
+        <div class="emp-avatar">👤</div>
+        <div>
+          <h2 id="empName" class="emp-name">Loading Employee...</h2>
+          <span id="empId" class="emp-id">ID: Loading...</span>
+        </div>
+      </div>
+    </div>
 
-</div>
+    <!-- ATTENDANCE CARD -->
+    <div class="glass attendance-card">
+      <div class="status-display">
+        <div class="gps-status">
+          <span class="icon">📍</span>
+          <div id="gpsStatus" class="status-text">Checking GPS...</div>
+        </div>
+        
+        <div class="time-status">
+          <span class="icon">⏰</span>
+          <div id="timeStatus" class="status-text">Checking time...</div>
+        </div>
+      </div>
 
+      <div class="attendance-btn-container">
+        <button id="attendanceBtn" class="attendance-btn-large" onclick="markAttendance()">
+          📍 Mark Attendance
+        </button>
+      </div>
 
+      <div id="msg" class="message"></div>
+    </div>
 
-<!-- MAIN CARD -->
+    <!-- STATS -->
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label">Today</div>
+        <div id="todayStat" class="stat-value">NO</div>
+      </div>
+      
+      <div class="stat-box">
+        <div class="stat-label">Streak</div>
+        <div id="streakCount" class="stat-value">0 days</div>
+      </div>
+      
+      <div class="stat-box">
+        <div class="stat-label">Monthly</div>
+        <div id="percentStat" class="stat-value">--%</div>
+      </div>
+    </div>
 
-<div class="card">
+  </main>
 
-<h3 id="empName">Loading...</h3>
+  <!-- FAB BUTTON (Optional Navigation) -->
+  <button class="fab" onclick="toggleMenu()" title="More">
+    ☰
+  </button>
 
-<p id="gpsStatus">Checking GPS...</p>
+  <!-- MOBILE MENU -->
+  <div id="mobileMenu" class="mobile-menu">
+    <button onclick="toggleMenu()">✕</button>
+    <a href="#attendance">Attendance</a>
+    <a href="#history">History</a>
+    <a href="#erp">ERP</a>
+  </div>
 
-
-<div class="btnGroup">
-
-<button id="morningBtn" class="btn">
-Morning Attendance
-</button>
-
-<button id="eveningBtn" class="btn">
-Evening Attendance
-</button>
-
-</div>
-
-<p id="msg"></p>
-
-</div>
-
-
-
-<!-- CAMERA BOX -->
-
-<div id="cameraBox" class="cameraBox">
-
-<video id="video" autoplay></video>
-
-<canvas id="canvas"></canvas>
-
-<div class="camBtns">
-
-<button id="captureBtn" class="btn">
-Capture
-</button>
-
-<button id="cancelBtn" class="btn cancel">
-Cancel
-</button>
-
-</div>
-
-</div>
-
-
-
-<!-- VERIFY SCREEN -->
-
-<div id="verifyScreen" class="verifyScreen">
-
-<div class="verifyCard">
-
-<div class="loader"></div>
-
-<p id="verifyText">
-Checking...
-</p>
-
-</div>
-
-</div>
-
-
-
-<!-- SUCCESS SCREEN -->
-
-<div id="successScreen" class="successScreen">
-
-<div class="successCard">
-
-<h2>✅ Verified</h2>
-
-<p>Attendance Recorded</p>
-
-</div>
-
-</div>
-
-
-
-<script type="module" src="./chirala.js"></script>
-
+  <!-- SCRIPT -->
+  <script type="module" src="./chirala.js"></script>
 </body>
 </html>
