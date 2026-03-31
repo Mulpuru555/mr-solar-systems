@@ -1,11 +1,16 @@
-import { auth, db } from "./firebase.js";
+// 🔥 ALL-IN-ONE FILE (NO firebase.js NEEDED)
+
+import { initializeApp } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import { 
+  getAuth, 
   onAuthStateChanged, 
   signOut 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 import { 
+  getFirestore, 
   collection, 
   addDoc, 
   getDocs, 
@@ -14,16 +19,21 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-// ✅ SECTION SWITCH
-document.getElementById("attendanceCard").onclick = () => {
-  document.getElementById("attendance").style.display = "block";
-  document.getElementById("history").style.display = "none";
+// 🔥 YOUR CONFIG (MERGED HERE)
+const firebaseConfig = {
+  apiKey: "AIzaSyBNtPFzFkYLpbv8vgfeQ0_uE42JT7h28bc",
+  authDomain: "mr-solar-portal.firebaseapp.com",
+  projectId: "mr-solar-portal",
+  storageBucket: "mr-solar-portal.appspot.com",
+  messagingSenderId: "1017116122935",
+  appId: "1:1017116122935:web:db1256b90c66c96ad644b2"
 };
 
-document.getElementById("historyCard").onclick = () => {
-  document.getElementById("attendance").style.display = "none";
-  document.getElementById("history").style.display = "block";
-};
+
+// 🔥 INIT
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 
 // 🔐 AUTH
@@ -45,7 +55,19 @@ document.getElementById("logoutBtn").onclick = () => {
 };
 
 
-// ✅ ATTENDANCE BUTTON FIX (NO onclick issue)
+// 🎯 SECTION SWITCH
+document.getElementById("attendanceCard").onclick = () => {
+  document.getElementById("attendance").style.display = "block";
+  document.getElementById("history").style.display = "none";
+};
+
+document.getElementById("historyCard").onclick = () => {
+  document.getElementById("attendance").style.display = "none";
+  document.getElementById("history").style.display = "block";
+};
+
+
+// ✅ ATTENDANCE
 document.getElementById("attendanceBtn").onclick = async () => {
 
   const user = auth.currentUser;
