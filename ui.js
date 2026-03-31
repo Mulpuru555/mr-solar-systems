@@ -49,46 +49,33 @@ h + ":" + m + ":" + s + " " + ampm;
 
 /* ================= TOGGLE SECTION ================= */
 
-window.toggleSection = (id)=>{
+window.toggleSection = (id) => {
 
-const target =
-document.getElementById(id);
+  const sections = document.querySelectorAll(".section");
+  const target = document.getElementById(id);
 
-if(!target) return;
+  if (!target) return;
 
+  // If clicking same section → close it
+  if (target.classList.contains("active")) {
+    target.classList.remove("active");
+    target.style.display = "none";
+    currentSection = null;
+    return;
+  }
 
-/* same → close */
+  // Close all sections
+  sections.forEach(sec => {
+    sec.classList.remove("active");
+    sec.style.display = "none";
+  });
 
-if(currentSection === id){
+  // Open selected
+  target.classList.add("active");
+  target.style.display = "block";
+  currentSection = id;
 
-target.style.display="none";
-currentSection = null;
-return;
-
-}
-
-
-/* close old */
-
-if(currentSection){
-
-const old =
-document.getElementById(currentSection);
-
-if(old)
-old.style.display="none";
-
-}
-
-
-/* open */
-
-target.style.display="block";
-
-currentSection = id;
-
-playClick();
-
+  playClick();
 };
 
 
