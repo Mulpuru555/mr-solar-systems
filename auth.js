@@ -117,3 +117,13 @@ modal.style.display = "none";
 }
 
 };
+/* FIX BUTTON CLICK */
+document.addEventListener("DOMContentLoaded", () => {
+
+const btn = document.getElementById("loginBtn");
+
+if(btn){
+btn.addEventListener("click", loginUser);
+}
+
+});
