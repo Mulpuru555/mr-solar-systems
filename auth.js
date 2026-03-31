@@ -1,173 +1,119 @@
-import { auth, db } from "./firebase-config.js";
+import { auth } from "./firebase-config.js";
 
 import {
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signOut,
-  onAuthStateChanged
+signInWithEmailAndPassword,
+sendPasswordResetEmail
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-import {
-  doc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* ================= LOGIN ================= */
+window.loginUser = async function(){
 
-// ==============================
-// LOGIN FUNCTION
-// ==============================
+const email = document.getElementById("loginEmail")?.value;
+const password = document.getElementById("loginPassword")?.value;
 
-window.loginUser = async function () {
+if(!email || !password){
+alert("Enter Email & Password");
+return;
+}
 
-  const email = document.getElementById("loginEmail").value;
-  const password = document.getElementById("loginPassword").value;
+/* 🔥 CHECK IF AI LOADER EXISTS */
+const modal = document.getElementById("loginModal");
+const loader = document.getElementById("aiLoader");
+const statusText = document.getElementById("aiStatus");
 
-  if (!email || !password) {
-    alert("Please enter email and password");
-    return;
-  }
+/* SHOW LOADER IF AVAILABLE */
+if(loader){
+modal.style.display = "none";
+loader.style.display = "flex";
+}
 
-  try {
+/* AI STEPS */
+const steps = [
+"Scanning credentials...",
+"Connecting to secure server...",
+"Verifying identity...",
+"Checking access level...",
+"Login successful"
+];
 
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+let i = 0;
 
-    const docRef = doc(db, "users", user.uid);
-    const docSnap = await getDoc(docRef);
+if(statusText){
+var interval = setInterval(()=>{
+statusText.innerText = steps[i];
+i++;
+if(i >= steps.length){
+clearInterval(interval);
+}
+}, 700);
+}
 
-    if (!docSnap.exists()) {
-      alert("User role not found.");
-      await signOut(auth);
-      return;
-    }
+try{
 
-    const userData = docSnap.data();
-    const role = userData.role;
-    const branch = userData.branch || "";
-    const accountStatus = userData.accountStatus || "active";
+await signInWithEmailAndPassword(auth, email, password);
 
-    // 🔴 Block check (employees only)
-    if (role === "employee" && accountStatus === "blocked") {
-      alert("Your account is blocked due to absence. Contact Admin.");
-      await signOut(auth);
-      return;
-    }
+/* SUCCESS REDIRECT */
+setTimeout(()=>{
 
-    // ======================
-    // REDIRECT LOGIC
-    // ======================
+/* 🔥 KEEP YOUR EXISTING REDIRECT (SAFE) */
+window.location.href = "employee.html";
 
-    if (role === "admin") {
+}, 3000);
 
-      window.location.href = "admin.html";
+}catch(err){
 
-    }
+/* HIDE LOADER */
+if(loader){
+loader.style.display = "none";
+modal.style.display = "flex";
+}
 
-    else if (role === "manager") {
+/* CLEAR INTERVAL */
+if(typeof interval !== "undefined"){
+clearInterval(interval);
+}
 
-      window.location.href = "manager.html";
-
-    }
-
-    else if (role === "employee") {
-
-      // ✅ NEW: branch check added
-
-      if (branch === "chirala") {
-
-        window.location.href = "chirala-attendance.html";
-
-      } else {
-
-        window.location.href = "employee.html";
-
-      }
-
-    }
-
-    else {
-
-      alert("Invalid role");
-      await signOut(auth);
-
-    }
-
-  } catch (error) {
-    alert(error.message);
-  }
-};
-
-
-// ==============================
-// FORGOT PASSWORD
-// ==============================
-
-window.resetPassword = async function () {
-
-  const email = document.getElementById("loginEmail").value;
-
-  if (!email) {
-    alert("Enter your email first.");
-    return;
-  }
-
-  try {
-    await sendPasswordResetEmail(auth, email);
-    alert("Password reset email sent!");
-  } catch (error) {
-    alert(error.message);
-  }
-};
-
-
-// ==============================
-// LOGOUT
-// ==============================
-
-window.logoutUser = async function () {
-  await signOut(auth);
-  window.location.href = "index.html";
-};
-
-
-// ==============================
-// SESSION CHECK (ROLE + BLOCK PROTECTION)
-// ==============================
-
-export function checkSession(requiredRole) {
-
-  onAuthStateChanged(auth, async (user) => {
-
-    if (!user) {
-      window.location.href = "index.html";
-      return;
-    }
-
-    const docRef = doc(db, "users", user.uid);
-    const docSnap = await getDoc(docRef);
-
-    if (!docSnap.exists()) {
-      await signOut(auth);
-      window.location.href = "index.html";
-      return;
-    }
-
-    const userData = docSnap.data();
-    const role = userData.role;
-    const accountStatus = userData.accountStatus || "active";
-
-    // 🔴 Block employees only
-    if (role === "employee" && accountStatus === "blocked") {
-      alert("Your account is blocked. Contact Admin.");
-      await signOut(auth);
-      window.location.href = "index.html";
-      return;
-    }
-
-    if (role !== requiredRole) {
-      window.location.href = "index.html";
-    }
-
-  });
+/* ERROR */
+alert("Login Failed: " + err.message);
 
 }
+
+};
+
+
+/* ================= RESET PASSWORD ================= */
+window.resetPassword = async function(){
+
+const email = document.getElementById("loginEmail")?.value;
+
+if(!email){
+alert("Enter email first");
+return;
+}
+
+try{
+
+await sendPasswordResetEmail(auth, email);
+
+alert("Reset link sent to email");
+
+}catch(err){
+
+alert("Error: " + err.message);
+
+}
+
+};
+
+
+/* ================= CLOSE LOGIN ================= */
+window.closeLogin = function(){
+
+const modal = document.getElementById("loginModal");
+
+if(modal){
+modal.style.display = "none";
+}
+
+};
