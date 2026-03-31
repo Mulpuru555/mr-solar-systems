@@ -1,189 +1,203 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Portal - M.R Solar Systems</title>
 
-<meta charset="UTF-8">
-<title>Employee Portal</title>
-
-<link rel="stylesheet" href="employee.css">
-<link rel="stylesheet" href="modern-ui.css">
-
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
-
+  <!-- CSS -->
+  <link rel="stylesheet" href="employee.css">
+  <link rel="stylesheet" href="modern-ui.css">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
-
-<!-- LOADING -->
-<div id="loadingScreen">
-  <div class="loader"></div>
-  <h2>Loading Portal...</h2>
-</div>
-
-<!-- HEADER -->
-<div class="header">
-  <div>
-    <h2>M.R Solar Systems</h2>
-    <div id="welcomeName">Welcome</div>
+  <!-- 🌞 SOLAR BACKGROUND -->
+  <div class="solar-bg">
+    <div class="sun"></div>
+    <div class="house">
+      <div class="roof">
+        <div class="panel"></div>
+        <div class="panel"></div>
+      </div>
+      <div class="body"></div>
+    </div>
+    <div class="energy-flow"></div>
   </div>
 
-  <div class="headerRight">
-    <div id="liveClock">00:00</div>
-    <button id="logoutBtn">Logout</button>
-  </div>
-</div>
-
-<!-- NOTICE -->
-<div id="noticeBar">
-  Notice loading...
-</div>
-
-<!-- DASHBOARD -->
-<div class="dashboard">
-
-<!-- STATS -->
-<div class="stats">
-
-  <div class="statBox">
-    <div>Today</div>
-    <div id="todayStat">0</div>
+  <!-- LOADING SCREEN -->
+  <div id="loadingScreen" class="loading-screen">
+    <div class="loader"></div>
+    <h2>Loading Portal...</h2>
   </div>
 
-  <div class="statBox">
-    <div>Monthly %</div>
-    <div id="percentStat">0%</div>
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-left">
+      <h2>M.R Solar Systems</h2>
+      <div id="welcomeName" class="welcome-name">Welcome</div>
+    </div>
+    <div class="header-right">
+      <div id="liveClock" class="live-clock">00:00:00</div>
+      <button id="logoutBtn" class="logout-btn" onclick="signOutUser()">Logout</button>
+    </div>
+  </header>
+
+  <!-- NOTICE BAR -->
+  <div id="noticeBar" class="notice-bar">
+    Notice loading...
   </div>
 
-  <div class="statBox">
-    <div>Total</div>
-    <div id="totalStat">0</div>
+  <!-- MAIN DASHBOARD -->
+  <main class="dashboard">
+    
+    <!-- STATS GRID -->
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="stat-label">Today</div>
+        <div id="todayStat" class="stat-value">NO</div>
+      </div>
+
+      <div class="stat-box">
+        <div class="stat-label">Monthly %</div>
+        <div id="percentStat" class="stat-value">--%</div>
+      </div>
+
+      <div class="stat-box">
+        <div class="stat-label">Total</div>
+        <div id="totalStat" class="stat-value">0</div>
+      </div>
+
+      <div class="stat-box">
+        <div class="stat-label">Pending</div>
+        <div id="pendingStat" class="stat-value">0</div>
+      </div>
+    </div>
+
+    <!-- 🔥 STREAK BOX -->
+    <div class="glass streak-box" id="streakBox">
+      🔥 Attendance Streak: <span id="streakCount">0 days</span>
+    </div>
+
+    <!-- NAVIGATION CARDS -->
+    <div class="cards-grid">
+      <div class="nav-card" onclick="toggleSection('attendanceSection')" data-section="attendanceSection">
+        <div class="card-icon">📍</div>
+        <div class="card-title">Attendance</div>
+      </div>
+
+      <div class="nav-card" onclick="toggleSection('erpSection')" data-section="erpSection">
+        <div class="card-icon">💰</div>
+        <div class="card-title">ERP</div>
+      </div>
+
+      <div class="nav-card" onclick="toggleSection('historySection')" data-section="historySection">
+        <div class="card-icon">📋</div>
+        <div class="card-title">History</div>
+      </div>
+    </div>
+
+    <!-- ================= ATTENDANCE SECTION ================= -->
+    <section id="attendanceSection" class="section active">
+      <div class="glass attendance-card">
+        <div id="distanceDisplay" class="distance-display">Checking location...</div>
+        
+        <div id="countdownBox" class="countdown-box">Time loading...</div>
+        
+        <button id="attendanceBtn" class="attendance-btn" onclick="markAttendance()">
+          Mark Attendance
+        </button>
+        
+        <div id="attendanceStatus" class="attendance-status"></div>
+      </div>
+    </section>
+
+    <!-- ================= ERP SECTION ================= -->
+    <section id="erpSection" class="section">
+      <div class="glass">
+        <h3>Add Payment</h3>
+        <form id="paymentForm" class="payment-form">
+          <input id="customerName" type="text" placeholder="Customer Name" required>
+          <input id="executiveName" type="text" placeholder="Executive Name" required>
+          <input id="totalAmount" type="number" placeholder="Total Amount" required>
+          <button type="submit">Add Payment</button>
+        </form>
+      </div>
+
+      <div class="glass">
+        <div class="search-box">
+          <input id="searchInput" type="text" placeholder="🔍 Search records...">
+        </div>
+
+        <div class="table-container">
+          <table class="records-table">
+            <thead>
+              <tr>
+                <th>S.No</th>
+                <th>Customer</th>
+                <th>Executive</th>
+                <th>Total</th>
+                <th>Paid</th>
+                <th>Status</th>
+                <th>Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recordsTable">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= HISTORY SECTION ================= -->
+    <section id="historySection" class="section">
+      <div class="glass">
+        <h3>Attendance History</h3>
+        <div class="table-container">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Distance</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="historyTable">
+              <!-- Dynamic content -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- EDIT POPUP -->
+  <div id="editPopup" class="popup-overlay" style="display: none;">
+    <div class="popup-box">
+      <h3>Edit Record</h3>
+      <input id="editName" type="text" placeholder="Customer Name">
+      <input id="editExec" type="text" placeholder="Executive">
+      <input id="editTotal" type="number" placeholder="Total Amount">
+      <div class="popup-buttons">
+        <button id="saveEditBtn" class="btn-primary">Save Changes</button>
+        <button onclick="closePopup()" class="btn-secondary">Cancel</button>
+      </div>
+    </div>
   </div>
 
-  <div class="statBox">
-    <div>Pending</div>
-    <div id="pendingStat">0</div>
-  </div>
-
-</div>
-
-<!-- STREAK (MOVED OUTSIDE) -->
-<div class="glass" id="streakBox">
-  🔥 Attendance Streak: <span id="streakCount">0</span> days
-</div>
-
-<!-- CARDS -->
-<div class="cards">
-
-  <div class="card" onclick="toggleSection('attendanceSection')">
-    Attendance
-  </div>
-
-  <div class="card" onclick="toggleSection('erpSection')">
-    ERP
-  </div>
-
-  <div class="card" onclick="toggleSection('historySection')">
-    History
-  </div>
-
-</div>
-
-<!-- ================= ATTENDANCE ================= -->
-<div id="attendanceSection" class="section">
-
-  <div class="glass">
-
-    <div id="distanceDisplay">Checking location...</div>
-
-    <div id="countdownBox">Time loading...</div>
-
-    <button id="attendanceBtn" onclick="markAttendance()">
-      Mark Attendance
-    </button>
-
-    <div id="attendanceStatus"></div>
-
-  </div>
-
-</div>
-
-<!-- ================= ERP ================= -->
-<div id="erpSection" class="section" style="display:none;">
-
-  <div class="glass">
-    <form id="paymentForm">
-      <input id="customerName" placeholder="Customer">
-      <input id="executiveName" placeholder="Executive">
-      <input id="totalAmount" placeholder="Total">
-      <button type="submit">Add</button>
-    </form>
-  </div>
-
-  <div class="glass">
-    <input id="searchInput" placeholder="Search...">
-
-    <table>
-      <thead>
-        <tr>
-          <th>S.No</th>
-          <th>Customer</th>
-          <th>Executive</th>
-          <th>Total</th>
-          <th>Paid</th>
-          <th>Status</th>
-          <th>Date</th>
-          <th>Lock</th>
-          <th>Edit</th>
-        </tr>
-      </thead>
-      <tbody id="recordsTable"></tbody>
-    </table>
-  </div>
-
-</div>
-
-<!-- ================= HISTORY ================= -->
-<div id="historySection" class="section" style="display:none;">
-
-  <div class="glass">
-    <table>
-      <thead>
-        <tr>
-          <th>Date</th>
-          <th>Time</th>
-        </tr>
-      </thead>
-      <tbody id="historyTable"></tbody>
-    </table>
-  </div>
-
-</div>
-
-</div>
-
-<!-- EDIT POPUP -->
-<div id="editPopup" class="popup">
-  <div class="popupBox">
-    <h3>Edit</h3>
-    <input id="editName">
-    <input id="editExec">
-    <input id="editTotal">
-    <button id="saveEditBtn">Save</button>
-    <button onclick="closePopup()">Cancel</button>
-  </div>
-</div>
-
-<!-- SCRIPTS -->
-
-<!-- 🔥 LOAD THIS FIRST -->
-<script src="animations.js"></script>
-
-<!-- MODULES -->
-<script type="module" src="ui.js"></script>
-<script type="module" src="dashboard.js"></script>
-<script type="module" src="attendance.js"></script>
-<script type="module" src="erp.js"></script>
-<script type="module" src="history.js"></script>
+  <!-- SCRIPTS -->
+  <script src="animations.js"></script>
+  
+  <!-- 🔥 MAIN MODULES (attendance.js should load first) -->
+  <script type="module" src="attendance.js"></script>
+  <script type="module" src="ui.js"></script>
+  <script type="module" src="dashboard.js"></script>
+  <script type="module" src="erp.js"></script>
+  <script type="module" src="history.js"></script>
 
 </body>
 </html>
