@@ -14,7 +14,19 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
-// AUTH
+// ✅ SECTION SWITCH
+document.getElementById("attendanceCard").onclick = () => {
+  document.getElementById("attendance").style.display = "block";
+  document.getElementById("history").style.display = "none";
+};
+
+document.getElementById("historyCard").onclick = () => {
+  document.getElementById("attendance").style.display = "none";
+  document.getElementById("history").style.display = "block";
+};
+
+
+// 🔐 AUTH
 onAuthStateChanged(auth, (user) => {
   if (user) {
     document.getElementById("welcomeName").innerText = user.email;
@@ -25,7 +37,7 @@ onAuthStateChanged(auth, (user) => {
 });
 
 
-// LOGOUT
+// 🚪 LOGOUT
 document.getElementById("logoutBtn").onclick = () => {
   signOut(auth).then(() => {
     window.location.href = "login.html";
@@ -33,11 +45,10 @@ document.getElementById("logoutBtn").onclick = () => {
 };
 
 
-// ATTENDANCE
-window.markAttendance = async function () {
+// ✅ ATTENDANCE BUTTON FIX (NO onclick issue)
+document.getElementById("attendanceBtn").onclick = async () => {
 
   const user = auth.currentUser;
-
   if (!user) return;
 
   const now = new Date();
@@ -50,13 +61,13 @@ window.markAttendance = async function () {
     timestamp: now
   });
 
-  document.getElementById("attendanceStatus").innerText = "✅ Marked";
+  document.getElementById("attendanceStatus").innerText = "✅ Attendance Marked";
 
   loadHistory(user.uid);
 };
 
 
-// HISTORY
+// 📜 HISTORY
 async function loadHistory(uid) {
 
   const table = document.getElementById("historyTable");
