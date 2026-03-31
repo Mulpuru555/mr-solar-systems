@@ -1,346 +1,283 @@
 import { auth, db } from "./firebase-config.js";
 
 import {
-collection,
-query,
-where,
-getDocs,
-addDoc,
-serverTimestamp,
-doc,
-updateDoc,
-getDoc
+  collection,
+  query,
+  where,
+  getDocs,
+  addDoc,
+  serverTimestamp,
+  doc,
+  updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
-onAuthStateChanged
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
 
 let uid = "";
 let records = [];
 let editID = "";
 
-
 /* ================= AUTH ================= */
-
-onAuthStateChanged(auth, async (user)=>{
-
-if(!user) return;
-
-uid = user.uid;
-
-loadRecords();
-
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return;
+  uid = user.uid;
+  await loadRecords();
 });
-
 
 /* ================= ADD ================= */
+const form = document.getElementById("paymentForm");
 
-const form =
-document.getElementById("paymentForm");
+if (form) {
+  form.onsubmit = async (e) => {
+    e.preventDefault();
 
-if(form){
+    const name = document.getElementById("customerName").value.trim();
+    const exec = document.getElementById("executiveName").value.trim();
+    const total = Number(document.getElementById("totalAmount").value) || 0;
 
-form.onsubmit = async (e)=>{
+    if (!name || !exec || total <= 0) {
+      alert("Please fill all fields correctly");
+      return;
+    }
 
-e.preventDefault();
+    try {
+      const submitBtn = form.querySelector("button[type='submit']");
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = "Adding...";
+      submitBtn.disabled = true;
 
-const name =
-document.getElementById("customerName").value;
+      await addDoc(collection(db, "customerPayments"), {
+        customerName: name,
+        executiveName: exec,
+        totalAmount: total,
+        createdBy: uid,
+        payments: [],
+        status: "Pending",
+        isLocked: true,
+        createdAt: serverTimestamp()
+      });
 
-const exec =
-document.getElementById("executiveName").value;
-
-const total =
-Number(
-document.getElementById("totalAmount").value
-) || 0;
-
-
-await addDoc(
-collection(db,"customerPayments"),
-{
-customerName:name,
-executiveName:exec,
-totalAmount:total,
-createdBy:uid,
-payments:[],
-status:"Pending",
-isLocked:true,
-createdAt:serverTimestamp()
+      form.reset();
+      await loadRecords();
+      alert("✅ Payment added successfully!");
+      
+    } catch (error) {
+      console.error("Add error:", error);
+      alert("❌ Failed to add payment");
+    } finally {
+      const submitBtn = form.querySelector("button[type='submit']");
+      submitBtn.textContent = "Add Payment";
+      submitBtn.disabled = false;
+    }
+  };
 }
-);
-
-form.reset();
-
-loadRecords();
-
-};
-
-}
-
 
 /* ================= LOAD ================= */
+async function loadRecords() {
+  try {
+    records = [];
 
-async function loadRecords(){
+    const table = document.getElementById("recordsTable");
+    if (!table) return;
 
-records = [];
+    table.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px">Loading records...</td></tr>';
 
-const table =
-document.getElementById("recordsTable");
+    const q = query(
+      collection(db, "customerPayments"),
+      where("createdBy", "==", uid)
+    );
 
-if(!table) return;
+    const snap = await getDocs(q);
 
-table.innerHTML="";
+    snap.forEach(d => {
+      records.push({
+        id: d.id,
+        data: d.data()
+      });
+    });
 
+    records.sort((a, b) => {
+      const t1 = a.data.createdAt?.seconds || 0;
+      const t2 = b.data.createdAt?.seconds || 0;
+      return t2 - t1;
+    });
 
-const q = query(
-collection(db,"customerPayments"),
-where("createdBy","==",uid)
-);
-
-const snap = await getDocs(q);
-
-
-snap.forEach(d=>{
-
-records.push({
-id:d.id,
-data:d.data()
-});
-
-});
-
-
-records.sort((a,b)=>{
-
-const t1 =
-a.data.createdAt?.seconds || 0;
-
-const t2 =
-b.data.createdAt?.seconds || 0;
-
-return t2 - t1;
-
-});
-
-
-showTable(records);
-
+    showTable(records);
+    
+    // 🔥 FIXED: UPDATE GLOBAL INSIDE loadRecords()
+    window.erpRecords = records;
+    
+  } catch (error) {
+    console.error("Load records error:", error);
+    const table = document.getElementById("recordsTable");
+    if (table) {
+      table.innerHTML = '<tr><td colspan="9" style="text-align:center;color:#ef4444">Failed to load records</td></tr>';
+    }
+  }
 }
 
+/* ================= SHOW TABLE - FIXED EVENT ✅ ================= */
+function showTable(list) {
+  const table = document.getElementById("recordsTable");
+  if (!table) return;
 
-/* ================= SHOW ================= */
+  table.innerHTML = "";
 
-function showTable(list){
+  if (list.length === 0) {
+    table.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#94a3b8">No records found</td></tr>';
+    return;
+  }
 
-const table =
-document.getElementById("recordsTable");
+  let i = 1;
+  list.forEach(obj => {
+    const d = obj.data;
+    const totalAmount = d.totalAmount ?? d.total ?? 0;
 
-table.innerHTML="";
+    let paid = 0;
+    (d.payments || []).forEach(p => {
+      paid += Number(p.amount) || 0;
+    });
 
-let i = 1;
+    const date = d.createdAt?.seconds 
+      ? new Date(d.createdAt.seconds * 1000).toLocaleDateString('en-IN')
+      : "-";
 
-list.forEach(obj=>{
+    const statusBadge = {
+      "Pending": '<span class="status pending">Pending</span>',
+      "Paid": '<span class="status paid">Paid</span>',
+      "Partial": '<span class="status partial">Partial</span>'
+    }[d.status] || '<span class="status unknown">Unknown</span>';
 
-const d = obj.data;
+    const locked = d.isLocked !== false;
+    const lockIcon = locked ? "🔒" : "🔓";
+    const editBtn = locked 
+      ? `<span class="locked">${lockIcon} Locked</span>`
+      : `<button class="edit-btn" data-id="${obj.id}">✏️ Edit</button>`;
 
-let paid = 0;
+    table.insertAdjacentHTML("beforeend", `
+      <tr>
+        <td>${i++}</td>
+        <td>${d.customerName || '-'}</td>
+        <td>${d.executiveName || '-'}</td>
+        <td class="amount">₹${totalAmount.toLocaleString()}</td>
+        <td class="amount">₹${paid.toLocaleString()}</td>
+        <td>${statusBadge}</td>
+        <td>${date}</td>
+        <td>${lockIcon}</td>
+        <td>${editBtn}</td>
+      </tr>
+    `);
+  });
 
-(d.payments || [])
-.forEach(p=>{
-
-paid +=
-Number(p.amount) || 0;
-
-});
-
-
-const date =
-d.createdAt?.seconds
-? new Date(
-d.createdAt.seconds*1000
-).toLocaleDateString()
-: "-";
-
-
-const locked =
-d.isLocked !== false;
-
-
-const editBtn =
-locked
-? "Locked"
-: `<button data-id="${obj.id}" class="editBtn">Edit</button>`;
-
-
-table.insertAdjacentHTML(
-"beforeend",
-`
-<tr>
-
-<td>${i++}</td>
-
-<td>${d.customerName}</td>
-
-<td>${d.executiveName}</td>
-
-<td>${d.totalAmount}</td>
-
-<td>${paid}</td>
-
-<td>${d.status}</td>
-
-<td>${date}</td>
-
-<td>${locked ? "Locked":"Open"}</td>
-
-<td>${editBtn}</td>
-
-</tr>
-`
-);
-
-});
-
-
-document
-.querySelectorAll(".editBtn")
-.forEach(btn=>{
-
-btn.onclick = ()=>{
-
-const id =
-btn.dataset.id;
-
-const rec =
-records.find(
-r=>r.id===id
-);
-
-if(!rec) return;
-
-openEdit(
-id,
-rec.data.customerName,
-rec.data.executiveName,
-rec.data.totalAmount
-);
-
-};
-
-});
-
+  /* 🔥 FIXED: onclick = SINGLE HANDLER (No duplication!) */
+  table.onclick = (e) => {
+    if (e.target.classList.contains('edit-btn')) {
+      const id = e.target.dataset.id;
+      const rec = records.find(r => r.id === id);
+      if (rec) {
+        const d = rec.data;
+        openEdit(
+          id,
+          d.customerName || '',
+          d.executiveName || '',
+          d.totalAmount ?? d.total ?? 0
+        );
+      }
+    }
+  };
 }
 
+/* ================= SEARCH - SAFE ✅ ================= */
+const searchInput = document.getElementById("searchInput");
 
-/* ================= SEARCH ================= */
+if (searchInput) {
+  searchInput.oninput = () => {
+    const v = searchInput.value.toLowerCase().trim();
 
-const searchInput =
-document.getElementById("searchInput");
+    const filtered = records.filter(r => {
+      const d = r.data;
+      return (
+        (d.customerName || "").toLowerCase().includes(v) ||
+        (d.executiveName || "").toLowerCase().includes(v) ||
+        (d.status || "").toLowerCase().includes(v)
+      );
+    });
 
-if(searchInput){
-
-searchInput.oninput = ()=>{
-
-const v =
-searchInput.value
-.toLowerCase();
-
-const filtered =
-records.filter(r=>{
-
-const d = r.data;
-
-return(
-
-d.customerName
-.toLowerCase()
-.includes(v)
-
-||
-
-d.executiveName
-.toLowerCase()
-.includes(v)
-
-||
-
-(d.status || "")
-.toLowerCase()
-.includes(v)
-
-);
-
-});
-
-showTable(filtered);
-
-};
-
+    showTable(filtered);
+  };
 }
-
 
 /* ================= EDIT ================= */
+window.openEdit = (id, name, exec, total) => {
+  editID = id;
 
-window.openEdit = (
-id,
-name,
-exec,
-total
-)=>{
+  const editNameEl = document.getElementById("editName");
+  const editExecEl = document.getElementById("editExec");
+  const editTotalEl = document.getElementById("editTotal");
+  const popupEl = document.getElementById("editPopup");
 
-editID = id;
-
-document.getElementById("editName").value = name;
-document.getElementById("editExec").value = exec;
-document.getElementById("editTotal").value = total;
-
-document.getElementById("editPopup")
-.style.display="flex";
-
+  if (editNameEl) editNameEl.value = name || '';
+  if (editExecEl) editExecEl.value = exec || '';
+  if (editTotalEl) editTotalEl.value = total || '';
+  if (popupEl) popupEl.style.display = "flex";
 };
 
-
-window.closePopup = ()=>{
-
-document.getElementById("editPopup")
-.style.display="none";
-
+window.closePopup = () => {
+  const popupEl = document.getElementById("editPopup");
+  if (popupEl) popupEl.style.display = "none";
 };
 
+/* 🔥 SAFE SAVE BUTTON */
+const saveBtn = document.getElementById("saveEditBtn");
+if (saveBtn) {
+  saveBtn.onclick = async () => {
+    if (!editID) {
+      alert("No record selected");
+      return;
+    }
 
-document
-.getElementById("saveEditBtn")
-.onclick = async ()=>{
+    const editNameEl = document.getElementById("editName");
+    const editExecEl = document.getElementById("editExec");
+    const editTotalEl = document.getElementById("editTotal");
 
-if(!editID) return;
+    if (!editNameEl || !editExecEl || !editTotalEl) return;
 
-const ref =
-doc(
-db,
-"customerPayments",
-editID
-);
+    const name = editNameEl.value.trim();
+    const exec = editExecEl.value.trim();
+    const total = Number(editTotalEl.value) || 0;
 
-await updateDoc(ref,{
+    if (!name || !exec || total <= 0) {
+      alert("Please fill all fields correctly");
+      return;
+    }
 
-customerName:
-document.getElementById("editName").value,
+    try {
+      saveBtn.textContent = "Saving...";
+      saveBtn.disabled = true;
 
-executiveName:
-document.getElementById("editExec").value,
+      const ref = doc(db, "customerPayments", editID);
+      await updateDoc(ref, {
+        customerName: name,
+        executiveName: exec,
+        totalAmount: total
+      });
 
-totalAmount:
-Number(
-document.getElementById("editTotal").value
-) || 0
+      closePopup();
+      await loadRecords();
+      alert("✅ Record updated successfully!");
+      
+    } catch (error) {
+      console.error("Update error:", error);
+      alert("❌ Failed to update record");
+    } finally {
+      saveBtn.textContent = "Save Changes";
+      saveBtn.disabled = false;
+    }
+  };
+}
 
-});
-
-closePopup();
-
-loadRecords();
-
-};
+/* 🔥 EXPOSE FUNCTIONS */
+window.erpRecords = records;
+window.loadRecords = loadRecords;
