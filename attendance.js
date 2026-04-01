@@ -14,7 +14,7 @@ import {
   signOut 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-/* 🔥 VARIABLES */
+/* VARIABLES */
 let officeLat = null;
 let officeLon = null;
 let allowedRadius = 200;
@@ -24,10 +24,13 @@ let currentUser = null;
 let locationWatchId = null;
 let clockInterval = null;
 let lastCoords = null;
-// 🔥 GLOBAL CACHE (FIX #1)
 let attendanceCache = [];
 
-/* 🔥 DATE FUNCTIONS */
+/* HELPERS */
+function el(id) {
+  return document.getElementById(id);
+}
+
 function getTodayDate() {
   const now = new Date();
   return now.getFullYear() + "-" +
@@ -41,347 +44,269 @@ function getTodayDateForDay(date) {
     String(date.getDate()).padStart(2, '0');
 }
 
-/* 🔥 ELEMENTS */
-function el(id) {
-  return document.getElementById(id);
-}
-
-/* 🔥 TIME CHECK */
 function isWithinAllowedTime() {
   const now = new Date();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-  const closeMinutes = closeHour * 60 + closeMinute;
-  return currentMinutes <= closeMinutes;
+  return (now.getHours() * 60 + now.getMinutes()) <= (closeHour * 60 + closeMinute);
 }
 
-/* 🔥 CACHE MANAGER (NEW - PERFORMANCE FIX) */
+/* CACHE */
 async function loadAttendanceData() {
   if (!currentUser) return;
-  
+
   try {
     const snap = await getDocs(collection(db, "attendance"));
     attendanceCache = [];
 
     snap.forEach(doc => {
-      attendanceCache.push(doc.data());
+      const data = doc.data();
+      if (data.userId === currentUser.uid || data.employeeId === currentUser.uid) {
+        attendanceCache.push(data);
+      }
     });
-    
-    // 🔥 Update all stats after cache load
+
     await Promise.all([
       loadToday(),
       loadStreak(),
       loadMonthlyStats()
     ]);
-  } catch (error) {
-    console.error("Attendance cache error:", error);
+
+  } catch (e) {
+    console.error("Cache error:", e);
+    alert("Failed to load attendance data");
   }
 }
 
-/* 🔥 FIXED: TODAY STATUS (USES CACHE) */
+/* TODAY */
 async function loadToday() {
-  if (!currentUser || attendanceCache.length === 0) return;
+  if (!currentUser) return;
 
   const today = getTodayDate();
-  const found = attendanceCache.some(data => 
-    (data.userId === currentUser.uid || data.employeeId === currentUser.uid) &&
-    data.date === today
-  );
+
+  const found = attendanceCache.some(d => d.date === today);
 
   const todayEl = el("todayStat");
-  if (todayEl) todayEl.textContent = found ? "YES" : "NO";
+  if (todayEl) todayEl.textContent = found ? "1" : "0";
 }
 
-/* 🔥 FIXED: STREAK (USES CACHE) */
+/* STREAK */
 async function loadStreak() {
-  if (!currentUser || attendanceCache.length === 0) return;
+  if (!currentUser) return;
 
-  const records = attendanceCache.filter(data => 
-    data.userId === currentUser.uid || data.employeeId === currentUser.uid
+  const records = [...attendanceCache];
+
+  records.sort((a, b) =>
+    (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0)
   );
-
-  // Sort latest first
-  records.sort((a, b) => {
-    return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
-  });
 
   let streak = 0;
   let current = new Date();
-  current.setHours(0, 0, 0, 0);
+  current.setHours(0,0,0,0);
 
   for (let r of records) {
-    let recordDate;
-    if (r.timestamp?.seconds) {
-      recordDate = new Date(r.timestamp.seconds * 1000);
-    } else if (r.date) {
-      recordDate = new Date(r.date);
-    } else continue;
+    let date = r.timestamp?.seconds
+      ? new Date(r.timestamp.seconds * 1000)
+      : new Date(r.date);
 
-    recordDate.setHours(0, 0, 0, 0);
-    const diff = Math.floor((current - recordDate) / (1000 * 60 * 60 * 24));
+    date.setHours(0,0,0,0);
+
+    const diff = Math.floor((current - date) / 86400000);
 
     if (diff === 0 || diff === 1) {
       streak++;
       current.setDate(current.getDate() - 1);
-    } else {
-      break;
-    }
+    } else break;
   }
 
   const streakEl = el("streakCount");
-  if (streakEl) streakEl.textContent = streak + " days";
+  if (streakEl) streakEl.textContent = streak;
 }
 
-/* 🔥 FIXED: MONTHLY STATS (USES CACHE) */
+/* MONTHLY */
 async function loadMonthlyStats() {
-  if (!currentUser || attendanceCache.length === 0) return;
+  if (!currentUser) return;
 
   try {
     const now = new Date();
     const year = now.getFullYear();
     const month = now.getMonth();
     const currentDay = now.getDate();
-    
-    let presentDays = 0;
-    let totalWorkingDays = 0;
-    let adminHolidays = 0;
 
-    // Load holidays
-    const holidaysSnap = await getDoc(doc(db, "settings", "holidays"));
-    const holidaysData = holidaysSnap.exists() ? holidaysSnap.data() : {};
+    let present = 0;
+    let total = 0;
 
-    // 🔥 Use cache instead of new query
-    const userRecords = new Set();
-    attendanceCache.forEach(data => {
-      if (data.userId === currentUser.uid || data.employeeId === currentUser.uid) {
-        userRecords.add(data.date);
-      }
-    });
+    const hSnap = await getDoc(doc(db, "settings", "holidays"));
+    const hData = hSnap.exists() ? hSnap.data() : {};
 
-    // Check each day
+    const userDates = new Set(attendanceCache.map(d => d.date));
+
     for (let d = 1; d <= currentDay; d++) {
       const date = new Date(year, month, d);
-      const day = date.getDay();
-      const dateStr = getTodayDateForDay(date);
+      const str = getTodayDateForDay(date);
 
-      if (day === 0) continue; // Skip Sundays
+      if (date.getDay() === 0) continue;
 
-      if (holidaysData[dateStr]) {
-        adminHolidays++;
-        continue;
-      }
+      if (hData[str]) continue;
 
-      totalWorkingDays++;
-      if (userRecords.has(dateStr)) presentDays++;
+      total++;
+      if (userDates.has(str)) present++;
     }
 
-    let percent = 100;
-    if (totalWorkingDays > 0) {
-      percent = Math.max(0, Math.round((presentDays / totalWorkingDays) * 100));
-    }
+    let percent = total > 0 ? Math.round((present / total) * 100) : 0;
 
     const percentEl = el("percentStat");
-    if (percentEl) {
-      percentEl.textContent = percent + "%";
-      percentEl.title = `${presentDays}/${totalWorkingDays} days (${adminHolidays} holidays)`;
-    }
-  } catch (error) {
-    console.error("Monthly stats error:", error);
+    if (percentEl) percentEl.textContent = percent + "%";
+
+  } catch (e) {
+    console.error("Monthly error:", e);
   }
 }
 
-/* 🔥 STATUS INDICATOR */
+/* STATUS */
 function updateStatus() {
-  const statusEl = el("attendanceStatus");
-  if (!statusEl) return;
+  const s = el("attendanceStatus");
+  if (!s) return;
 
-  if (!isWithinAllowedTime()) {
-    statusEl.textContent = "⏰ Attendance Closed";
-    statusEl.className = "status closed";
-  } else {
-    statusEl.textContent = "✅ Attendance Open";
-    statusEl.className = "status open";
-  }
+  s.textContent = isWithinAllowedTime() ? "✅ Open" : "⏰ Closed";
 }
 
-/* 🔥 UI STATES */
-function showLoginState() {
-  const distanceEl = el("distanceDisplay");
-  const todayEl = el("todayStat");
-  const percentEl = el("percentStat");
-  const streakEl = el("streakCount");
+/* AUTH */
+onAuthStateChanged(auth, async user => {
 
-  if (distanceEl) distanceEl.textContent = "👋 Login";
-  if (todayEl) todayEl.textContent = "NO";
-  if (percentEl) percentEl.textContent = "--%";
-  if (streakEl) streakEl.textContent = "0 days";
-}
-
-/* 🔥 AUTH */
-onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    showLoginState();
-    stopLocationTracking();
-    stopClock();
-    lastCoords = null;
-    attendanceCache = []; // 🔥 Clear cache
+    attendanceCache = [];
     return;
   }
 
   currentUser = user;
+
   try {
     await loadOfficeSettings();
     startSystem();
   } catch (e) {
-    console.error("Settings error:", e);
-    const distanceEl = el("distanceDisplay");
-    if (distanceEl) distanceEl.textContent = "⚠️ Settings Error";
+    console.error("Settings error", e);
   }
 });
 
-/* 🔥 SETTINGS */
+/* SETTINGS */
 async function loadOfficeSettings() {
   const snap = await getDoc(doc(db, "settings", "tenali"));
-  const data = snap.data();
-  
-  officeLat = Number(data?.point?.latitude);
-  officeLon = Number(data?.point?.longitude);
-  allowedRadius = Number(data?.radius) || 200;
 
+  if (!snap.exists()) throw new Error("Settings missing");
+
+  const data = snap.data();
+
+  if (!data?.point) throw new Error("Invalid settings");
+
+  officeLat = Number(data.point.latitude);
+  officeLon = Number(data.point.longitude);
+  allowedRadius = Number(data.radius) || 200;
+
+  // ✅ RESTORED ADMIN TIME CONTROL
   try {
     const timeSnap = await getDoc(doc(db, "settings", "attendance"));
     if (timeSnap.exists()) {
-      const timeData = timeSnap.data();
-      closeHour = Number(timeData.closeHour) || 23;
-      closeMinute = Number(timeData.closeMinute) || 0;
+      const t = timeSnap.data();
+      closeHour = Number(t.closeHour) || 23;
+      closeMinute = Number(t.closeMinute) || 0;
     }
   } catch (e) {
     console.warn("Time settings not found");
   }
 }
 
-/* 🔥 SYSTEM START */
+/* START */
 async function startSystem() {
   startClock();
+  updateStatus(); // small fix
   startLocation();
-  await loadAttendanceData(); // 🔥 Single cache load
+  await loadAttendanceData();
 }
 
-/* 🔥 CLOCK */
-function stopClock() {
-  if (clockInterval) clearInterval(clockInterval);
-  clockInterval = null;
-}
-
+/* CLOCK */
 function startClock() {
   const clock = el("liveClock");
-  stopClock();
 
-  const updateClock = () => {
-    const now = new Date();
-    const time = now.toLocaleTimeString("en-IN", {
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
-    });
-    
-    if (clock && clock.innerText !== time) {
-      clock.innerText = time;
-    }
+  if (clockInterval) clearInterval(clockInterval);
+
+  const update = () => {
+    if (clock) clock.innerText = new Date().toLocaleTimeString("en-IN");
     updateStatus();
   };
 
-  updateClock();
-  clockInterval = setInterval(updateClock, 1000);
+  update();
+  clockInterval = setInterval(update, 1000);
 }
 
-/* 🔥 LOCATION */
-function stopLocationTracking() {
-  if (locationWatchId) {
-    navigator.geolocation.clearWatch(locationWatchId);
-    locationWatchId = null;
-  }
-}
-
+/* LOCATION */
 function startLocation() {
-  const display = el("distanceDisplay");
-  if (display) display.textContent = "📍 GPS...";
-
   if (!navigator.geolocation) {
-    if (display) display.textContent = "❌ No GPS";
+    alert("GPS not supported");
     return;
   }
-
-  stopLocationTracking();
 
   locationWatchId = navigator.geolocation.watchPosition(
     pos => {
+
       lastCoords = pos.coords;
-      // 🔥 FIX #2: Proper null check
+
       if (officeLat !== null && officeLon !== null) {
-        const distance = calculateDistance(
-          pos.coords.latitude, 
-          pos.coords.longitude, 
-          officeLat, 
+        const dist = calculateDistance(
+          pos.coords.latitude,
+          pos.coords.longitude,
+          officeLat,
           officeLon
         );
-        updateDistanceDisplay(distance);
-        updateAttendanceButton(distance);
+
+        updateAttendanceButton(dist);
       }
+
     },
     err => {
-      console.error("GPS error:", err);
-      if (display) display.textContent = "❌ GPS Error";
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
+      alert("Please enable location permission");
+      console.error(err);
+    }
   );
 }
 
-/* 🔥 UI UPDATES */
-function updateDistanceDisplay(distance) {
-  const display = el("distanceDisplay");
-  if (!display) return;
-  
-  const inside = distance <= allowedRadius;
-  display.innerHTML = inside ? `✅ ${Math.round(distance)}m` : `❌ ${Math.round(distance)}m`;
-}
-
+/* BUTTON */
 function updateAttendanceButton(distance) {
   const btn = el("attendanceBtn");
   if (!btn) return;
-  
-  const ready = distance <= allowedRadius && isWithinAllowedTime();
-  btn.disabled = !ready;
-  btn.textContent = ready ? "✅ Mark Attendance" : "Outside/Closed";
+
+  const ok = distance <= allowedRadius && isWithinAllowedTime();
+
+  btn.disabled = !ok;
+  btn.textContent = ok ? "Mark Attendance" : "Outside/Closed";
 }
 
-/* 🔥 ATTENDANCE MARKING (OPTIMIZED + UX FIX) */
+/* MARK ATTENDANCE */
 async function markAttendance() {
-  if (!currentUser || !lastCoords || officeLat === null || officeLon === null) {
-    alert("Missing data");
-    return;
-  }
+
+  if (!currentUser || !lastCoords) return;
 
   const btn = el("attendanceBtn");
   if (btn) btn.disabled = true;
 
   try {
     const today = getTodayDate();
+
     const distance = calculateDistance(
-      lastCoords.latitude, 
-      lastCoords.longitude, 
-      officeLat, 
+      lastCoords.latitude,
+      lastCoords.longitude,
+      officeLat,
       officeLon
     );
 
-    // 🔥 USE CACHE (FAST) + UX FIX #3
-    const alreadyMarked = attendanceCache.some(data => 
-      (data.userId === currentUser.uid || data.employeeId === currentUser.uid) &&
-      data.date === today
-    );
-
-    if (alreadyMarked) {
-      throw new Error("Already marked today!");
+    if (distance > allowedRadius) {
+      alert("Outside allowed area");
+      if (btn) btn.disabled = false; // FIXED
+      return;
     }
 
-    // ✅ Save
+    const exists = attendanceCache.some(d => d.date === today);
+
+    if (exists) throw new Error("Already marked");
+
     await addDoc(collection(db, "attendance"), {
       userId: currentUser.uid,
       date: today,
@@ -392,59 +317,33 @@ async function markAttendance() {
       status: "present"
     });
 
-    // 🔥 UX FIX: Keep button disabled + update message
     if (btn) {
-      btn.textContent = "✅ Marked Today";
+      btn.textContent = "Marked";
       btn.disabled = true;
     }
 
-    alert("✅ Attendance Marked!");
-    
-    // 🔥 Refresh cache and stats
     await loadAttendanceData();
 
-  } catch (error) {
-    console.error("Attendance error:", error);
-    alert("Error: " + error.message);
-    
-    // 🔥 Re-enable button on error
-    if (btn) {
-      const distance = calculateDistance(
-        lastCoords.latitude, 
-        lastCoords.longitude, 
-        officeLat, 
-        officeLon
-      );
-      updateAttendanceButton(distance);
-    }
+  } catch (e) {
+    alert(e.message);
+    if (btn) btn.disabled = false;
   }
 }
 
-// ✅ Event listener
-document.addEventListener('DOMContentLoaded', () => {
+/* EVENT */
+document.addEventListener("DOMContentLoaded", () => {
   const btn = el("attendanceBtn");
-  if (btn) {
-    btn.onclick = markAttendance;
-  }
+  if (btn) btn.onclick = markAttendance;
 });
 
-/* 🔥 LOGOUT */
-window.signOutUser = async () => {
-  stopLocationTracking();
-  stopClock();
-  attendanceCache = []; // 🔥 Clear cache
-  await signOut(auth);
-};
-
-/* 🔥 DISTANCE */
+/* DISTANCE */
 function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + 
-            Math.cos(lat1 * Math.PI / 180) * 
-            Math.cos(lat2 * Math.PI / 180) * 
-            Math.sin(dLon / 2) ** 2;
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  const dLat = (lat2 - lat1) * Math.PI/180;
+  const dLon = (lon2 - lon1) * Math.PI/180;
+  const a = Math.sin(dLat/2)**2 +
+    Math.cos(lat1*Math.PI/180) *
+    Math.cos(lat2*Math.PI/180) *
+    Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
 }
