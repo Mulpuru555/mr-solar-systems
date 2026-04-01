@@ -3,7 +3,9 @@ import { auth, db } from "./firebase-config.js";
 import {
   doc,
   getDoc,
-  setDoc,
+  getDocs,
+  addDoc,
+  collection,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -22,6 +24,8 @@ let currentUser = null;
 let locationWatchId = null;
 let clockInterval = null;
 let lastCoords = null;
+// 🔥 GLOBAL CACHE (FIX #1)
+let attendanceCache = [];
 
 /* 🔥 DATE FUNCTIONS */
 function getTodayDate() {
@@ -50,80 +54,74 @@ function isWithinAllowedTime() {
   return currentMinutes <= closeMinutes;
 }
 
-/* 🔥 OPTIMIZED MONTHLY STATS - Only PAST days ✅ */
-async function loadMonthlyStats() {
+/* 🔥 CACHE MANAGER (NEW - PERFORMANCE FIX) */
+async function loadAttendanceData() {
   if (!currentUser) return;
-
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = now.getMonth();
-  const currentDay = now.getDate();  // 🔥 Only up to TODAY
   
-  let presentDays = 0;
-  let totalWorkingDays = 0;
-  let adminHolidays = 0;
+  try {
+    const snap = await getDocs(collection(db, "attendance"));
+    attendanceCache = [];
 
-  // 🔥 Load holidays
-  const holidaysSnap = await getDoc(doc(db, "settings", "holidays"));
-  const holidaysData = holidaysSnap.exists() ? holidaysSnap.data() : {};
-
-  // 🔥 FIXED: Only check PAST days (performance + accuracy)
-  for (let d = 1; d <= currentDay; d++) {
-    const date = new Date(year, month, d);
-    const day = date.getDay();
-    const dateStr = getTodayDateForDay(date);
-
-    // 🔥 Skip Sundays
-    if (day === 0) continue;
-
-    // 🔥 Skip Admin Holidays
-    if (holidaysData[dateStr]) {
-      adminHolidays++;
-      continue;
-    }
-
-    totalWorkingDays++;
-    const snap = await getDoc(doc(db, "attendance", currentUser.uid, dateStr, "data"));
-    if (snap.exists()) presentDays++;
-  }
-
-  // 🔥 Perfect 100% - absences
-  let percent = 100;
-  if (totalWorkingDays > 0) {
-    percent = Math.max(0, Math.round((presentDays / totalWorkingDays) * 100));
-  }
-
-  const percentEl = el("percentStat");
-  if (percentEl) {
-    percentEl.textContent = percent + "%";
-    percentEl.title = `${presentDays}/${totalWorkingDays} days (${adminHolidays} holidays)`;
+    snap.forEach(doc => {
+      attendanceCache.push(doc.data());
+    });
+    
+    // 🔥 Update all stats after cache load
+    await Promise.all([
+      loadToday(),
+      loadStreak(),
+      loadMonthlyStats()
+    ]);
+  } catch (error) {
+    console.error("Attendance cache error:", error);
   }
 }
 
-/* 🔥 OPTIMIZED STREAK - Safety Limit ✅ */
+/* 🔥 FIXED: TODAY STATUS (USES CACHE) */
+async function loadToday() {
+  if (!currentUser || attendanceCache.length === 0) return;
+
+  const today = getTodayDate();
+  const found = attendanceCache.some(data => 
+    (data.userId === currentUser.uid || data.employeeId === currentUser.uid) &&
+    data.date === today
+  );
+
+  const todayEl = el("todayStat");
+  if (todayEl) todayEl.textContent = found ? "YES" : "NO";
+}
+
+/* 🔥 FIXED: STREAK (USES CACHE) */
 async function loadStreak() {
-  if (!currentUser) return;
+  if (!currentUser || attendanceCache.length === 0) return;
+
+  const records = attendanceCache.filter(data => 
+    data.userId === currentUser.uid || data.employeeId === currentUser.uid
+  );
+
+  // Sort latest first
+  records.sort((a, b) => {
+    return (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0);
+  });
 
   let streak = 0;
-  let date = new Date();
-  let safety = 0;  // 🔥 Safety limit
+  let current = new Date();
+  current.setHours(0, 0, 0, 0);
 
-  // 🔥 FIXED: Max 365 days check (prevents infinite loop)
-  while (safety < 365) {
-    safety++;
-    const dateStr = getTodayDateForDay(date);
-    const dayCheck = date.getDay();
+  for (let r of records) {
+    let recordDate;
+    if (r.timestamp?.seconds) {
+      recordDate = new Date(r.timestamp.seconds * 1000);
+    } else if (r.date) {
+      recordDate = new Date(r.date);
+    } else continue;
 
-    // 🔥 Skip Sundays
-    if (dayCheck === 0) {
-      date.setDate(date.getDate() - 1);
-      continue;
-    }
+    recordDate.setHours(0, 0, 0, 0);
+    const diff = Math.floor((current - recordDate) / (1000 * 60 * 60 * 24));
 
-    const snap = await getDoc(doc(db, "attendance", currentUser.uid, dateStr, "data"));
-    if (snap.exists()) {
+    if (diff === 0 || diff === 1) {
       streak++;
-      date.setDate(date.getDate() - 1);
+      current.setDate(current.getDate() - 1);
     } else {
       break;
     }
@@ -131,6 +129,64 @@ async function loadStreak() {
 
   const streakEl = el("streakCount");
   if (streakEl) streakEl.textContent = streak + " days";
+}
+
+/* 🔥 FIXED: MONTHLY STATS (USES CACHE) */
+async function loadMonthlyStats() {
+  if (!currentUser || attendanceCache.length === 0) return;
+
+  try {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    const currentDay = now.getDate();
+    
+    let presentDays = 0;
+    let totalWorkingDays = 0;
+    let adminHolidays = 0;
+
+    // Load holidays
+    const holidaysSnap = await getDoc(doc(db, "settings", "holidays"));
+    const holidaysData = holidaysSnap.exists() ? holidaysSnap.data() : {};
+
+    // 🔥 Use cache instead of new query
+    const userRecords = new Set();
+    attendanceCache.forEach(data => {
+      if (data.userId === currentUser.uid || data.employeeId === currentUser.uid) {
+        userRecords.add(data.date);
+      }
+    });
+
+    // Check each day
+    for (let d = 1; d <= currentDay; d++) {
+      const date = new Date(year, month, d);
+      const day = date.getDay();
+      const dateStr = getTodayDateForDay(date);
+
+      if (day === 0) continue; // Skip Sundays
+
+      if (holidaysData[dateStr]) {
+        adminHolidays++;
+        continue;
+      }
+
+      totalWorkingDays++;
+      if (userRecords.has(dateStr)) presentDays++;
+    }
+
+    let percent = 100;
+    if (totalWorkingDays > 0) {
+      percent = Math.max(0, Math.round((presentDays / totalWorkingDays) * 100));
+    }
+
+    const percentEl = el("percentStat");
+    if (percentEl) {
+      percentEl.textContent = percent + "%";
+      percentEl.title = `${presentDays}/${totalWorkingDays} days (${adminHolidays} holidays)`;
+    }
+  } catch (error) {
+    console.error("Monthly stats error:", error);
+  }
 }
 
 /* 🔥 STATUS INDICATOR */
@@ -149,18 +205,15 @@ function updateStatus() {
 
 /* 🔥 UI STATES */
 function showLoginState() {
-  el("distanceDisplay").textContent = "👋 Login";
-  el("todayStat").textContent = "NO";
-  el("percentStat").textContent = "--%";
-  if (el("streakCount")) el("streakCount").textContent = "0 days";
-}
+  const distanceEl = el("distanceDisplay");
+  const todayEl = el("todayStat");
+  const percentEl = el("percentStat");
+  const streakEl = el("streakCount");
 
-/* 🔥 TODAY STATUS */
-async function loadToday() {
-  if (!currentUser) return;
-  const today = getTodayDate();
-  const snap = await getDoc(doc(db, "attendance", currentUser.uid, today, "data"));
-  el("todayStat").textContent = snap.exists() ? "YES" : "NO";
+  if (distanceEl) distanceEl.textContent = "👋 Login";
+  if (todayEl) todayEl.textContent = "NO";
+  if (percentEl) percentEl.textContent = "--%";
+  if (streakEl) streakEl.textContent = "0 days";
 }
 
 /* 🔥 AUTH */
@@ -170,6 +223,7 @@ onAuthStateChanged(auth, async (user) => {
     stopLocationTracking();
     stopClock();
     lastCoords = null;
+    attendanceCache = []; // 🔥 Clear cache
     return;
   }
 
@@ -179,7 +233,8 @@ onAuthStateChanged(auth, async (user) => {
     startSystem();
   } catch (e) {
     console.error("Settings error:", e);
-    el("distanceDisplay").textContent = "⚠️ Settings Error";
+    const distanceEl = el("distanceDisplay");
+    if (distanceEl) distanceEl.textContent = "⚠️ Settings Error";
   }
 });
 
@@ -187,43 +242,49 @@ onAuthStateChanged(auth, async (user) => {
 async function loadOfficeSettings() {
   const snap = await getDoc(doc(db, "settings", "tenali"));
   const data = snap.data();
-  officeLat = Number(data.point.latitude);
-  officeLon = Number(data.point.longitude);
-  allowedRadius = Number(data.radius) || 200;
+  
+  officeLat = Number(data?.point?.latitude);
+  officeLon = Number(data?.point?.longitude);
+  allowedRadius = Number(data?.radius) || 200;
 
-  const timeSnap = await getDoc(doc(db, "settings", "attendance"));
-  if (timeSnap.exists()) {
-    const timeData = timeSnap.data();
-    closeHour = Number(timeData.closeHour) || 23;
-    closeMinute = Number(timeData.closeMinute) || 0;
+  try {
+    const timeSnap = await getDoc(doc(db, "settings", "attendance"));
+    if (timeSnap.exists()) {
+      const timeData = timeSnap.data();
+      closeHour = Number(timeData.closeHour) || 23;
+      closeMinute = Number(timeData.closeMinute) || 0;
+    }
+  } catch (e) {
+    console.warn("Time settings not found");
   }
 }
 
-/* 🔥 CLEAN SYSTEM START - No double calls ✅ */
-function startSystem() {
+/* 🔥 SYSTEM START */
+async function startSystem() {
   startClock();
   startLocation();
-  loadToday();
-  loadMonthlyStats();  // 🔥 Single call
-  loadStreak();        // 🔥 Single call
+  await loadAttendanceData(); // 🔥 Single cache load
 }
 
-/* 🔥 CLOCK WITH STATUS */
+/* 🔥 CLOCK */
 function stopClock() {
   if (clockInterval) clearInterval(clockInterval);
+  clockInterval = null;
 }
 
 function startClock() {
   const clock = el("liveClock");
-  if (clockInterval) clearInterval(clockInterval);
+  stopClock();
 
   const updateClock = () => {
     const now = new Date();
     const time = now.toLocaleTimeString("en-IN", {
       hour: '2-digit', minute: '2-digit', second: '2-digit'
     });
-    if (clock && clock.innerText !== time) clock.innerText = time;
     
+    if (clock && clock.innerText !== time) {
+      clock.innerText = time;
+    }
     updateStatus();
   };
 
@@ -241,10 +302,10 @@ function stopLocationTracking() {
 
 function startLocation() {
   const display = el("distanceDisplay");
-  display.textContent = "📍 GPS...";
+  if (display) display.textContent = "📍 GPS...";
 
   if (!navigator.geolocation) {
-    display.textContent = "❌ No GPS";
+    if (display) display.textContent = "❌ No GPS";
     return;
   }
 
@@ -253,97 +314,125 @@ function startLocation() {
   locationWatchId = navigator.geolocation.watchPosition(
     pos => {
       lastCoords = pos.coords;
-      if (officeLat) {
-        const distance = calculateDistance(pos.coords.latitude, pos.coords.longitude, officeLat, officeLon);
+      // 🔥 FIX #2: Proper null check
+      if (officeLat !== null && officeLon !== null) {
+        const distance = calculateDistance(
+          pos.coords.latitude, 
+          pos.coords.longitude, 
+          officeLat, 
+          officeLon
+        );
         updateDistanceDisplay(distance);
         updateAttendanceButton(distance);
       }
     },
-    () => display.textContent = "❌ GPS Error",
-    { enableHighAccuracy: true }
+    err => {
+      console.error("GPS error:", err);
+      if (display) display.textContent = "❌ GPS Error";
+    },
+    { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 }
   );
 }
 
 /* 🔥 UI UPDATES */
 function updateDistanceDisplay(distance) {
   const display = el("distanceDisplay");
+  if (!display) return;
+  
   const inside = distance <= allowedRadius;
   display.innerHTML = inside ? `✅ ${Math.round(distance)}m` : `❌ ${Math.round(distance)}m`;
 }
 
 function updateAttendanceButton(distance) {
   const btn = el("attendanceBtn");
+  if (!btn) return;
+  
   const ready = distance <= allowedRadius && isWithinAllowedTime();
   btn.disabled = !ready;
   btn.textContent = ready ? "✅ Mark Attendance" : "Outside/Closed";
 }
 
-/* 🔥 PERFECT ATTENDANCE */
-window.markAttendance = async () => {
-  if (!isWithinAllowedTime()) return alert("⏰ Closed");
-  if (!lastCoords) return alert("📍 GPS");
-  if (!navigator.onLine) return alert("❌ Offline");
-
-  const distance = calculateDistance(lastCoords.latitude, lastCoords.longitude, officeLat, officeLon);
-  if (distance > allowedRadius) return alert("❌ Outside range");
+/* 🔥 ATTENDANCE MARKING (OPTIMIZED + UX FIX) */
+async function markAttendance() {
+  if (!currentUser || !lastCoords || officeLat === null || officeLon === null) {
+    alert("Missing data");
+    return;
+  }
 
   const btn = el("attendanceBtn");
-  btn.disabled = true;
-  btn.textContent = "⏳ Saving...";
-  btn.style.background = "#f59e0b";
+  if (btn) btn.disabled = true;
 
   try {
     const today = getTodayDate();
-    const ref = doc(db, "attendance", currentUser.uid, today, "data");
-    
-    const snap = await getDoc(ref);
-    if (snap.exists()) throw new Error("Already marked");
+    const distance = calculateDistance(
+      lastCoords.latitude, 
+      lastCoords.longitude, 
+      officeLat, 
+      officeLon
+    );
 
-    await setDoc(ref, {
-      status: "present",
+    // 🔥 USE CACHE (FAST) + UX FIX #3
+    const alreadyMarked = attendanceCache.some(data => 
+      (data.userId === currentUser.uid || data.employeeId === currentUser.uid) &&
+      data.date === today
+    );
+
+    if (alreadyMarked) {
+      throw new Error("Already marked today!");
+    }
+
+    // ✅ Save
+    await addDoc(collection(db, "attendance"), {
+      userId: currentUser.uid,
       date: today,
       timestamp: serverTimestamp(),
       lat: lastCoords.latitude,
       lon: lastCoords.longitude,
-      distance: Math.round(distance)
+      distance: Math.round(distance),
+      status: "present"
     });
+
+    // 🔥 UX FIX: Keep button disabled + update message
+    if (btn) {
+      btn.textContent = "✅ Marked Today";
+      btn.disabled = true;
+    }
 
     alert("✅ Attendance Marked!");
     
-    // 🔥 UI Success
-    btn.textContent = "✅ Marked Today";
-    btn.style.background = "#10b981";
-    btn.style.color = "white";
-    btn.disabled = true;
+    // 🔥 Refresh cache and stats
+    await loadAttendanceData();
+
+  } catch (error) {
+    console.error("Attendance error:", error);
+    alert("Error: " + error.message);
     
-    // 🔥 Update all data
-    setTimeout(async () => {
-      await loadToday();
-      await loadMonthlyStats();
-      await loadStreak();
-    }, 800);
-    
-  } catch (e) {
-    if (e.message.includes("Already")) {
-      btn.textContent = "✅ Already Marked";
-      btn.style.background = "#10b981";
-      btn.style.color = "white";
-      btn.disabled = true;
-      alert("✅ Already marked today!");
-    } else {
-      console.error("Error:", e);
-      alert("❌ Failed to mark");
-      btn.textContent = "✅ Mark Attendance";
-      btn.style.background = "";
-      btn.style.color = "";
+    // 🔥 Re-enable button on error
+    if (btn) {
+      const distance = calculateDistance(
+        lastCoords.latitude, 
+        lastCoords.longitude, 
+        officeLat, 
+        officeLon
+      );
+      updateAttendanceButton(distance);
     }
   }
-};
+}
+
+// ✅ Event listener
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = el("attendanceBtn");
+  if (btn) {
+    btn.onclick = markAttendance;
+  }
+});
 
 /* 🔥 LOGOUT */
 window.signOutUser = async () => {
   stopLocationTracking();
   stopClock();
+  attendanceCache = []; // 🔥 Clear cache
   await signOut(auth);
 };
 
@@ -352,7 +441,10 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   const R = 6371000;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  const a = Math.sin(dLat / 2) ** 2 + 
+            Math.cos(lat1 * Math.PI / 180) * 
+            Math.cos(lat2 * Math.PI / 180) * 
+            Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
