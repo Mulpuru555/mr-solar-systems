@@ -222,12 +222,14 @@ async function loadOfficeSettings() {
 }
 
 /* 🔥 CLEAN SYSTEM START - No double calls ✅ */
-function startSystem() {
+async function startSystem() {
   startClock();
   startLocation();
-  loadToday();
-  loadMonthlyStats();  // 🔥 Single call
-  loadStreak();        // 🔥 Single call
+
+  // 🔥 Wait in order (IMPORTANT)
+  await loadToday();
+  await loadMonthlyStats();
+  await loadStreak();
 }
 
 /* 🔥 CLOCK WITH STATUS */
