@@ -1,25 +1,37 @@
 import { auth, db } from "./firebase-config.js";
+
 import {
   collection,
-  query,
-  where,
-  orderBy
+  getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 let uid = "";
+let refreshInterval = null;
 
 /* ================= AUTH ================= */
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
     window.location.href = "index.html";
+    // Stop refresh when logged out
+    if (refreshInterval) {
+      clearInterval(refreshInterval);
+      refreshInterval = null;
+    }
     return;
   }
 
   uid = user.uid;
-  await loadHistory(); // Use await for better error handling
+  
+  // Start refresh only when authenticated
+  if (!refreshInterval) {
+    refreshInterval = setInterval(loadHistory, 30000);
+  }
+  
+  await loadHistory();
 });
 
 /* ================= LOAD HISTORY ================= */
@@ -30,148 +42,99 @@ async function loadHistory() {
     return;
   }
 
-  // Show loading state
-  table.innerHTML = "<tr><td colspan='2' class='text-center'>Loading...</td></tr>";
+  table.innerHTML = "<tr><td colspan='2'>Loading...</td></tr>";
 
   try {
-    // 🔥 IMPROVED: Use Firestore query instead of client-side filtering
-    const q = query(
-      collection(db, "attendance"),
-      where("userId", "==", uid), // Prioritize userId (new format)
-      where("employeeId", "==", uid, { shouldDocumentExist: true }), // Fallback to employeeId
-      orderBy("date", "desc"),
-      orderBy("timestamp", "desc")
-    );
+    // ✅ NO INDEX REQUIRED - Simple collection query
+    const snap = await getDocs(collection(db, "attendance"));
 
-    const snap = await getDocs(q);
     const rows = [];
 
     snap.forEach((doc) => {
-      rows.push({ id: doc.id, ...doc.data() });
+      const data = doc.data();
+
+      // ✅ SUPPORTS BOTH FIELD NAMES
+      if (data.userId === uid || data.employeeId === uid) {
+        rows.push(data);
+      }
     });
 
-    // No data found
     if (rows.length === 0) {
-      table.innerHTML = "<tr><td colspan='2' class='text-center'>No Records Found</td></tr>";
+      table.innerHTML = "<tr><td colspan='2'>No Records Found</td></tr>";
       return;
     }
 
-    // Render rows
-    renderTableRows(table, rows);
+    // ✅ CLIENT-SIDE SORT (latest first)
+    rows.sort((a, b) => {
+      const timeA = a.timestamp?.seconds || 0;
+      const timeB = b.timestamp?.seconds || 0;
+      return timeB - timeA;
+    });
+
+    table.innerHTML = "";
+
+    rows.forEach((data) => {
+      const date = formatDate(data.date || data.timestamp);
+      const time = formatTime(data.timestamp);
+
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${date}</td>
+        <td>${time}</td>
+      `;
+      table.appendChild(row);
+    });
 
   } catch (error) {
     console.error("Error loading history:", error);
-    table.innerHTML = "<tr><td colspan='2' class='text-center text-danger'>Error loading data. Please try again.</td></tr>";
+    table.innerHTML = "<tr><td colspan='2'>Error loading data</td></tr>";
   }
 }
 
-/* ================= RENDER TABLE ROWS ================= */
-function renderTableRows(table, rows) {
-  table.innerHTML = ""; // Clear table
-
-  rows.forEach((r) => {
-    const row = createTableRow(r);
-    table.appendChild(row);
-  });
-}
-
-/* ================= CREATE TABLE ROW ================= */
-function createTableRow(record) {
-  const row = document.createElement("tr");
-  
-  // Format date
-  const date = formatDate(record.date || record.createdAt);
-  
-  // Format time
-  const time = formatTime(record);
-
-  row.innerHTML = `
-    <td class="date-cell">${date}</td>
-    <td class="time-cell">${time}</td>
-  `;
-  
-  // Add hover effect
-  row.className = "table-row-hover";
-  
-  return row;
-}
-
 /* ================= FORMAT DATE ================= */
-function formatDate(dateStr) {
-  if (!dateStr) return "-";
-  
+function formatDate(dateVal) {
+  if (!dateVal) return "-";
+
   try {
-    // Handle different date formats
     let date;
-    if (typeof dateStr === 'string') {
-      date = new Date(dateStr);
-    } else if (dateStr.seconds) {
-      date = new Date(dateStr.seconds * 1000);
-    } else {
-      date = new Date(dateStr);
-    }
     
-    return date.toLocaleDateString("en-IN", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric"
-    });
+    if (dateVal.seconds !== undefined) {
+      date = new Date(dateVal.seconds * 1000);
+    } else if (typeof dateVal === 'string') {
+      date = new Date(dateVal);
+    } else {
+      date = new Date(dateVal);
+    }
+
+    if (isNaN(date.getTime())) return "-";
+    
+    return date.toLocaleDateString("en-IN");
   } catch {
-    return dateStr || "-";
+    return "-";
   }
 }
 
 /* ================= FORMAT TIME ================= */
-function formatTime(record) {
-  // Priority order for time fields
-  const timeFields = [
-    record.timestamp,
-    record.time,
-    record.checkInTime,
-    record.checkOutTime
-  ];
+function formatTime(timestamp) {
+  if (!timestamp) return "-";
 
-  for (const timeField of timeFields) {
-    if (timeField) {
-      try {
-        if (timeField.seconds) {
-          // Firestore timestamp
-          return new Date(timeField.seconds * 1000).toLocaleTimeString("en-IN", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true
-          });
-        } else if (typeof timeField === 'string') {
-          // String time
-          return timeField;
-        } else {
-          // Date object
-          return new Date(timeField).toLocaleTimeString("en-IN", {
-            hour: "2-digit",
-            minute: "2-digit",
-            hour12: true
-          });
-        }
-      } catch {
-        continue;
-      }
+  try {
+    let date;
+    
+    if (timestamp.seconds !== undefined) {
+      date = new Date(timestamp.seconds * 1000);
+    } else {
+      date = new Date(timestamp);
     }
+
+    if (isNaN(date.getTime())) return "-";
+    
+    return date.toLocaleTimeString("en-IN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true
+    });
+  } catch {
+    return "-";
   }
-  
-  return "-";
 }
-
-/* ================= RELOAD FUNCTION (OPTIONAL) ================= */
-function reloadHistory() {
-  if (uid) {
-    loadHistory();
-  }
-}
-
-// Expose reload function globally for manual refresh
-window.reloadHistory = reloadHistory;
-
-// Auto-reload every 30 seconds (optional)
-setInterval(() => {
-  if (uid) loadHistory();
-}, 30000);
