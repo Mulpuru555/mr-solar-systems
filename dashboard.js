@@ -1,185 +1,124 @@
 import { auth, db } from "./firebase-config.js";
 
 import {
-  doc,
-  getDoc,
-  getDocs,
-  collection
+doc,
+getDoc,
+getDocs,
+collection,
+query,
+where
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 import {
-  onAuthStateChanged,
-  signOut
+onAuthStateChanged,
+signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
 
 let uid = "";
 let userData = null;
 
-/* ================= AUTH ================= */
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    window.location.href = "index.html";
-    return;
-  }
 
-  uid = user.uid;
+onAuthStateChanged(auth, async (user)=>{
 
-  try {
-    const snap = await getDoc(doc(db, "users", uid));
-    
-    if (!snap.exists()) {
-      console.warn("User document not found");
-      return;
-    }
+if(!user){
+location.href="index.html";
+return;
+}
 
-    userData = snap.data();
+uid = user.uid;
 
-    // ✅ Safe DOM update
-    const welcomeEl = document.getElementById("welcomeName");
-    if (welcomeEl) {
-      welcomeEl.innerText = "Welcome " + (userData.name || "User");
-    }
+const snap = await getDoc(
+doc(db,"users",uid)
+);
 
-    await loadStats();
-  } catch (error) {
-    console.error("Auth error:", error);
-  }
+if(!snap.exists()) return;
+
+userData = snap.data();
+
+
+document.getElementById("welcomeName").innerText =
+"Welcome " + (userData.name || "");
+
+
+loadStats();
+
 });
 
-/* ================= LOGOUT ================= */
-const logoutBtn = document.getElementById("logoutBtn");
-if (logoutBtn) {
-  logoutBtn.onclick = async () => {
-    try {
-      await signOut(auth);
-      window.location.href = "index.html";
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-  };
+
+/* logout */
+
+const logoutBtn =
+document.getElementById("logoutBtn");
+
+if(logoutBtn){
+
+logoutBtn.onclick = async ()=>{
+
+await signOut(auth);
+location.href="index.html";
+
+};
+
 }
+
 
 /* ================= STATS ================= */
-async function loadStats() {
-  try {
-    // Show loading
-    updateStat("totalStat", "Loading...");
-    updateStat("pendingStat", "Loading...");
-    updateStat("todayStat", "Loading...");
 
-    /* ================= ERP PAYMENTS (NO INDEX NEEDED) ================= */
-    let total = 0;
-    let pending = 0;
+async function loadStats(){
 
-    const paymentsSnap = await getDocs(collection(db, "customerPayments"));
-    
-    paymentsSnap.forEach(d => {
-      const data = d.data();
-      
-      // ✅ Support both field names
-      if (data.createdBy === uid || data.userId === uid || data.employeeId === uid) {
-        total++;
-        if ((data.status || "").toLowerCase() === "pending") {
-          pending++;
-        }
-      }
-    });
+let total = 0;
+let pending = 0;
 
-    updateStat("totalStat", total);
-    updateStat("pendingStat", pending);
 
-    /* ================= ATTENDANCE ================= */
-    const attendanceSnap = await getDocs(collection(db, "attendance"));
-    const records = [];
+/* ERP */
 
-    attendanceSnap.forEach(doc => {
-      const data = doc.data();
-      if (data.userId === uid || data.employeeId === uid) {
-        records.push(data);
-      }
-    });
+const q = query(
+collection(db,"customerPayments"),
+where("createdBy","==",uid)
+);
 
-    /* ================= TODAY ================= */
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Start of today
-    const todayStr = today.toDateString();
+const snap = await getDocs(q);
 
-    const todayFound = records.some(r => {
-      const recordDate = getRecordDate(r);
-      return recordDate && recordDate.toDateString() === todayStr;
-    });
+snap.forEach(d=>{
 
-    updateStat("todayStat", todayFound ? "YES" : "NO");
+total++;
 
-    /* ================= STREAK (FIXED LOGIC) ================= */
-    const streak = calculateStreak(records);
-    updateStat("streakCount", streak);
-
-  } catch (error) {
-    console.error("Stats error:", error);
-    updateStat("totalStat", "Error");
-    updateStat("pendingStat", "Error");
-    updateStat("todayStat", "Error");
-    updateStat("streakCount", "Error");
-  }
+if(
+(d.data().status || "")
+.toLowerCase() === "pending"
+){
+pending++;
 }
 
-/* ================= HELPER FUNCTIONS ================= */
-function updateStat(elementId, value) {
-  const el = document.getElementById(elementId);
-  if (el) el.innerText = value;
+});
+
+document.getElementById("totalStat").innerText = total;
+document.getElementById("pendingStat").innerText = pending;
+
+
+/* TODAY */
+
+const today =
+new Date().toISOString().split("T")[0];
+
+let todayStatus = "NO";
+
+const ref = doc(
+db,
+"attendance",
+uid,
+today,
+"data"
+);
+
+const aSnap = await getDoc(ref);
+
+if(aSnap.exists()){
+todayStatus = "YES";
 }
 
-function getRecordDate(record) {
-  try {
-    if (record.timestamp?.seconds !== undefined) {
-      return new Date(record.timestamp.seconds * 1000);
-    }
-    if (record.date) {
-      return new Date(record.date);
-    }
-    return null;
-  } catch {
-    return null;
-  }
-}
+document.getElementById("todayStat").innerText =
+todayStatus;
 
-function calculateStreak(records) {
-  if (records.length === 0) return 0;
-
-  // Convert & sort dates (latest first)
-  const dates = records
-    .map(r => getRecordDate(r))
-    .filter(d => d !== null)
-    .map(d => {
-      d.setHours(0, 0, 0, 0); // normalize
-      return d;
-    })
-    .sort((a, b) => b - a);
-
-  let streak = 0;
-
-  let current = new Date();
-  current.setHours(0, 0, 0, 0);
-
-  for (let i = 0; i < dates.length; i++) {
-
-    const diff = Math.floor(
-      (current - dates[i]) / (1000 * 60 * 60 * 24)
-    );
-
-    if (diff === 0) {
-      streak++;
-      current.setDate(current.getDate() - 1);
-    } 
-    else if (diff === 1) {
-      streak++;
-      current.setDate(current.getDate() - 1);
-    } 
-    else {
-      break;
-    }
-  }
-
-  return streak;
 }
