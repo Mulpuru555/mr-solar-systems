@@ -101,18 +101,29 @@ async function loadSettings() {
 /* ================= LOAD ATTENDANCE ================= */
 async function loadAttendance() {
   try {
-    const snap = await getDocs(collection(db, "attendance"));
     attendanceCache = [];
 
-    snap.forEach(docSnap => {
-      const d = docSnap.data();
-      // ✅ DUAL ID SUPPORT
-      if (d.userId === currentUser.uid || d.employeeId === currentUser.uid) {
-        attendanceCache.push({ id: docSnap.id, ...d });
+    // 👉 Go inside: attendance / USER_ID
+    const userRef = collection(db, "attendance", currentUser.uid);
+
+    const datesSnap = await getDocs(userRef);
+
+    for (const dateDoc of datesSnap.docs) {
+
+      // 👉 Go inside: attendance / USER_ID / DATE / data
+      const dataRef = doc(db, "attendance", currentUser.uid, dateDoc.id, "data");
+      const dataSnap = await getDoc(dataRef);
+
+      if (dataSnap.exists()) {
+        attendanceCache.push({
+          id: dataSnap.id,
+          ...dataSnap.data()
+        });
       }
-    });
+    }
 
     calculateAll();
+
   } catch (e) {
     console.error("Attendance load error", e);
   }
