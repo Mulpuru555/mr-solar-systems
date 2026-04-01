@@ -106,21 +106,44 @@ async function loadStreak() {
 
   let streak = 0;
   let date = new Date();
-  let safety = 0;  // 🔥 Safety limit
+  let safety = 0;
 
-  // 🔥 FIXED: Max 365 days check (prevents infinite loop)
+  // 🔥 Load holidays
+  const holidaysSnap = await getDoc(doc(db, "settings", "holidays"));
+  const holidaysData = holidaysSnap.exists() ? holidaysSnap.data() : {};
+
+  // 🔥 Skip today if not marked
+  const todayStr = getTodayDate();
+  const todaySnap = await getDoc(
+    doc(db, "attendance", currentUser.uid, todayStr, "data")
+  );
+
+  if (!todaySnap.exists()) {
+    date.setDate(date.getDate() - 1);
+  }
+
   while (safety < 365) {
     safety++;
+
     const dateStr = getTodayDateForDay(date);
     const dayCheck = date.getDay();
 
-    // 🔥 Skip Sundays
+    // ✅ Skip Sunday
     if (dayCheck === 0) {
       date.setDate(date.getDate() - 1);
       continue;
     }
 
-    const snap = await getDoc(doc(db, "attendance", currentUser.uid, dateStr, "data"));
+    // 🔥 NEW: Skip admin holidays
+    if (holidaysData[dateStr]) {
+      date.setDate(date.getDate() - 1);
+      continue;
+    }
+
+    const snap = await getDoc(
+      doc(db, "attendance", currentUser.uid, dateStr, "data")
+    );
+
     if (snap.exists()) {
       streak++;
       date.setDate(date.getDate() - 1);
@@ -132,7 +155,6 @@ async function loadStreak() {
   const streakEl = el("streakCount");
   if (streakEl) streakEl.textContent = streak + " days";
 }
-
 /* 🔥 STATUS INDICATOR */
 function updateStatus() {
   const statusEl = el("attendanceStatus");
