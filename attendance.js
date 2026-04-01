@@ -180,9 +180,14 @@ function showLoginState() {
 /* 🔥 TODAY STATUS */
 async function loadToday() {
   if (!currentUser) return;
+
+  const todayEl = el("todayStat");
+  if (todayEl) todayEl.textContent = "..."; // loading
+
   const today = getTodayDate();
   const snap = await getDoc(doc(db, "attendance", currentUser.uid, today, "data"));
-  el("todayStat").textContent = snap.exists() ? "YES" : "NO";
+
+  if (todayEl) todayEl.textContent = snap.exists() ? "YES" : "NO";
 }
 
 /* 🔥 AUTH */
@@ -222,14 +227,14 @@ async function loadOfficeSettings() {
 }
 
 /* 🔥 CLEAN SYSTEM START - No double calls ✅ */
-async function startSystem() {
+function startSystem() {
   startClock();
   startLocation();
 
-  // 🔥 Wait in order (IMPORTANT)
-  await loadToday();
-  await loadMonthlyStats();
-  await loadStreak();
+  // ❌ remove await here
+  loadToday();
+  loadMonthlyStats();
+  loadStreak();
 }
 
 /* 🔥 CLOCK WITH STATUS */
