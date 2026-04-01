@@ -103,22 +103,41 @@ async function loadAttendance() {
   try {
     attendanceCache = [];
 
-    // 👉 Go inside: attendance / USER_ID
-    const userRef = collection(db, "attendance", currentUser.uid);
+    // 👉 Get today's record directly
+    const today = todayStr();
 
-    const datesSnap = await getDocs(userRef);
+    const dataRef = doc(
+      db,
+      "attendance",
+      currentUser.uid,
+      today,
+      "data"
+    );
 
-    for (const dateDoc of datesSnap.docs) {
+    const snap = await getDoc(dataRef);
 
-      // 👉 Go inside: attendance / USER_ID / DATE / data
-      const dataRef = doc(db, "attendance", currentUser.uid, dateDoc.id, "data");
-      const dataSnap = await getDoc(dataRef);
+    if (snap.exists()) {
+      attendanceCache.push(snap.data());
+    }
 
-      if (dataSnap.exists()) {
-        attendanceCache.push({
-          id: dataSnap.id,
-          ...dataSnap.data()
-        });
+    // 👉 OPTIONAL: load last few days (for streak)
+    for (let i = 1; i <= 30; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+
+      const dateStr = normalizeDate(d);
+
+      const ref = doc(
+        db,
+        "attendance",
+        currentUser.uid,
+        dateStr,
+        "data"
+      );
+
+      const s = await getDoc(ref);
+      if (s.exists()) {
+        attendanceCache.push(s.data());
       }
     }
 
