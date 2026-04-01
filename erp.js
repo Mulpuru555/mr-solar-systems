@@ -144,11 +144,19 @@ function showTable(list) {
       ? new Date(d.createdAt.seconds * 1000).toLocaleDateString('en-IN')
       : "-";
 
-    const statusBadge = {
-      "Pending": '<span class="status pending">Pending</span>',
-      "Paid": '<span class="status paid">Paid</span>',
-      "Partial": '<span class="status partial">Partial</span>'
-    }[d.status] || '<span class="status unknown">Unknown</span>';
+    let status = "Pending";
+
+if (paid === totalAmount) {
+  status = "Paid";
+} else if (paid > 0) {
+  status = "Partial";
+}
+
+const statusBadge = {
+  "Pending": '<span class="status pending">Pending</span>',
+  "Paid": '<span class="status paid">Paid</span>',
+  "Partial": '<span class="status partial">Partial</span>'
+}[status];
 
     const locked = d.isLocked !== false;
     const lockIcon = locked ? "🔒" : "🔓";
