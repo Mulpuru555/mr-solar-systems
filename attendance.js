@@ -180,14 +180,9 @@ function showLoginState() {
 /* 🔥 TODAY STATUS */
 async function loadToday() {
   if (!currentUser) return;
-
-  const todayEl = el("todayStat");
-  if (todayEl) todayEl.textContent = "..."; // loading
-
   const today = getTodayDate();
   const snap = await getDoc(doc(db, "attendance", currentUser.uid, today, "data"));
-
-  if (todayEl) todayEl.textContent = snap.exists() ? "YES" : "NO";
+  el("todayStat").textContent = snap.exists() ? "YES" : "NO";
 }
 
 /* 🔥 AUTH */
@@ -230,11 +225,9 @@ async function loadOfficeSettings() {
 function startSystem() {
   startClock();
   startLocation();
-
-  // ❌ remove await here
   loadToday();
-  loadMonthlyStats();
-  loadStreak();
+  loadMonthlyStats();  // 🔥 Single call
+  loadStreak();        // 🔥 Single call
 }
 
 /* 🔥 CLOCK WITH STATUS */
