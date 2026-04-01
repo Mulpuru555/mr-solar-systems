@@ -99,26 +99,29 @@ document.getElementById("pendingStat").innerText = pending;
 
 /* TODAY */
 
-const today =
-new Date().toISOString().split("T")[0];
+const snapAttendance = await getDocs(collection(db, "attendance"));
 
-let todayStatus = "NO";
+let todayCount = 0;
 
-const ref = doc(
-db,
-"attendance",
-uid,
-today,
-"data"
-);
+const today = new Date().toDateString();
 
-const aSnap = await getDoc(ref);
+snapAttendance.forEach(doc => {
+  const data = doc.data();
 
-if(aSnap.exists()){
-todayStatus = "YES";
-}
+  if (data.userId === uid || data.employeeId === uid) {
 
-document.getElementById("todayStat").innerText =
-todayStatus;
+    let recordDate;
 
-}
+    if (data.timestamp?.seconds) {
+      recordDate = new Date(data.timestamp.seconds * 1000).toDateString();
+    } else if (data.date) {
+      recordDate = new Date(data.date).toDateString();
+    }
+
+    if (recordDate === today) {
+      todayCount++;
+    }
+  }
+});
+
+document.getElementById("todayStat").innerText = todayCount > 0 ? "YES" : "NO";
