@@ -49,6 +49,7 @@ th,td{padding:12px;border-bottom:1px solid #2c2c2c;text-align:center;}
 <button onclick="showSection('attendanceReport')">📈 Attendance Report</button>
 <button onclick="showSection('holidayManagement')">🎉 Holiday Management</button>
 <button onclick="showSection('erp')">💰 Customer ERP</button>
+<button class="action" onclick="fixAllStatuses()">Fix All Status</button>
 </div>
 
 <div class="main">
@@ -468,6 +469,45 @@ window.deleteHoliday = async function(date){
 };
 
 loadHolidays();
+window.fixAllStatuses = async function () {
+
+  const confirmFix = confirm("Fix all status based on payments?");
+  if (!confirmFix) return;
+
+  const snapshot = await getDocs(collection(db, "customerPayments"));
+
+  let updated = 0;
+
+  for (const docSnap of snapshot.docs) {
+
+    const data = docSnap.data();
+
+    const totalAmount = Number(data.totalAmount) || 0;
+
+    const payments = data.payments || [];
+
+    const totalPaid = payments.reduce((sum, p) => {
+      return sum + (Number(p.amount) || 0);
+    }, 0);
+
+    let newStatus = "Pending";
+
+    if (totalPaid >= totalAmount && totalAmount > 0) {
+      newStatus = "Paid";
+    } else if (totalPaid > 0) {
+      newStatus = "Partial";
+    }
+
+    if (data.status !== newStatus) {
+      await updateDoc(doc(db, "customerPayments", docSnap.id), {
+        status: newStatus
+      });
+      updated++;
+    }
+  }
+
+  alert(`✅ Fixed ${updated} records successfully!`);
+};
 </script>
 
 <script type="module" src="auth.js"></script>
