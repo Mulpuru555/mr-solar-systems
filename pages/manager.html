@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<link rel="shortcut icon" href="../favicon.ico">
+<link rel="apple-touch-icon" href="../assets/images/mr-logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<link rel="stylesheet" href="../css/manager.css">
+<script>
+  window.switchManagerModule = function(modId) {
+    sessionStorage.setItem("activeManagerModule", modId);
+    document.querySelectorAll(".managerModule").forEach(m => m.classList.remove("active"));
+    document.querySelectorAll(".managerTab").forEach(t => t.classList.remove("active"));
+    const target = document.getElementById(modId);
+    if (target) target.classList.add("active");
+    const activeTab = document.querySelector(`[data-mod="${modId}"]`);
+    if (activeTab) activeTab.classList.add("active");
+  };
+  window.logoutUser = async function() {
+    try {
+      const { auth } = await import('../js/firebase-config.js');
+      const { signOut } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+      await signOut(auth);
+    } catch(e) {}
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = '/index.html';
+  };
+</script>
+</head>
+
+<body>
+
+
+<div class="nav">
+
+<div class="logo">
+Manager Dashboard
+</div>
+
+<button
+onclick="logoutUser()"
+class="logout">
+
+Logout
+
+</button>
+
+</div>
+
+<div class="managerNavTabs">
+  <button class="navTabBtn active" data-module="attendanceModule" onclick="switchManagerModule('attendanceModule')">📅 Attendance Report</button>
+  <button class="navTabBtn" data-module="summaryModule" onclick="switchManagerModule('summaryModule')">📊 Monthly Summary</button>
+  <button class="navTabBtn" data-module="progressModule" onclick="switchManagerModule('progressModule')">🚧 Customer Progress</button>
+  <button class="navTabBtn" data-module="leaveModule" onclick="switchManagerModule('leaveModule')">✉ Leave Requests</button>
+  <button class="navTabBtn" data-module="serviceModule" onclick="switchManagerModule('serviceModule')">🛠 Service Requests</button>
+  <button class="navTabBtn" data-module="tasksModule" onclick="switchManagerModule('tasksModule')">📋 Task Assignment</button>
+  <button class="navTabBtn" data-module="blockedModule" onclick="switchManagerModule('blockedModule')">🔒 Blocked Staff</button>
+</div>
+
+<div class="container" style="display:block;">
+
+<!-- 1. ATTENDANCE REPORT MODULE -->
+<div id="attendanceModule" class="managerModule active">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:16px;">
+      <div>
+        <h2 style="margin:0 0 4px;">Daily Attendance Report</h2>
+        <div style="font-size:12px;color:#94a3b8;">Select date to review check-ins, timestamps, and selfie verifications.</div>
+      </div>
+      <input type="date" id="attendanceDate" style="max-width:200px;margin:0;">
+    </div>
+
+    <div id="attendanceReportMetrics" style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;"></div>
+
+    <div class="tableScroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Branch</th>
+            <th>Status</th>
+            <th>Type</th>
+            <th>Time</th>
+            <th>Photo</th>
+          </tr>
+        </thead>
+        <tbody id="attendanceTable">
+          <tr><td colspan="6" style="text-align:center;color:#8a97a6;padding:16px;">Loading attendance records...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 2. SUMMARY MODULE -->
+<div id="summaryModule" class="managerModule">
+  <div class="card">
+    <div style="margin-bottom:16px;">
+      <h2 style="margin:0 0 4px;">Monthly Attendance Summary</h2>
+      <div style="font-size:12px;color:#94a3b8;">Real-time calculation of working days (excluding Sundays & holidays), present days, absent days, and %.</div>
+    </div>
+
+    <div class="tableScroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Branch</th>
+            <th>Working Days</th>
+            <th>Present</th>
+            <th>Absent</th>
+            <th>Attendance %</th>
+          </tr>
+        </thead>
+        <tbody id="summaryTable">
+          <tr><td colspan="6" style="text-align:center;color:#8a97a6;padding:16px;">Calculating summary...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 3. CUSTOMER PROGRESS & ERP MODULE -->
+<div id="progressModule" class="managerModule">
+  <div class="card">
+    <div style="margin-bottom:16px;">
+      <h2 style="margin:0 0 4px;">Customer Progress & Installation Tracking</h2>
+      <div style="font-size:12px;color:#94a3b8;">Live stage status and payment metrics for customer installations.</div>
+    </div>
+
+    <input type="text" id="managerProgressSearchInput" placeholder="Search by customer name, executive, or branch..." style="width:100%;padding:10px 14px;margin-bottom:16px;border-radius:8px;">
+
+    <div id="managerProgressList">Loading customer records...</div>
+  </div>
+</div>
+
+<!-- 4. LEAVE APPROVAL MODULE -->
+<div id="leaveModule" class="managerModule">
+  <div class="card">
+    <div style="margin-bottom:16px;">
+      <h2 style="margin:0 0 4px;">Leave Requests (View Only)</h2>
+      <div style="font-size:12px;color:#94a3b8;">Monitor staff leave submissions across company branches.</div>
+    </div>
+
+    <div class="tableScroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Reason</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="leaveApprovalTable">
+          <tr><td colspan="6" style="text-align:center;color:#8a97a6;padding:16px;">Loading leave requests...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 5. SERVICE REQUESTS MODULE -->
+<div id="serviceModule" class="managerModule">
+  <div class="card">
+    <div style="margin-bottom:16px;">
+      <h2 style="margin:0 0 4px;">Service & Maintenance Requests</h2>
+      <div style="font-size:12px;color:#94a3b8;">Assign technicians and track live resolution statuses.</div>
+    </div>
+
+    <input type="text" id="managerServiceSearchInput" placeholder="Search by customer, status, or technician..." style="width:100%;padding:10px 14px;margin-bottom:16px;border-radius:8px;">
+
+    <div id="managerServiceList">Loading service requests...</div>
+  </div>
+</div>
+
+<!-- 6. TASK ASSIGNMENT MODULE -->
+<div id="tasksModule" class="managerModule">
+  <div class="card">
+    <div style="margin-bottom:16px;">
+      <h2 style="margin:0 0 4px;">Assign a Task</h2>
+      <div style="font-size:12px;color:#94a3b8;">Dispatch daily assignments to field executives and technicians.</div>
+    </div>
+
+    <input type="text" id="mgrTaskTitleInput" placeholder="Task title / description" style="width:100%;margin-bottom:10px;">
+    <select id="mgrTaskAssigneeSelect" style="width:100%;margin-bottom:10px;"><option value="">Assign to...</option></select>
+    <input type="date" id="mgrTaskDueDateInput" style="width:100%;margin-bottom:12px;">
+    <button class="btn" id="mgrCreateTaskBtn" style="width:100%;margin-bottom:16px;">Assign Task</button>
+    <div id="mgrTaskFormStatus" style="font-size:12px;margin-bottom:14px;"></div>
+
+    <h2 style="margin:24px 0 12px;color:#38bdf8;">All Assigned Tasks</h2>
+    <div id="managerTaskList">Loading tasks...</div>
+  </div>
+</div>
+
+<!-- 7. BLOCKED EMPLOYEES MODULE -->
+<div id="blockedModule" class="managerModule">
+  <div class="card">
+    <div style="margin-bottom:16px;">
+      <h2 style="margin:0 0 4px;">Blocked Staff Accounts</h2>
+      <div style="font-size:12px;color:#94a3b8;">Employees temporarily restricted due to device discrepancies or policy alerts.</div>
+    </div>
+
+    <div class="tableScroll">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Branch</th>
+            <th>Reason</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="blockedTable">
+          <tr><td colspan="4" style="text-align:center;color:#8a97a6;padding:16px;">No blocked employees.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<!-- PHOTO POPUP -->
+<div id="photoPopup">
+  <img id="popupImg" alt="Enlarged photo">
+</div>
+
+<script type="module" src="../js/session-timeout.js"></script>
+<script type="module" src="../js/manager.js"></script>
+<script type="module" src="../js/manager-leave.js"></script>
+<script type="module" src="../js/manager-service.js"></script>
+<script type="module" src="../js/manager-tasks.js"></script>
+
+</body>
+</html>

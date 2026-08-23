@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<link rel="shortcut icon" href="../favicon.ico">
+<link rel="apple-touch-icon" href="../assets/images/mr-logo.jpeg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Portal - M.R Solar Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/employee.css">
+<link rel="stylesheet" href="../css/responsive-tables.css">
+<link rel="stylesheet" href="../css/attendance-widgets.css">
+<link rel="stylesheet" href="../css/erp-widgets.css">
+<link rel="stylesheet" href="../css/employee-modules.css">
+<link rel="stylesheet" href="../css/chirala.css">
+
+<script>
+  window.toggleSection = function(id) {
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    const target = document.getElementById(id);
+    if (target) target.classList.add("active");
+  };
+  window.logoutUser = async function() {
+    try {
+      const { auth } = await import('../js/firebase-config.js');
+      const { signOut } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+      await signOut(auth);
+    } catch(e) {}
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = '/index.html';
+  };
+</script>
+</head>
+
+<body>
+
+
+<!-- LOADING -->
+
+<div id="loadingScreen">
+
+<div class="loader"></div>
+<h2>Loading Portal...</h2>
+
+</div>
+
+
+
+<!-- HEADER -->
+
+<div class="header">
+
+<div>
+
+<h2>M.R Solar Systems</h2>
+<div id="welcomeName">Welcome</div>
+
+</div>
+
+<div class="headerRight">
+
+<div class="headerSearchWrap">
+<input type="text" id="globalSearchInput" placeholder="Search sections...">
+<div class="searchResultsPanel" id="searchResultsPanel"></div>
+</div>
+
+<div class="notifBellWrap">
+<button id="notifBellBtn" type="button">&#128276;<span id="notifBadge">0</span></button>
+<div class="notifPanel" id="notifPanel">
+<div class="notifEmpty">Loading…</div>
+</div>
+</div>
+
+<div id="liveClock">00:00</div>
+
+<a id="profileLink" href="profile.html" class="headerProfileLink">Profile</a>
+
+<button id="logoutBtn">
+Logout
+</button>
+
+</div>
+
+</div>
+
+
+
+<!-- NOTICE BANNER -->
+<div id="noticeBanner" class="noticeBanner" style="display:none;"></div>
+
+
+
+<!-- STATS -->
+
+<div class="stats">
+
+<div class="statCard">
+
+<div class="statNumber" id="totalStat">
+0
+</div>
+
+<div class="statLabel">
+Total ERP Entries
+</div>
+
+</div>
+
+<div class="statCard">
+
+<div class="statNumber" id="pendingStat">
+0
+</div>
+
+<div class="statLabel">
+Pending Records
+</div>
+
+</div>
+
+<div class="statCard">
+
+<div class="statNumber" id="todayStat">
+NO
+</div>
+
+<div class="statLabel">
+Today Attendance
+</div>
+
+</div>
+
+<div class="statCard">
+
+<div class="statNumber" id="percentStat">
+0%
+</div>
+
+<div class="statLabel">
+Month Attendance
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- QUICK ACTIONS BAR -->
+<div class="quickActionsBar" id="quickActionsBar">
+<button class="quickActionBtn" onclick="toggleSection('attendanceSection')">&#128197; Mark Attendance</button>
+<button class="quickActionBtn" onclick="toggleSection('erpSection')">&#10010; New ERP Entry</button>
+<button class="quickActionBtn" onclick="toggleSection('customerProgressSection')">&#128679; Customer Progress</button>
+<button class="quickActionBtn" onclick="toggleSection('leaveSection')">&#9993; Apply Leave</button>
+<button class="quickActionBtn" onclick="location.href='profile.html'">View Profile</button>
+</div>
+
+
+
+<!-- CARDS -->
+
+<div class="cards">
+
+<div class="card" onclick="toggleSection('attendanceSection')">
+Attendance
+</div>
+
+<div class="card" onclick="toggleSection('erpSection')">
+ERP
+</div>
+
+<div class="card" onclick="toggleSection('customerProgressSection')">
+Customer Progress
+</div>
+
+<div class="card" onclick="toggleSection('historySection')">
+History
+</div>
+
+<div class="card" onclick="toggleSection('leaveSection')">
+Leave
+</div>
+
+<div class="card" onclick="toggleSection('documentsSection')">
+Documents
+</div>
+
+<div class="card" onclick="toggleSection('activitySection')">
+Activity
+</div>
+
+<div class="card" onclick="toggleSection('serviceSection')">
+Service Requests
+</div>
+
+<div class="card" onclick="toggleSection('taskSection')">
+My Tasks
+</div>
+
+</div>
+
+
+
+<!-- ================= ATTENDANCE ================= -->
+
+<div id="attendanceSection" class="section">
+
+<div class="glass">
+
+<div id="distanceDisplay">
+Checking location...
+</div>
+
+<div id="countdownBox">
+Time loading...
+</div>
+
+<button id="attendanceBtn" onclick="markAttendance()">
+Mark Attendance
+</button>
+
+<div id="attendanceStatus"></div>
+
+</div>
+
+<div class="glass" id="attendanceAnalytics">
+
+<div class="analyticsHead">
+<h3>Attendance Analytics</h3>
+<div class="analyticsSummary" id="analyticsSummary">Loading…</div>
+</div>
+
+<div class="streakRow">
+<div class="streakBox">
+<div class="streakNum" id="streakCount">0</div>
+<div class="streakLabel">Day streak</div>
+</div>
+</div>
+
+<div class="calendarWrap">
+<div class="calendarNav">
+<button type="button" id="calPrevBtn">&lsaquo;</button>
+<div id="calendarMonthLabel">—</div>
+<button type="button" id="calNextBtn">&rsaquo;</button>
+</div>
+<div class="calendarGrid" id="calendarGrid"></div>
+<div class="calendarLegend">
+<span><i class="dotPresent"></i> Present</span>
+<span><i class="dotAbsent"></i> Absent</span>
+<span><i class="dotHoliday"></i> Holiday/Sunday</span>
+<span><i class="dotFuture"></i> Upcoming</span>
+</div>
+</div>
+
+<div class="heatmapWrap">
+<div class="heatmapTitle">Last 12 weeks</div>
+<div class="heatmapGrid" id="heatmapGrid"></div>
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- ================= ERP ================= -->
+
+<div id="erpSection" class="section">
+
+<div class="glass">
+
+<form id="paymentForm">
+
+<input id="customerName" placeholder="Customer" required maxlength="80">
+
+<input id="customerPhone" placeholder="Phone Number" type="tel" pattern="[0-9+\-\s]{7,15}" required maxlength="20">
+
+<input id="executiveName" placeholder="Executive" required maxlength="80">
+
+<input id="totalAmount" placeholder="Total" type="number" min="1" step="0.01" required>
+
+<button type="submit">
+Add
+</button>
+
+</form>
+
+</div>
+
+
+<div class="glass">
+
+<div class="erpToolbarRow">
+<input id="searchInput" placeholder="Search...">
+<button type="button" id="erpExportCsvBtn" class="leaveSubmitBtn">Export CSV</button>
+<button type="button" id="erpExportXlsxBtn" class="leaveSubmitBtn">Export Excel</button>
+</div>
+
+<div class="tableScroll">
+<table>
+
+<thead>
+
+<tr>
+<th>S.No</th>
+<th class="erpSortable" data-sort="customerName">Customer<span class="erpSortArrow">&#8645;</span></th>
+<th>Phone</th>
+<th class="erpSortable" data-sort="executiveName">Executive<span class="erpSortArrow">&#8645;</span></th>
+<th class="erpSortable" data-sort="totalAmount">Total<span class="erpSortArrow">&#8645;</span></th>
+<th class="erpSortable" data-sort="paid">Paid<span class="erpSortArrow">&#8645;</span></th>
+<th class="erpSortable" data-sort="balance">Balance<span class="erpSortArrow">&#8645;</span></th>
+<th class="erpSortable" data-sort="status">Status<span class="erpSortArrow">&#8645;</span></th>
+<th class="erpSortable" data-sort="currentStage">Stage<span class="erpSortArrow">&#8645;</span></th>
+<th class="erpSortable" data-sort="date">Date<span class="erpSortArrow">&#8645;</span></th>
+<th>Lock</th>
+<th>Actions</th>
+</tr>
+
+</thead>
+
+<tbody id="recordsTable"></tbody>
+
+</table>
+</div>
+
+<div class="erpPaginationRow" id="erpPaginationControls"></div>
+
+</div>
+
+<!-- ERP payment timeline / invoice modal -->
+<div class="erpModalOverlay" id="erpTimelineModal">
+<div class="erpModalBox">
+<h3 id="erpModalCustomerName">Customer</h3>
+<div class="erpModalSub" id="erpModalExecName"></div>
+<div id="erpTimelineList"></div>
+<div class="erpModalActions">
+<button class="erpBtnPrint" id="erpPrintInvoiceBtn">Print Invoice</button>
+<button class="erpBtnClose" id="erpCloseModalBtn">Close</button>
+</div>
+</div>
+</div>
+
+<div id="erpInvoicePrintArea">
+<h2>M.R Solar Systems — Invoice</h2>
+<p id="printCustomerLine"></p>
+<p id="printExecLine"></p>
+<p id="printDateLine"></p>
+<table>
+<thead><tr><th>#</th><th>Payment Date</th><th>Amount (₹)</th></tr></thead>
+<tbody id="printPaymentRows"></tbody>
+</table>
+<p id="printTotalsLine" style="margin-top:16px;font-weight:bold;"></p>
+</div>
+
+<!-- Work progress modal -->
+<div class="erpModalOverlay" id="progressModal">
+<div class="erpModalBox">
+<h3 id="progressModalCustomerName">Work Progress</h3>
+<div class="erpModalSub">Update and track installation/service progress for this customer.</div>
+
+<form id="progressForm">
+<label class="popupLabel">Status</label>
+<select id="progressStatusInput" required>
+<option value="">Select stage</option>
+</select>
+
+<label class="popupLabel">Remarks</label>
+<textarea id="progressRemarksInput" rows="2" required placeholder="What was done / next steps..."></textarea>
+
+<label class="popupLabel">Photo (optional)</label>
+<input type="file" id="progressPhotoInput" accept="image/*">
+
+<button type="submit" class="leaveSubmitBtn" style="margin-top:10px;width:100%;">Add Update</button>
+</form>
+<div id="progressFormStatus" style="margin-top:8px;font-size:12px;"></div>
+
+<div class="erpModalSub" style="margin-top:16px;">History</div>
+<div id="progressHistoryList"></div>
+
+<div class="erpModalActions">
+<button class="erpBtnClose" id="progressCloseModalBtn">Close</button>
+</div>
+</div>
+</div>
+
+</div>
+
+
+
+
+<!-- ================= CUSTOMER PROGRESS (INSIDE ERP) ================= -->
+
+<div id="customerProgressSection" class="section">
+
+<div class="glass">
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+  <div>
+    <h3 style="color:#ff8c00;margin:0 0 4px;">Customer Progress &amp; Workflow Tracking</h3>
+    <div style="font-size:13px;color:#8a97a6;">Live stage tracking, balances, and executive details from your ERP records.</div>
+  </div>
+  <button type="button" class="quickActionBtn" onclick="toggleSection('erpSection')" style="background:#ff8c00;color:#fff;border:none;">+ Add / View ERP Records</button>
+</div>
+
+<div class="erpToolbarRow" style="margin-bottom:16px;">
+  <input id="empProgressSearchInput" placeholder="Search by customer name, phone, or executive..." style="flex:2;min-width:240px;">
+  <select id="empProgressStatusFilter" style="flex:1;min-width:160px;padding:9px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:#0d1117;color:#fff;">
+    <option value="">All Payment Statuses</option>
+    <option value="Pending">Pending</option>
+    <option value="Partially Paid">Partially Paid</option>
+    <option value="Completed">Completed</option>
+  </select>
+  <select id="empProgressStageFilter" style="flex:1;min-width:160px;padding:9px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:#0d1117;color:#fff;">
+    <option value="">All Installation Stages</option>
+    <option value="Registration">Registration</option>
+    <option value="Loan / Cash / Bajaj">Loan / Cash / Bajaj</option>
+    <option value="Payments">Payments</option>
+    <option value="Installation Agreement">Installation Agreement</option>
+    <option value="Civil Work">Civil Work</option>
+    <option value="AE Login">AE Login</option>
+    <option value="Net Meter">Net Meter</option>
+    <option value="Subsidy Push">Subsidy Push</option>
+    <option value="Subsidy Received">Subsidy Received</option>
+    <option value="Warranty">Warranty</option>
+    <option value="Completed">Completed</option>
+  </select>
+</div>
+
+<div id="empCustomerProgressList" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;">
+  <div style="color:#8a97a6;padding:20px;text-align:center;">Loading customer records...</div>
+</div>
+
+</div>
+
+</div>
+
+
+<!-- ================= HISTORY ================= -->
+
+<div id="historySection" class="section">
+
+<div class="glass">
+
+<table>
+
+<thead>
+
+<tr>
+<th>Date</th>
+<th>Time</th>
+</tr>
+
+</thead>
+
+<tbody id="historyTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+
+<!-- ================= LEAVE ================= -->
+
+<div id="leaveSection" class="section">
+
+<div class="glass">
+<h3 style="color:#ff8c00;margin-top:0;">Request Leave</h3>
+
+<form id="leaveForm" class="leaveForm">
+
+<div>
+<label for="leaveType">Type</label>
+<select id="leaveType">
+<option value="casual">Casual</option>
+<option value="sick">Sick</option>
+<option value="other">Other</option>
+</select>
+</div>
+
+<div></div>
+
+<div>
+<label for="leaveFrom">From date</label>
+<input type="date" id="leaveFrom" required>
+</div>
+
+<div>
+<label for="leaveTo">To date</label>
+<input type="date" id="leaveTo" required>
+</div>
+
+<div class="fullSpan">
+<label for="leaveReason">Reason</label>
+<textarea id="leaveReason" rows="3" required></textarea>
+</div>
+
+<div class="fullSpan">
+<button type="submit" class="leaveSubmitBtn">Submit Request</button>
+</div>
+
+</form>
+
+<div id="leaveFormStatus"></div>
+
+</div>
+
+<div class="glass">
+<h3 style="color:#ff8c00;margin-top:0;">Leave History</h3>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>From</th>
+<th>To</th>
+<th>Reason</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody id="leaveHistoryTable"></tbody>
+</table>
+</div>
+
+<div class="glass">
+<h3 style="color:#ff8c00;margin-top:0;">Upcoming Holidays</h3>
+<ul class="holidayList" id="holidayList">
+<li>Loading…</li>
+</ul>
+</div>
+
+</div>
+
+
+
+<!-- ================= DOCUMENTS ================= -->
+
+<div id="documentsSection" class="section">
+
+<div class="glass">
+
+<h3 style="color:#ff8c00;margin-top:0;">Personal Documents</h3>
+
+<div class="docUploadRow">
+<input type="file" id="documentInput">
+<button type="button" class="leaveSubmitBtn" id="documentUploadBtn">Upload</button>
+</div>
+
+<div id="documentUploadStatus"></div>
+
+<div class="docList" id="documentList">
+<div class="docEmpty">Loading…</div>
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- ================= ACTIVITY ================= -->
+
+<div id="activitySection" class="section">
+
+<div class="glass">
+<h3 style="color:#ff8c00;margin-top:0;">Recent Activity</h3>
+<div class="timelineList" id="timelineList">
+<div class="timelineEmpty">Loading…</div>
+</div>
+</div>
+
+</div>
+
+
+
+<!-- ================= SERVICE REQUESTS ================= -->
+
+<div id="serviceSection" class="section">
+
+<div class="glass">
+<h3 style="color:#ff8c00;margin-top:0;">Log a Service Request</h3>
+
+<form id="serviceRequestForm" class="leaveForm">
+<div>
+<label for="serviceCustomerName">Customer Name</label>
+<input type="text" id="serviceCustomerName" required>
+</div>
+<div>
+<label for="serviceCustomerPhone">Phone</label>
+<input type="tel" id="serviceCustomerPhone" required>
+</div>
+<div class="fullSpan">
+<label for="serviceIssueDescription">Issue Description</label>
+<textarea id="serviceIssueDescription" rows="3" required></textarea>
+</div>
+<div class="fullSpan">
+<button type="submit" class="leaveSubmitBtn">Submit Request</button>
+</div>
+</form>
+<div id="serviceFormStatus"></div>
+</div>
+
+<div class="glass">
+<h3 style="color:#ff8c00;margin-top:0;">My Service Requests</h3>
+<p style="font-size:12px;color:#8a97a6;margin-top:-6px;">Requests you logged or are assigned to. You can add notes on ones assigned to you.</p>
+<div id="myServiceRequestsList">Loading…</div>
+</div>
+
+</div>
+
+
+
+<!-- ================= MY TASKS ================= -->
+
+<div id="taskSection" class="section">
+
+<div class="glass">
+<h3 style="color:#ff8c00;margin-top:0;">My Tasks</h3>
+<p style="font-size:12px;color:#8a97a6;margin-top:-6px;">Tasks assigned to you. Update the status as you make progress.</p>
+<div id="myTasksList">Loading…</div>
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- EDIT POPUP (Strict Employee Permissions) -->
+
+<div id="editPopup" class="popup">
+
+<div class="popupBox" style="max-height:85vh;overflow-y:auto;">
+
+<h3 style="margin-top:0;color:#ff8c00;">Edit Record</h3>
+<div style="font-size:12px;color:#8a97a6;margin-bottom:14px;">Customer identity &amp; financial terms are read-only.</div>
+
+<label class="popupLabel">Customer Name (Read-Only)</label>
+<input id="editName" placeholder="Customer" readonly disabled style="background:#0d1117;opacity:0.7;cursor:not-allowed;border:1px solid rgba(255,255,255,0.1);">
+
+<label class="popupLabel">Executive Name (Read-Only)</label>
+<input id="editExec" placeholder="Executive" readonly disabled style="background:#0d1117;opacity:0.7;cursor:not-allowed;border:1px solid rgba(255,255,255,0.1);">
+
+<label class="popupLabel">Phone Number (Read-Only)</label>
+<input id="editPhone" placeholder="Phone Number" readonly disabled style="background:#0d1117;opacity:0.7;cursor:not-allowed;border:1px solid rgba(255,255,255,0.1);">
+
+<label class="popupLabel">Total Amount (₹) (Read-Only)</label>
+<input id="editTotal" placeholder="Total" readonly disabled style="background:#0d1117;opacity:0.7;cursor:not-allowed;border:1px solid rgba(255,255,255,0.1);">
+
+<label class="popupLabel">Status (Read-Only)</label>
+<input id="editStatus" placeholder="Status" readonly disabled style="background:#0d1117;opacity:0.7;cursor:not-allowed;border:1px solid rgba(255,255,255,0.1);">
+
+<div style="border-top:1px solid rgba(255,255,255,0.1);margin:14px 0 10px;"></div>
+<div style="font-size:12px;color:#2ecc71;font-weight:700;margin-bottom:8px;">Employee-Editable Fields (Unlocked):</div>
+
+<label class="popupLabel">Paid Amount (₹)</label>
+<input id="editPaid" placeholder="Enter updated paid amount" type="number" min="0" step="0.01">
+
+<label class="popupLabel">Payment Date</label>
+<input id="editDate" type="date">
+
+<label class="popupLabel">Current Stage / Progress</label>
+<select id="editStage" style="width:100%;padding:10px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:#0d1117;color:#fff;margin-bottom:8px;">
+  <option value="Registration">Registration</option>
+  <option value="Loan / Cash / Bajaj">Loan / Cash / Bajaj</option>
+  <option value="Payments">Payments</option>
+  <option value="Installation Agreement">Installation Agreement</option>
+  <option value="Civil Work">Civil Work</option>
+  <option value="AE Login">AE Login</option>
+  <option value="Net Meter">Net Meter</option>
+  <option value="Subsidy Push">Subsidy Push</option>
+  <option value="Subsidy Received">Subsidy Received</option>
+  <option value="Warranty">Warranty</option>
+  <option value="Completed">Completed</option>
+</select>
+
+<label class="popupLabel">Remarks</label>
+<textarea id="editRemarks" placeholder="Add remarks..." rows="2" style="width:100%;padding:10px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:#0d1117;color:#fff;margin-bottom:8px;resize:vertical;"></textarea>
+
+<div class="popupActions">
+<button id="saveEditBtn" style="background:#22c55e;color:#fff;border:none;">
+Save Changes
+</button>
+
+<button type="button" class="popupCancelBtn" onclick="closePopup()">
+Cancel
+</button>
+</div>
+
+</div>
+
+</div>
+
+
+
+<!-- SCRIPTS -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script type="module">
+import { checkSession } from "../js/auth.js";
+checkSession("employee");
+</script>
+
+<script type="module" src="../js/session-timeout.js"></script>
+<script type="module" src="../js/ui.js"></script>
+<script type="module" src="../js/dashboard.js"></script>
+<script type="module" src="../js/notices.js"></script>
+<script type="module" src="../js/attendance.js"></script>
+<script type="module" src="../js/attendance-analytics.js"></script>
+<script type="module" src="../js/erp.js"></script>
+<script type="module" src="../js/erp-enhancements.js"></script>
+<script type="module" src="../js/history.js"></script>
+<script type="module" src="../js/leave.js"></script>
+<script type="module" src="../js/documents.js"></script>
+<script type="module" src="../js/notifications.js"></script>
+<script type="module" src="../js/quick-actions.js"></script>
+<script type="module" src="../js/activity-timeline.js"></script>
+<script type="module" src="../js/service-requests.js"></script>
+<script type="module" src="../js/my-tasks.js"></script>
+
+</body>
+</html>

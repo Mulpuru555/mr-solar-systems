@@ -1,0 +1,236 @@
+/* ==============================================
+   Leave / Documents / Notifications / Quick Actions / Timeline
+   Additive only.
+   ============================================== */
+
+/* ---------- Quick Actions ---------- */
+.quickActionsRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.quickActionBtn {
+  background: rgba(255,140,0,0.1);
+  border: 1px solid rgba(255,140,0,0.35);
+  color: #ff8c00;
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.quickActionBtn:hover { background: #ff8c00; color: #111; }
+
+/* ---------- Header: search + notifications ---------- */
+.headerSearchWrap {
+  position: relative;
+}
+
+#globalSearchInput {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: white;
+  padding: 7px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  width: 160px;
+  outline: none;
+}
+#globalSearchInput:focus { border-color: #ff8c00; width: 200px; }
+
+.searchResultsPanel {
+  position: absolute;
+  top: 38px;
+  left: 0;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,140,0,0.3);
+  border-radius: 8px;
+  min-width: 200px;
+  z-index: 50;
+  display: none;
+  overflow: hidden;
+}
+.searchResultsPanel.open { display: block; }
+.searchResultsPanel div {
+  padding: 10px 14px;
+  font-size: 13px;
+  color: white;
+  cursor: pointer;
+}
+.searchResultsPanel div:hover { background: rgba(255,140,0,0.15); }
+
+.notifBellWrap { position: relative; }
+
+#notifBellBtn {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 15px;
+  position: relative;
+}
+#notifBellBtn:hover { border-color: #ff8c00; }
+
+#notifBadge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: #ff5252;
+  color: white;
+  font-size: 10px;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+#notifBadge.show { display: flex; }
+
+.notifPanel {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  width: 280px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,140,0,0.3);
+  border-radius: 10px;
+  z-index: 50;
+  display: none;
+}
+.notifPanel.open { display: block; }
+
+.notifItem {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 12px;
+  color: #cfd8e3;
+  cursor: pointer;
+}
+.notifItem:last-child { border-bottom: none; }
+.notifItem.unread { background: rgba(255,140,0,0.08); color: white; }
+.notifItem .notifTime { display: block; font-size: 10px; color: #7c8794; margin-top: 4px; }
+.notifEmpty { padding: 20px; text-align: center; color: #7c8794; font-size: 12px; }
+
+/* ---------- Leave module ---------- */
+.leaveForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.leaveForm .fullSpan { grid-column: 1 / -1; }
+
+.leaveForm label {
+  display: block;
+  font-size: 11px;
+  color: #8a97a6;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.leaveForm input,
+.leaveForm select,
+.leaveForm textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.05);
+  color: white;
+  font-family: var(--mrs-font, inherit);
+  box-sizing: border-box;
+}
+
+.leaveSubmitBtn {
+  background: #ff8c00;
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.statusPill {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  text-transform: capitalize;
+}
+.statusPill.pending  { background: rgba(255,179,0,0.15); color: #ffb300; border: 1px solid rgba(255,179,0,0.4); }
+.statusPill.approved { background: rgba(46,204,113,0.15); color: #6fe3a1; border: 1px solid rgba(46,204,113,0.4); }
+.statusPill.rejected { background: rgba(255,82,82,0.15); color: #ff8a8a; border: 1px solid rgba(255,82,82,0.4); }
+.statusPill.open      { background: rgba(255,82,82,0.15); color: #ff8a8a; border: 1px solid rgba(255,82,82,0.4); }
+.statusPill.in-progress { background: rgba(255,179,0,0.15); color: #ffb300; border: 1px solid rgba(255,179,0,0.4); }
+.statusPill.resolved  { background: rgba(46,204,113,0.15); color: #6fe3a1; border: 1px solid rgba(46,204,113,0.4); }
+
+/* ---------- Holidays ---------- */
+.holidayList { list-style: none; padding: 0; margin: 0; }
+.holidayList li {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 13px;
+  color: #cfd8e3;
+}
+.holidayList li:last-child { border-bottom: none; }
+.holidayList .holidayDate { color: #ff8c00; font-weight: 600; }
+
+/* ---------- Documents ---------- */
+.docUploadRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.docList { display: flex; flex-direction: column; gap: 8px; }
+.docItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  font-size: 13px;
+}
+.docItem a { color: #ff8c00; text-decoration: none; font-size: 12px; }
+.docItem a:hover { text-decoration: underline; }
+.docEmpty { color: #7c8794; font-size: 13px; padding: 10px 0; }
+
+/* ---------- Activity Timeline ---------- */
+.timelineList { position: relative; padding-left: 20px; }
+.timelineList::before {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 4px;
+  bottom: 4px;
+  width: 2px;
+  background: rgba(255,140,0,0.25);
+}
+.timelineItem { position: relative; padding-bottom: 18px; }
+.timelineItem::before {
+  content: "";
+  position: absolute;
+  left: -20px;
+  top: 3px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ff8c00;
+}
+.timelineText { font-size: 13px; color: white; }
+.timelineMeta { font-size: 11px; color: #8a97a6; margin-top: 2px; }
+.timelineEmpty { color: #7c8794; font-size: 13px; }

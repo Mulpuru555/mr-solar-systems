@@ -1,0 +1,275 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /* ==========================================================
+       AUTHENTICATION & ROLE HELPERS
+       ========================================================== */
+
+    function isLoggedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function isAdmin() {
+      return isLoggedIn() && getUserData().role == "admin";
+    }
+
+    function isManager() {
+      return isLoggedIn() && getUserData().role == "manager";
+    }
+
+    function isEmployee() {
+      return isLoggedIn() && (
+        getUserData().role == "employee" ||
+        getUserData().role == "technician" ||
+        !("role" in getUserData())
+      );
+    }
+
+    function isOwner(uid) {
+      return isLoggedIn() && request.auth.uid == uid;
+    }
+
+    /* ==========================================================
+       USERS & PROFILES
+       ========================================================== */
+
+    match /users/{userId} {
+      // Authenticated users can read directory / lookup colleagues
+      allow read: if isLoggedIn();
+
+      // Admins can create any user; users can initialize their own profile on login
+      allow create: if isAdmin() || (isLoggedIn() && isOwner(userId));
+
+      // Admin has full update access.
+      // Manager can update employee status.
+      // Employees can update their personal profile info (photo, phone, address),
+      // but cannot elevate their own role or unblock their account status.
+      allow update: if isAdmin()
+        || isManager()
+        || (
+          isOwner(userId) &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'accountStatus'])
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    /* ==========================================================
+       CUSTOMER ERP & PAYMENTS (customerPayments)
+       ========================================================== */
+
+    match /customerPayments/{docId} {
+      // All authenticated staff can read customer ERP records
+      allow read: if isLoggedIn();
+
+      // Admin, Manager, and Employees can create customer records
+      allow create: if isLoggedIn();
+
+      // ADMIN: Full editing rights to all fields, total amounts, locking/unlocking, and deletion.
+      // EMPLOYEE: Can update progress (stage, remarks, payments, status) without tampering with identity fields.
+      allow update: if isAdmin()
+        || (
+          isLoggedIn() &&
+          (!("isLocked" in resource.data) || resource.data.isLocked != true) &&
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+            'customerName', 'executiveName', 'phone', 'totalAmount',
+            'isLocked', 'createdBy', 'createdAt'
+          ])
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    /* ==========================================================
+       CUSTOMER PROGRESS & INSTALLATIONS (customerProgress)
+       ========================================================== */
+
+    match /customerProgress/{docId} {
+      allow read: if isLoggedIn();
+      allow create, update: if isLoggedIn();
+      allow delete: if isAdmin();
+    }
+
+    /* ==========================================================
+       ATTENDANCE (Flat & Branch Collections)
+       ========================================================== */
+
+    match /attendance/{docId} {
+      allow read: if isLoggedIn();
+      allow create: if isLoggedIn();
+      allow update: if isAdmin() || isManager();
+      allow delete: if isAdmin();
+    }
+
+    match /attendance_tenali/{docId} {
+      allow read: if isLoggedIn();
+      allow create: if isLoggedIn();
+      allow update: if isAdmin() || isManager();
+      allow delete: if isAdmin();
+    }
+
+    match /attendance_chirala/{docId} {
+      allow read: if isLoggedIn();
+      allow create: if isLoggedIn();
+      allow update: if isAdmin() || isManager();
+      allow delete: if isAdmin();
+    }
+
+    match /attendance_bapatla/{docId} {
+      allow read: if isLoggedIn();
+      allow create: if isLoggedIn();
+      allow update: if isAdmin() || isManager();
+      allow delete: if isAdmin();
+    }
+
+    /* Nested Attendance Path (e.g. /attendance/{uid}/{date}/data) */
+    match /attendance/{uid}/{date}/{docId} {
+      allow read: if isLoggedIn();
+      allow write: if isOwner(uid) || isAdmin() || isManager();
+    }
+
+    /* ==========================================================
+       INVENTORY & STOCK (inventory, inventoryItems, etc.)
+       ========================================================== */
+
+    match /inventory/{docId} {
+      allow read: if isLoggedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /inventoryItems/{docId} {
+      allow read: if isLoggedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /purchaseRecords/{docId} {
+      allow read: if isLoggedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /issueRecords/{docId} {
+      allow read: if isLoggedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /vendors/{docId} {
+      allow read: if isLoggedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    /* ==========================================================
+       TASK MANAGEMENT
+       ========================================================== */
+
+    match /tasks/{docId} {
+      allow read: if isLoggedIn();
+      allow create: if isAdmin() || isManager();
+      allow update: if isAdmin() || isManager() || isEmployee();
+      allow delete: if isAdmin();
+    }
+
+    /* ==========================================================
+       LEAVE REQUESTS
+       ========================================================== */
+
+    match /leaveRequests/{docId} {
+      allow read: if isLoggedIn();
+      allow create: if isLoggedIn();
+      allow update: if isAdmin()
+        || isManager()
+        || (isLoggedIn() && resource.data.employeeId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    /* ==========================================================
+       SERVICE REQUESTS
+       ========================================================== */
+
+    match /serviceRequests/{docId} {
+      // Public website visitors can submit service requests
+      allow create: if true;
+      allow read: if isLoggedIn();
+      allow update: if isAdmin() || isManager() || isEmployee();
+      allow delete: if isAdmin();
+    }
+
+    /* ==========================================================
+       WEBSITE LEADS (Public Site Visit & Contact Forms)
+       ========================================================== */
+
+    match /websiteLeads/{docId} {
+      // Public visitors can submit lead forms without auth
+      allow create: if true;
+      // All authenticated staff (Admin, Manager, Employees) can view leads
+      allow read: if isLoggedIn();
+      allow update: if isAdmin() || isManager();
+      allow delete: if isAdmin();
+    }
+
+    /* ==========================================================
+       COMPANY NOTICES & BROADCASTS
+       ========================================================== */
+
+    match /notices/{docId} {
+      allow read: if isLoggedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    /* ==========================================================
+       SETTINGS & COMPANY HOLIDAYS
+       ========================================================== */
+
+    match /settings/{doc=**} {
+      allow read: if isLoggedIn();
+      allow write: if isAdmin();
+    }
+
+    match /holidays/{docId} {
+      allow read: if isLoggedIn();
+      allow write: if isAdmin();
+    }
+
+    /* ==========================================================
+       EMPLOYEE DOCUMENTS
+       ========================================================== */
+
+    match /documents/{uid}/files/{fileId} {
+      allow read: if isLoggedIn() && (isOwner(uid) || isAdmin() || isManager());
+      allow write: if isLoggedIn() && (isOwner(uid) || isAdmin());
+    }
+
+    /* ==========================================================
+       NOTIFICATIONS
+       ========================================================== */
+
+    match /notifications/{docId} {
+      allow read: if isLoggedIn() && (resource.data.employeeId == request.auth.uid || isAdmin());
+      allow update: if isLoggedIn() && (resource.data.employeeId == request.auth.uid || isAdmin());
+      allow create: if isAdmin() || isManager();
+      allow delete: if isAdmin();
+    }
+
+    /* ==========================================================
+       SECURITY AUDIT LOGS & LOGIN HISTORY
+       ========================================================== */
+
+    match /auditLogs/{docId} {
+      allow read: if isAdmin() || isManager();
+      allow create: if isLoggedIn();
+      allow update, delete: if isAdmin();
+    }
+
+    match /loginHistory/{docId} {
+      allow read: if isAdmin() || isManager();
+      allow create: if isLoggedIn();
+      allow update, delete: if isAdmin();
+    }
+
+  }
+}

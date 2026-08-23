@@ -1,0 +1,143 @@
+/* ==============================================
+   ERP widgets — status badges, pagination, timeline/invoice modal
+   Additive only.
+   ============================================== */
+
+.erpStatusBadge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.erpStatusBadge.completed,
+.erpStatusBadge.Completed { background: rgba(46,204,113,0.15); color: #6fe3a1; }
+.erpStatusBadge.pending,
+.erpStatusBadge.Pending { background: rgba(255,179,0,0.15); color: #ffb300; }
+
+.erpPaginationRow {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 14px;
+  font-size: 13px;
+}
+.erpPaginationRow button {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: inherit;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.erpPaginationRow button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.erpPaginationRow button:not(:disabled):hover {
+  border-color: #ff8c00;
+  color: #ff8c00;
+}
+
+.erpSortable {
+  cursor: pointer;
+  user-select: none;
+}
+.erpSortable:hover { color: #ff8c00; }
+.erpSortArrow { font-size: 10px; margin-left: 4px; opacity: 0.6; }
+
+.erpToolbarRow {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+/* ---------- Modal ---------- */
+.erpModalOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+}
+.erpModalOverlay.open { display: flex; }
+
+.erpModalBox {
+  background: #151515;
+  border: 1px solid rgba(255,140,0,0.3);
+  border-radius: 12px;
+  padding: 24px;
+  width: 420px;
+  max-width: 92vw;
+  max-height: 85vh;
+  overflow-y: auto;
+  color: white;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.erpModalBox h3 {
+  margin: 0 0 4px;
+  color: #ff8c00;
+}
+.erpModalBox .erpModalSub {
+  font-size: 12px;
+  color: #8a97a6;
+  margin-bottom: 16px;
+}
+
+.erpTimelineItem {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-size: 13px;
+}
+.erpTimelineItem:last-child { border-bottom: none; }
+.erpTimelineEmpty { color: #8a97a6; font-size: 13px; padding: 10px 0; }
+
+.erpModalActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+.erpModalActions button {
+  flex: 1;
+  padding: 9px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+}
+.erpBtnPrint { background: #ff8c00; color: #111; font-weight: 600; }
+.erpBtnClose { background: rgba(255,255,255,0.1); color: white; }
+
+/* ---------- Printable invoice (hidden until print) ---------- */
+#erpInvoicePrintArea { display: none; }
+#reportPrintArea { display: none; }
+
+@media print {
+  body * { visibility: hidden; }
+  #erpInvoicePrintArea, #erpInvoicePrintArea *,
+  #reportPrintArea, #reportPrintArea * { visibility: visible; }
+  #erpInvoicePrintArea, #reportPrintArea {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 40px;
+    color: #111;
+    background: white;
+  }
+  #erpInvoicePrintArea h2, #reportPrintArea h2 { color: #ff8c00; }
+  #erpInvoicePrintArea table, #reportPrintArea table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+  #erpInvoicePrintArea th, #erpInvoicePrintArea td,
+  #reportPrintArea th, #reportPrintArea td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: left;
+  }
+}

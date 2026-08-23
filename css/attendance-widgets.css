@@ -1,0 +1,152 @@
+/* ==============================================
+   Attendance Analytics widgets (calendar, streak, heatmap)
+   Additive only — does not alter existing .glass/.card styles.
+   ============================================== */
+
+.analyticsHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: var(--mrs-space-md, 16px);
+}
+
+.analyticsHead h3 {
+  margin: 0;
+  color: #ff8c00;
+  font-size: 16px;
+}
+
+.analyticsSummary {
+  font-size: 13px;
+  color: #cfd8e3;
+}
+
+.streakRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: var(--mrs-space-md, 16px);
+}
+
+.streakBox {
+  background: rgba(255,140,0,0.1);
+  border: 1px solid rgba(255,140,0,0.35);
+  border-radius: 10px;
+  padding: 10px 18px;
+  text-align: center;
+}
+
+.streakNum {
+  font-size: 24px;
+  font-weight: 800;
+  color: #ff8c00;
+}
+
+.streakLabel {
+  font-size: 11px;
+  color: #cfd8e3;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.calendarWrap { margin-bottom: var(--mrs-space-md, 16px); }
+
+.calendarNav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 10px;
+  color: white;
+  font-size: 14px;
+}
+
+.calendarNav button {
+  background: rgba(255,255,255,0.08);
+  border: none;
+  color: white;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 16px;
+}
+.calendarNav button:hover { background: #ff8c00; color: #111; }
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calDay {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  font-size: 12px;
+  color: white;
+  background: rgba(255,255,255,0.04);
+}
+
+.calDay.calDow {
+  background: none;
+  color: #8a97a6;
+  font-size: 10px;
+  text-transform: uppercase;
+}
+
+.calDay.calBlank { background: none; }
+
+.calDay.calPresent { background: rgba(46,204,113,0.75); font-weight: 700; }
+.calDay.calAbsent  { background: rgba(255,82,82,0.7); font-weight: 700; }
+.calDay.calHoliday { background: rgba(255,255,255,0.08); color: #8a97a6; }
+.calDay.calFuture  { background: rgba(255,255,255,0.03); color: #5b6673; }
+.calDay.calToday   { outline: 2px solid #ff8c00; }
+
+.calendarLegend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 10px;
+  font-size: 11px;
+  color: #cfd8e3;
+}
+.calendarLegend span { display: flex; align-items: center; gap: 5px; }
+.calendarLegend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.dotPresent { background: rgba(46,204,113,0.85); }
+.dotAbsent  { background: rgba(255,82,82,0.8); }
+.dotHoliday { background: rgba(255,255,255,0.2); }
+.dotFuture  { background: rgba(255,255,255,0.06); }
+
+.heatmapTitle {
+  font-size: 12px;
+  color: #cfd8e3;
+  margin-bottom: 8px;
+}
+
+.heatmapGrid {
+  display: grid;
+  grid-template-rows: repeat(7, 12px);
+  grid-auto-flow: column;
+  grid-auto-columns: 12px;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.heatCell {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.06);
+}
+.heatCell.heatPresent { background: rgba(46,204,113,0.85); }
+.heatCell.heatAbsent { background: rgba(255,82,82,0.55); }
+.heatCell.heatHoliday { background: rgba(255,255,255,0.15); }
+
+@media (max-width: 480px) {
+  .calDay { font-size: 10px; }
+}

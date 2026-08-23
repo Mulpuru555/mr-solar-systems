@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<link rel="shortcut icon" href="../favicon.ico">
+<link rel="apple-touch-icon" href="../assets/images/mr-logo.jpeg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login – M.R Solar Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/animations.css">
+<link rel="stylesheet" href="../css/login.css">
+</head>
+<body class="mrs-login-body">
+
+  <section class="mrs-login-brand">
+    <div class="mrs-login-brand-content">
+      <img src="../assets/images/mr-logo.jpeg" alt="M.R Solar Systems" class="mrs-login-logo">
+      <h1>Power your business with <span>M.R Solar Systems</span></h1>
+      <p>Sign in to your employee, manager, or admin portal to manage attendance, ERP records, and daily operations in one place.</p>
+      <ul class="mrs-login-features">
+        <li>Real-time attendance &amp; branch tracking</li>
+        <li>Centralized ERP &amp; payment records</li>
+        <li>Role-based access for every team</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="mrs-login-panel">
+    <div class="mrs-login-card">
+      <h2>Welcome back</h2>
+      <p class="mrs-login-sub">Sign in to continue to your dashboard</p>
+
+      <div class="mrs-field">
+        <label for="loginEmail">Email address</label>
+        <div class="mrs-input-wrap">
+          <input type="email" id="loginEmail" placeholder="you@mrsolarsystems.in" autocomplete="username">
+        </div>
+      </div>
+
+      <div class="mrs-field">
+        <label for="loginPassword">Password</label>
+        <div class="mrs-input-wrap">
+          <input type="password" id="loginPassword" placeholder="Enter your password" autocomplete="current-password">
+          <button type="button" class="mrs-toggle-pass" id="togglePasswordBtn" aria-label="Show password">Show</button>
+        </div>
+      </div>
+
+      <div class="mrs-login-row">
+        <label class="mrs-remember">
+          <input type="checkbox" id="rememberMe"> Remember me
+        </label>
+        <button type="button" class="mrs-forgot" onclick="resetPassword()">Forgot password?</button>
+      </div>
+
+      <button type="button" class="mrs-login-btn" id="loginBtn" onclick="loginUser()">
+        <span id="loginBtnLabel">Login</span>
+      </button>
+
+      <div class="mrs-login-msg" id="loginMessage"></div>
+
+      <a href="../index.html" class="mrs-login-back">&larr; Back to homepage</a>
+    </div>
+  </section>
+
+<script type="module" src="../js/auth.js"></script>
+<script type="module" src="../js/login-ui.js"></script>
+</body>
+</html>
