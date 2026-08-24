@@ -151,6 +151,7 @@ table {
   width: 100%;
   margin-top: 10px;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 table thead {
@@ -176,11 +177,15 @@ th {
 }
 
 td, th {
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 13px;
+  text-align: left;
+  vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-
 /* STATUS */
 
 .present {
