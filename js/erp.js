@@ -102,11 +102,11 @@ if (form) {
 }
 
 /* ================= LOAD (REALTIME SNAPSHOT) ================= */
-
 function loadRecords() {
   if (!uid) return;
   if (unsubscribeRecords) unsubscribeRecords();
 
+  // Query entire customerPayments collection so all staff see all records
   const q = collection(db, "customerPayments");
 
   unsubscribeRecords = onSnapshot(q, (snap) => {
