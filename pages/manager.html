@@ -76,22 +76,30 @@ Logout
     <div id="attendanceReportMetrics" style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;"></div>
 
     <div class="tableScroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Branch</th>
-            <th>Status</th>
-            <th>Type</th>
-            <th>Time</th>
-            <th>Photo</th>
-          </tr>
-        </thead>
-        <tbody id="attendanceTable">
-          <tr><td colspan="6" style="text-align:center;color:#8a97a6;padding:16px;">Loading attendance records...</td></tr>
-        </tbody>
-      </table>
-    </div>
+  <table style="table-layout:fixed;width:100%;border-collapse:collapse;">
+    <colgroup>
+      <col style="width:24%;">
+      <col style="width:16%;">
+      <col style="width:16%;">
+      <col style="width:14%;">
+      <col style="width:16%;">
+      <col style="width:14%;">
+    </colgroup>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Branch</th>
+        <th>Status</th>
+        <th>Type</th>
+        <th>Time</th>
+        <th style="text-align:center;">Photo</th>
+      </tr>
+    </thead>
+    <tbody id="attendanceTable">
+      <tr><td colspan="6" style="text-align:center;color:#8a97a6;padding:16px;">Loading attendance records...</td></tr>
+    </tbody>
+  </table>
+</div>
   </div>
 </div>
 
