@@ -107,10 +107,7 @@ function loadRecords() {
   if (!uid) return;
   if (unsubscribeRecords) unsubscribeRecords();
 
-  const q = query(
-    collection(db, "customerPayments"),
-    where("createdBy", "==", uid)
-  );
+  const q = collection(db, "customerPayments");
 
   unsubscribeRecords = onSnapshot(q, (snap) => {
     records = [];
