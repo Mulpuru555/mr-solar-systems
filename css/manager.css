@@ -151,14 +151,18 @@ table {
   width: 100%;
   margin-top: 10px;
   border-collapse: collapse;
-  overflow-x: auto;
-  display: block;
 }
 
-table thead, table tbody, table tr {
-  display: table;
-  width: 100%;
-  table-layout: auto;
+table thead {
+  display: table-header-group;
+}
+
+table tbody {
+  display: table-row-group;
+}
+
+table tr {
+  display: table-row;
 }
 
 th {
