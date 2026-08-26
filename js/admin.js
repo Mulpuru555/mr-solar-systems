@@ -452,28 +452,52 @@ window.exportFullReport = async function () {
 /* ==========================================================
    ATTENDANCE CLOSING TIME & REPORTS & HOLIDAYS
 ========================================================== */
-
 async function loadClosingTime() {
-  const snap = await getDoc(doc(db, "settings", "attendance"));
-  if (snap.exists()) {
-    const hEl = document.getElementById("closeHourInput");
-    const mEl = document.getElementById("closeMinuteInput");
-    if (hEl) hEl.value = snap.data().closeHour ?? 11;
-    if (mEl) mEl.value = snap.data().closeMinute ?? 0;
+  try {
+    const snap = await getDoc(doc(db, "settings", "attendance"));
+    if (snap.exists()) {
+      const data = snap.data();
+      let h24 = data.closeHour ?? 10;
+      let min = data.closeMinute ?? 0;
+      let ampm = h24 >= 12 ? "PM" : "AM";
+      let h12 = h24 % 12 || 12;
+
+      const hEl = document.getElementById("closeHourInput");
+      const mEl = document.getElementById("closeMinuteInput");
+      const aEl = document.getElementById("closeAmpmInput");
+
+      if (hEl) hEl.value = h12;
+      if (mEl) mEl.value = min;
+      if (aEl) aEl.value = ampm;
+    }
+  } catch (e) {
+    console.error("Error loading closing time:", e);
   }
 }
 loadClosingTime();
 
 window.updateCloseTime = async function () {
-  const hour = parseInt(document.getElementById("closeHourInput").value);
+  const h12 = parseInt(document.getElementById("closeHourInput").value);
   const minute = parseInt(document.getElementById("closeMinuteInput").value);
-  if (isNaN(hour) || hour < 0 || hour > 23 || isNaN(minute) || minute < 0 || minute > 59) {
-    document.getElementById("timeStatus").innerText = "Invalid time.";
-    return;
+  const ampm = document.getElementById("closeAmpmInput").value;
+
+  // Convert 12-hour AM/PM to 24-hour for accurate time calculations
+  let h24 = h12;
+  if (ampm === "PM" && h12 < 12) h24 = h12 + 12;
+  if (ampm === "AM" && h12 === 12) h24 = 0;
+
+  try {
+    await setDoc(doc(db, "settings", "attendance"), {
+      closeHour: h24,
+      closeMinute: minute,
+      displayTime: `${String(h12).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${ampm}`
+    }, { merge: true });
+
+    document.getElementById("timeStatus").innerHTML = `<span style="color:#22c55e;">✅ Closing time updated to ${String(h12).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${ampm} successfully!</span>`;
+    logActivity("Updated attendance closing time", `time=${h12}:${minute} ${ampm} (24h: ${h24}:${minute})`);
+  } catch (err) {
+    document.getElementById("timeStatus").innerHTML = `<span style="color:#ef4444;">Failed to update: ${err.message}</span>`;
   }
-  await setDoc(doc(db, "settings", "attendance"), { closeHour: hour, closeMinute: minute }, { merge: true });
-  document.getElementById("timeStatus").innerText = "Updated successfully!";
-  logActivity("Updated attendance closing time", `closeHour=${hour}, closeMinute=${minute}`);
 };
 
 window.generateAttendanceReport = async function () {
