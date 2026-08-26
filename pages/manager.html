@@ -54,7 +54,6 @@ Logout
   <button class="navTabBtn active" data-module="attendanceModule" onclick="switchManagerModule('attendanceModule')">📅 Attendance Report</button>
   <button class="navTabBtn" data-module="summaryModule" onclick="switchManagerModule('summaryModule')">📊 Monthly Summary</button>
   <button class="navTabBtn" data-module="progressModule" onclick="switchManagerModule('progressModule')">🚧 Customer Progress</button>
-  <button class="navTabBtn" data-module="leaveModule" onclick="switchManagerModule('leaveModule')">✉ Leave Requests</button>
   <button class="navTabBtn" data-module="serviceModule" onclick="switchManagerModule('serviceModule')">🛠 Service Requests</button>
   <button class="navTabBtn" data-module="tasksModule" onclick="switchManagerModule('tasksModule')">📋 Task Assignment</button>
   <button class="navTabBtn" data-module="blockedModule" onclick="switchManagerModule('blockedModule')">🔒 Blocked Staff</button>
@@ -76,30 +75,30 @@ Logout
     <div id="attendanceReportMetrics" style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;"></div>
 
     <div class="tableScroll">
-  <table style="table-layout:fixed;width:100%;border-collapse:collapse;">
-    <colgroup>
-      <col style="width:24%;">
-      <col style="width:16%;">
-      <col style="width:16%;">
-      <col style="width:14%;">
-      <col style="width:16%;">
-      <col style="width:14%;">
-    </colgroup>
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Branch</th>
-        <th>Status</th>
-        <th>Type</th>
-        <th>Time</th>
-        <th style="text-align:center;">Photo</th>
-      </tr>
-    </thead>
-    <tbody id="attendanceTable">
-      <tr><td colspan="6" style="text-align:center;color:#8a97a6;padding:16px;">Loading attendance records...</td></tr>
-    </tbody>
-  </table>
-</div>
+      <table style="table-layout:fixed;width:100%;border-collapse:collapse;">
+        <colgroup>
+          <col style="width:24%;">
+          <col style="width:16%;">
+          <col style="width:16%;">
+          <col style="width:14%;">
+          <col style="width:16%;">
+          <col style="width:14%;">
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Branch</th>
+            <th>Status</th>
+            <th>Type</th>
+            <th>Time</th>
+            <th style="text-align:center;">Photo</th>
+          </tr>
+        </thead>
+        <tbody id="attendanceTable">
+          <tr><td colspan="6" style="text-align:center;color:#8a97a6;padding:16px;">Loading attendance records...</td></tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </div>
 
@@ -112,7 +111,15 @@ Logout
     </div>
 
     <div class="tableScroll">
-      <table>
+      <table style="table-layout:fixed;width:100%;border-collapse:collapse;">
+        <colgroup>
+          <col style="width:24%;">
+          <col style="width:16%;">
+          <col style="width:15%;">
+          <col style="width:15%;">
+          <col style="width:15%;">
+          <col style="width:15%;">
+        </colgroup>
         <thead>
           <tr>
             <th>Name</th>
@@ -145,35 +152,7 @@ Logout
   </div>
 </div>
 
-<!-- 4. LEAVE APPROVAL MODULE -->
-<div id="leaveModule" class="managerModule">
-  <div class="card">
-    <div style="margin-bottom:16px;">
-      <h2 style="margin:0 0 4px;">Leave Requests (View Only)</h2>
-      <div style="font-size:12px;color:#94a3b8;">Monitor staff leave submissions across company branches.</div>
-    </div>
-
-    <div class="tableScroll">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Type</th>
-            <th>From</th>
-            <th>To</th>
-            <th>Reason</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="leaveApprovalTable">
-          <tr><td colspan="6" style="text-align:center;color:#8a97a6;padding:16px;">Loading leave requests...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-</div>
-
-<!-- 5. SERVICE REQUESTS MODULE -->
+<!-- 4. SERVICE REQUESTS MODULE -->
 <div id="serviceModule" class="managerModule">
   <div class="card">
     <div style="margin-bottom:16px;">
@@ -241,7 +220,6 @@ Logout
 
 <script type="module" src="../js/session-timeout.js"></script>
 <script type="module" src="../js/manager.js"></script>
-<script type="module" src="../js/manager-leave.js"></script>
 <script type="module" src="../js/manager-service.js"></script>
 <script type="module" src="../js/manager-tasks.js"></script>
 

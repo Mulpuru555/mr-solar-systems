@@ -25,6 +25,7 @@ function escapeHtml(str) {
 
 let inventoryList = [];
 let purchaseList = [];
+let distributionList = [];
 
 const inventoryTable = document.getElementById("inventoryTable");
 const invSearchInput = document.getElementById("invSearchInput");
@@ -39,6 +40,13 @@ const purchaseItemSelect = document.getElementById("purchaseItemSelect");
 const recordPurchaseBtn = document.getElementById("recordPurchaseBtn");
 const purchaseRecordsTable = document.getElementById("purchaseRecordsTable");
 const purchaseFormStatus = document.getElementById("purchaseFormStatus");
+
+const distributeItemSelect = document.getElementById("distributeItemSelect");
+const recordDistributionBtn = document.getElementById("recordDistributionBtn");
+const distributionRecordsTable = document.getElementById("distributionRecordsTable");
+const distributionFormStatus = document.getElementById("distributionFormStatus");
+const distExportCsvBtn = document.getElementById("distExportCsvBtn");
+const distExportXlsxBtn = document.getElementById("distExportXlsxBtn");
 
 /* ==========================================================
    RENDER INVENTORY TABLE & PURCHASE SELECT
@@ -108,7 +116,8 @@ function renderInventoryTable() {
           <td>${statusBadge}</td>
           <td><span style="font-size:12px;color:#94a3b8;">${updatedDate}</span></td>
           <td>
-            <button class="action addStockBtn" data-id="${item.id}" data-name="${escapeHtml(item.name)}" style="background:#0284c7;padding:4px 10px;font-size:11px;margin-right:4px;">+ Add Stock</button>
+            <button class="action addStockBtn" data-id="${item.id}" data-name="${escapeHtml(item.name)}" style="background:#0284c7;padding:4px 10px;font-size:11px;margin-right:4px;">+ Purchase</button>
+            <button class="action distStockBtn" data-id="${item.id}" data-name="${escapeHtml(item.name)}" style="background:#f59e0b;padding:4px 10px;font-size:11px;margin-right:4px;">🚚 Distribute</button>
             <button class="action editItemBtn" data-id="${item.id}" style="background:#475569;padding:4px 8px;font-size:11px;margin-right:4px;">Edit</button>
             <button class="action deleteItemBtn" data-id="${item.id}" data-name="${escapeHtml(item.name)}" style="background:#ef4444;padding:4px 8px;font-size:11px;">Delete</button>
           </td>
@@ -117,7 +126,17 @@ function renderInventoryTable() {
     }).join("");
 
     inventoryTable.querySelectorAll(".addStockBtn").forEach(btn => {
-      btn.onclick = () => handleAddStock(btn.dataset.id, btn.dataset.name);
+      btn.onclick = () => {
+        if (purchaseItemSelect) purchaseItemSelect.value = btn.dataset.id;
+        document.getElementById("purchaseQuantity")?.focus();
+      };
+    });
+
+    inventoryTable.querySelectorAll(".distStockBtn").forEach(btn => {
+      btn.onclick = () => {
+        if (distributeItemSelect) distributeItemSelect.value = btn.dataset.id;
+        document.getElementById("distributeQuantity")?.focus();
+      };
     });
 
     inventoryTable.querySelectorAll(".editItemBtn").forEach(btn => {
@@ -134,11 +153,20 @@ function renderInventoryTable() {
 }
 
 function updatePurchaseSelect() {
-  if (!purchaseItemSelect) return;
-  const currentVal = purchaseItemSelect.value;
-  purchaseItemSelect.innerHTML = `<option value="">Select inventory item to purchase...</option>` +
+  const optionsHtml = `<option value="">Select inventory item...</option>` +
     inventoryList.map(i => `<option value="${i.id}">${escapeHtml(i.name)} (Available stock: ${i.quantity ?? 0} ${escapeHtml(i.unit || "pcs")})</option>`).join("");
-  if (currentVal) purchaseItemSelect.value = currentVal;
+
+  if (purchaseItemSelect) {
+    const curVal = purchaseItemSelect.value;
+    purchaseItemSelect.innerHTML = optionsHtml;
+    if (curVal) purchaseItemSelect.value = curVal;
+  }
+
+  if (distributeItemSelect) {
+    const curDistVal = distributeItemSelect.value;
+    distributeItemSelect.innerHTML = optionsHtml;
+    if (curDistVal) distributeItemSelect.value = curDistVal;
+  }
 }
 
 /* ==========================================================
@@ -148,6 +176,7 @@ function updatePurchaseSelect() {
 function updateStockMetrics() {
   const totalItemsEl = document.getElementById("invSummaryTotalItems");
   const totalUnitsEl = document.getElementById("invSummaryTotalUnits");
+  const totalDistEl = document.getElementById("invSummaryTotalDistributed");
   const lowStockEl = document.getElementById("invSummaryLowStock");
   const outOfStockEl = document.getElementById("invSummaryOutOfStock");
   const widgetLowStockEl = document.getElementById("widgetLowStockCount");
@@ -168,8 +197,11 @@ function updateStockMetrics() {
     }
   });
 
+  const totalDistUnits = distributionList.reduce((acc, d) => acc + (Number(d.quantity) || 0), 0);
+
   if (totalItemsEl) totalItemsEl.textContent = inventoryList.length;
   if (totalUnitsEl) totalUnitsEl.textContent = totalUnits.toLocaleString();
+  if (totalDistEl) totalDistEl.textContent = `${totalDistUnits.toLocaleString()} Units`;
   if (lowStockEl) lowStockEl.textContent = lowStockCount;
   if (outOfStockEl) outOfStockEl.textContent = outOfStockCount;
   if (widgetLowStockEl) widgetLowStockEl.textContent = lowStockCount;
@@ -446,6 +478,116 @@ function renderPurchaseRecordsTable() {
 }
 
 /* ==========================================================
+   RECORD STOCK DISTRIBUTION (OUTWARD DISPATCH)
+========================================================== */
+
+if (recordDistributionBtn) {
+  recordDistributionBtn.addEventListener("click", async () => {
+    const itemId = distributeItemSelect?.value;
+    const quantity = Number(document.getElementById("distributeQuantity")?.value);
+    const customerName = document.getElementById("distributeCustomer")?.value.trim() || "Site Dispatch";
+    const branch = document.getElementById("distributeBranch")?.value || "Direct Site";
+    const technician = document.getElementById("distributeTechnician")?.value.trim() || "-";
+    const challanNumber = document.getElementById("distributeChallan")?.value.trim() || `DC-${Date.now().toString().slice(-4)}`;
+    const distributeDate = document.getElementById("distributeDate")?.value || new Date().toISOString().split("T")[0];
+
+    if (!itemId) {
+      if (distributionFormStatus) distributionFormStatus.innerHTML = `<span style="color:#ef4444;">Please select an inventory item to distribute.</span>`;
+      return;
+    }
+
+    if (!quantity || quantity <= 0) {
+      if (distributionFormStatus) distributionFormStatus.innerHTML = `<span style="color:#ef4444;">Please enter a valid quantity to dispatch.</span>`;
+      return;
+    }
+
+    const item = inventoryList.find(i => i.id === itemId);
+    if (!item) return;
+
+    const availableQty = Number(item.quantity) || 0;
+    if (quantity > availableQty) {
+      alert(`🚨 INSUFFICIENT STOCK!\nYou requested to distribute ${quantity} ${item.unit || "pcs"} of "${item.name}", but only ${availableQty} ${item.unit || "pcs"} are available in stock.`);
+      if (distributionFormStatus) distributionFormStatus.innerHTML = `<span style="color:#ef4444;">Insufficient stock! Only ${availableQty} ${item.unit || "pcs"} available.</span>`;
+      return;
+    }
+
+    try {
+      if (distributionFormStatus) distributionFormStatus.innerHTML = `<span style="color:#38bdf8;">Dispatching stock and updating inventory...</span>`;
+
+      // 1. Add distribution record
+      await addDoc(collection(db, "distributionRecords"), {
+        itemId,
+        itemName: item.name,
+        category: item.category || "Panel",
+        quantity,
+        customerName,
+        branch,
+        technician,
+        challanNumber,
+        distributeDate,
+        createdAt: serverTimestamp()
+      });
+
+      // 2. Decrement available stock quantity in inventory
+      await updateDoc(doc(db, "inventory", itemId), {
+        quantity: increment(-quantity),
+        updatedAt: serverTimestamp()
+      });
+
+      const updatedQty = availableQty - quantity;
+      logActivity("Admin distributed stock", `item=${item.name}, quantity=-${quantity}, new_stock=${updatedQty}, dest=${customerName} (${branch}), challan=${challanNumber}`);
+
+      if (distributionFormStatus) {
+        distributionFormStatus.innerHTML = `<span style="color:#22c55e;">Stock dispatched! Deducted ${quantity} ${item.unit || "pcs"} from "${item.name}". Remaining available stock is ${updatedQty} ${item.unit || "pcs"}.</span>`;
+      }
+
+      alert(`✅ Successfully dispatched ${quantity} ${item.unit || "pcs"} of "${item.name}" to ${customerName} (${branch})!`);
+
+      document.getElementById("distributeQuantity").value = "";
+      document.getElementById("distributeCustomer").value = "";
+      document.getElementById("distributeTechnician").value = "";
+      document.getElementById("distributeChallan").value = "";
+
+      setTimeout(() => {
+        if (distributionFormStatus) distributionFormStatus.innerHTML = "";
+      }, 5000);
+    } catch (err) {
+      if (distributionFormStatus) {
+        distributionFormStatus.innerHTML = `<span style="color:#ef4444;">Error distributing stock: ${err.message}</span>`;
+      }
+    }
+  });
+}
+
+/* ==========================================================
+   RENDER DISTRIBUTION RECORDS TABLE
+========================================================== */
+
+function renderDistributionRecordsTable() {
+  if (!distributionRecordsTable) return;
+
+  if (distributionList.length === 0) {
+    distributionRecordsTable.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#8a97a6;padding:16px;">No distribution/dispatch records found yet.</td></tr>`;
+    return;
+  }
+
+  distributionRecordsTable.innerHTML = distributionList.map(d => {
+    const qty = Number(d.quantity) || 0;
+    return `
+      <tr>
+        <td><strong>${escapeHtml(d.itemName)}</strong></td>
+        <td><strong style="color:#f59e0b;">-${qty}</strong></td>
+        <td><strong>${escapeHtml(d.customerName || "-")}</strong></td>
+        <td><span style="color:#38bdf8;font-weight:600;">${escapeHtml(d.branch || "-")}</span></td>
+        <td>${escapeHtml(d.technician || "-")}</td>
+        <td><code>${escapeHtml(d.challanNumber || "-")}</code></td>
+        <td><span style="font-size:12px;color:#94a3b8;">${escapeHtml(d.distributeDate || "-")}</span></td>
+      </tr>
+    `;
+  }).join("");
+}
+
+/* ==========================================================
    EXPORTS (CSV & EXCEL)
 ========================================================== */
 
@@ -519,6 +661,56 @@ if (invExportXlsxBtn) {
   });
 }
 
+/* Distribution Exports */
+if (distExportCsvBtn) {
+  distExportCsvBtn.addEventListener("click", () => {
+    if (distributionList.length === 0) {
+      alert("No distribution records to export.");
+      return;
+    }
+
+    let csv = "Item Name,Quantity Dispatched,Customer / Installation Site,Branch / Destination,Technician / Executive,Challan / Ref No.,Dispatch Date\n";
+    distributionList.forEach(d => {
+      csv += `"${escapeHtml(d.itemName || '')}",${d.quantity || 0},"${escapeHtml(d.customerName || '')}","${escapeHtml(d.branch || '')}","${escapeHtml(d.technician || '')}","${escapeHtml(d.challanNumber || '')}","${escapeHtml(d.distributeDate || '')}"\n`;
+    });
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `MR_Solar_Stock_Dispatches_${new Date().toISOString().split("T")[0]}.csv`;
+    link.click();
+  });
+}
+
+if (distExportXlsxBtn) {
+  distExportXlsxBtn.addEventListener("click", () => {
+    if (distributionList.length === 0) {
+      alert("No distribution records to export.");
+      return;
+    }
+
+    const rows = distributionList.map(d => ({
+      "Item Name": d.itemName || "",
+      "Quantity Dispatched": d.quantity || 0,
+      "Customer / Installation Site": d.customerName || "",
+      "Branch / Destination": d.branch || "",
+      "Technician / Executive": d.technician || "",
+      "Challan / Ref No.": d.challanNumber || "",
+      "Dispatch Date": d.distributeDate || ""
+    }));
+
+    if (typeof XLSX === "undefined") {
+      if (distExportCsvBtn) distExportCsvBtn.click();
+      return;
+    }
+
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Stock Dispatches");
+    XLSX.writeFile(wb, `MR_Solar_Stock_Dispatches_${new Date().toISOString().split("T")[0]}.xlsx`);
+  });
+}
+
 /* Search and filters */
 if (invSearchInput) invSearchInput.addEventListener("input", renderInventoryTable);
 if (invFilterCategory) invFilterCategory.addEventListener("change", renderInventoryTable);
@@ -540,12 +732,27 @@ function initInventoryListener() {
   onSnapshot(query(collection(db, "purchaseRecords"), orderBy("createdAt", "desc")), (snap) => {
     purchaseList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     renderPurchaseRecordsTable();
+    updateStockMetrics();
   }, () => {
-    // Fallback without orderBy
     onSnapshot(collection(db, "purchaseRecords"), (snap) => {
       purchaseList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       purchaseList.sort((a, b) => String(b.purchaseDate || "").localeCompare(String(a.purchaseDate || "")));
       renderPurchaseRecordsTable();
+      updateStockMetrics();
+    });
+  });
+
+  // Realtime Distribution Records
+  onSnapshot(query(collection(db, "distributionRecords"), orderBy("createdAt", "desc")), (snap) => {
+    distributionList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderDistributionRecordsTable();
+    updateStockMetrics();
+  }, () => {
+    onSnapshot(collection(db, "distributionRecords"), (snap) => {
+      distributionList = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      distributionList.sort((a, b) => String(b.distributeDate || "").localeCompare(String(a.distributeDate || "")));
+      renderDistributionRecordsTable();
+      updateStockMetrics();
     });
   });
 }

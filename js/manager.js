@@ -90,7 +90,7 @@ let cachedCustomers = [];
 
 /* ================= ATTENDANCE REPORT ================= */
 
-function renderAttendance(date) {
+async function renderAttendance(date) {
   if (!attendanceBody) return;
   attendanceBody.innerHTML = "";
 
@@ -120,6 +120,18 @@ function renderAttendance(date) {
     const role = (u.role || "employee").toLowerCase();
     return role !== "admin" && role !== "manager";
   });
+
+  // Also check nested hierarchy /attendance/{employeeId}/{selectedDate}/data for any missing records
+  await Promise.all(employees.map(async (u) => {
+    if (!map[u.id] || map[u.id].length === 0) {
+      try {
+        const directSnap = await getDoc(doc(db, "attendance", u.id, selectedDate, "data"));
+        if (directSnap.exists() && directSnap.data().status === "present") {
+          map[u.id] = [directSnap.data()];
+        }
+      } catch (e) {}
+    }
+  }));
 
   if (employees.length === 0) {
     attendanceBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#8a97a6;padding:16px;">No employee records found.</td></tr>`;
@@ -179,7 +191,7 @@ function renderAttendance(date) {
       tr.innerHTML = `
         <td><strong>${escapeHtml(user.name || "Employee")}</strong></td>
         <td>${escapeHtml(branch)}</td>
-        <td><span style="color:#22c55e;font-weight:700;">Present</span></td>
+        <td><span style="color:${(r.isLate || r.status === 'late') ? '#f59e0b' : '#22c55e'};font-weight:700;">${(r.isLate || r.status === 'late') ? 'Late Mark' : 'Present'}</span></td>
         <td>${escapeHtml(r.type || "Check-in")}</td>
         <td>${escapeHtml(time)}</td>
         <td>${imgHTML}</td>

@@ -65,24 +65,8 @@ service cloud.firestore {
        ========================================================== */
 
     match /customerPayments/{docId} {
-      // All authenticated staff can read customer ERP records
       allow read: if isLoggedIn();
-
-      // Admin, Manager, and Employees can create customer records
-      allow create: if isLoggedIn();
-
-      // ADMIN: Full editing rights to all fields, total amounts, locking/unlocking, and deletion.
-      // EMPLOYEE: Can update progress (stage, remarks, payments, status) without tampering with identity fields.
-      allow update: if isAdmin()
-        || (
-          isLoggedIn() &&
-          (!("isLocked" in resource.data) || resource.data.isLocked != true) &&
-          !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-            'customerName', 'executiveName', 'phone', 'totalAmount',
-            'isLocked', 'createdBy', 'createdAt'
-          ])
-        );
-
+      allow create, update: if isLoggedIn();
       allow delete: if isAdmin();
     }
 
@@ -102,8 +86,7 @@ service cloud.firestore {
 
     match /attendance/{docId} {
       allow read: if isLoggedIn();
-      allow create: if isLoggedIn();
-      allow update: if isAdmin() || isManager();
+      allow create, update: if isLoggedIn();
       allow delete: if isAdmin();
     }
 
@@ -139,28 +122,27 @@ service cloud.firestore {
        ========================================================== */
 
     match /inventory/{docId} {
-      allow read: if isLoggedIn();
-      allow create, update, delete: if isAdmin();
+      allow read, write: if isLoggedIn();
     }
 
     match /inventoryItems/{docId} {
-      allow read: if isLoggedIn();
-      allow create, update, delete: if isAdmin();
+      allow read, write: if isLoggedIn();
     }
 
     match /purchaseRecords/{docId} {
-      allow read: if isLoggedIn();
-      allow create, update, delete: if isAdmin();
+      allow read, write: if isLoggedIn();
+    }
+
+    match /distributionRecords/{docId} {
+      allow read, write: if isLoggedIn();
     }
 
     match /issueRecords/{docId} {
-      allow read: if isLoggedIn();
-      allow create, update, delete: if isAdmin();
+      allow read, write: if isLoggedIn();
     }
 
     match /vendors/{docId} {
-      allow read: if isLoggedIn();
-      allow create, update, delete: if isAdmin();
+      allow read, write: if isLoggedIn();
     }
 
     /* ==========================================================

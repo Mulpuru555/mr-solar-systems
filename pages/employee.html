@@ -153,7 +153,6 @@ Month Attendance
 <button class="quickActionBtn" onclick="toggleSection('attendanceSection')">&#128197; Mark Attendance</button>
 <button class="quickActionBtn" onclick="toggleSection('erpSection')">&#10010; New ERP Entry</button>
 <button class="quickActionBtn" onclick="toggleSection('customerProgressSection')">&#128679; Customer Progress</button>
-<button class="quickActionBtn" onclick="toggleSection('leaveSection')">&#9993; Apply Leave</button>
 <button class="quickActionBtn" onclick="location.href='profile.html'">View Profile</button>
 </div>
 
@@ -179,10 +178,6 @@ Customer Progress
 History
 </div>
 
-<div class="card" onclick="toggleSection('leaveSection')">
-Leave
-</div>
-
 <div class="card" onclick="toggleSection('documentsSection')">
 Documents
 </div>
@@ -206,6 +201,20 @@ My Tasks
 <!-- ================= ATTENDANCE ================= -->
 
 <div id="attendanceSection" class="section">
+
+<!-- LATE PUNCTUALITY TRACKER WIDGET -->
+<div id="lateTrackerWidget"></div>
+
+<!-- PROMINENT ATTENDANCE CONFIRMATION HERO BANNER -->
+<div id="attendanceConfirmedBanner" style="display:none;background:linear-gradient(135deg,rgba(34,197,94,0.25),rgba(15,23,42,0.95));border:2px solid #22c55e;border-radius:12px;padding:18px 22px;margin-bottom:16px;box-shadow:0 8px 24px rgba(34,197,94,0.25);">
+  <div style="display:flex;align-items:center;gap:14px;">
+    <div style="font-size:36px;line-height:1;">✅</div>
+    <div>
+      <div style="font-size:18px;font-weight:800;color:#22c55e;">Attendance Marked for Today!</div>
+      <div id="attendanceConfirmedDetails" style="font-size:13px;color:#cfd8e3;margin-top:4px;">Status: Present</div>
+    </div>
+  </div>
+</div>
 
 <div class="glass">
 
@@ -406,13 +415,20 @@ Add
 
 <div class="erpToolbarRow" style="margin-bottom:16px;">
   <input id="empProgressSearchInput" placeholder="Search by customer name, phone, or executive..." style="flex:2;min-width:240px;">
-  <select id="empProgressStatusFilter" style="flex:1;min-width:160px;padding:9px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:#0d1117;color:#fff;">
+  <select id="empProgressGroupFilter" style="flex:1;min-width:170px;padding:9px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:#0d1117;color:#fff;">
+    <option value="">All ABCD Workflow Groups</option>
+    <option value="A">Group A &bull; Onboarding (Reg / Loan / Pay)</option>
+    <option value="B">Group B &bull; Approvals (Agreement / Civil / AE)</option>
+    <option value="C">Group C &bull; Subsidy (Net Meter / Subsidy)</option>
+    <option value="D">Group D &bull; Handover (Warranty / Completed)</option>
+  </select>
+  <select id="empProgressStatusFilter" style="flex:1;min-width:140px;padding:9px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:#0d1117;color:#fff;">
     <option value="">All Payment Statuses</option>
     <option value="Pending">Pending</option>
     <option value="Partially Paid">Partially Paid</option>
     <option value="Completed">Completed</option>
   </select>
-  <select id="empProgressStageFilter" style="flex:1;min-width:160px;padding:9px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:#0d1117;color:#fff;">
+  <select id="empProgressStageFilter" style="flex:1;min-width:140px;padding:9px 12px;border-radius:6px;border:1px solid rgba(255,255,255,0.15);background:#0d1117;color:#fff;">
     <option value="">All Installation Stages</option>
     <option value="Registration">Registration</option>
     <option value="Loan / Cash / Bajaj">Loan / Cash / Bajaj</option>
@@ -458,78 +474,6 @@ Add
 
 </table>
 
-</div>
-
-</div>
-
-
-
-<!-- ================= LEAVE ================= -->
-
-<div id="leaveSection" class="section">
-
-<div class="glass">
-<h3 style="color:#ff8c00;margin-top:0;">Request Leave</h3>
-
-<form id="leaveForm" class="leaveForm">
-
-<div>
-<label for="leaveType">Type</label>
-<select id="leaveType">
-<option value="casual">Casual</option>
-<option value="sick">Sick</option>
-<option value="other">Other</option>
-</select>
-</div>
-
-<div></div>
-
-<div>
-<label for="leaveFrom">From date</label>
-<input type="date" id="leaveFrom" required>
-</div>
-
-<div>
-<label for="leaveTo">To date</label>
-<input type="date" id="leaveTo" required>
-</div>
-
-<div class="fullSpan">
-<label for="leaveReason">Reason</label>
-<textarea id="leaveReason" rows="3" required></textarea>
-</div>
-
-<div class="fullSpan">
-<button type="submit" class="leaveSubmitBtn">Submit Request</button>
-</div>
-
-</form>
-
-<div id="leaveFormStatus"></div>
-
-</div>
-
-<div class="glass">
-<h3 style="color:#ff8c00;margin-top:0;">Leave History</h3>
-<table>
-<thead>
-<tr>
-<th>Type</th>
-<th>From</th>
-<th>To</th>
-<th>Reason</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody id="leaveHistoryTable"></tbody>
-</table>
-</div>
-
-<div class="glass">
-<h3 style="color:#ff8c00;margin-top:0;">Upcoming Holidays</h3>
-<ul class="holidayList" id="holidayList">
-<li>Loading…</li>
-</ul>
 </div>
 
 </div>
@@ -629,32 +573,32 @@ Add
 
 
 
-<!-- EDIT POPUP (Strict Employee Permissions) -->
+<!-- EDIT POPUP (Employee Editable ERP Details) -->
 
 <div id="editPopup" class="popup">
 
 <div class="popupBox" style="max-height:85vh;overflow-y:auto;">
 
-<h3 style="margin-top:0;color:#ff8c00;">Edit Record</h3>
-<div style="font-size:12px;color:#8a97a6;margin-bottom:14px;">Customer identity &amp; financial terms are read-only.</div>
+<h3 style="margin-top:0;color:#ff8c00;">Edit Customer Record</h3>
+<div style="font-size:12px;color:#8a97a6;margin-bottom:14px;">Update customer details, stage, and payment info.</div>
 
-<label class="popupLabel">Customer Name (Read-Only)</label>
-<input id="editName" placeholder="Customer" readonly disabled style="background:#0d1117;opacity:0.7;cursor:not-allowed;border:1px solid rgba(255,255,255,0.1);">
+<label class="popupLabel">Customer Name</label>
+<input id="editName" placeholder="Enter customer name" type="text" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.15);color:#fff;">
 
-<label class="popupLabel">Executive Name (Read-Only)</label>
-<input id="editExec" placeholder="Executive" readonly disabled style="background:#0d1117;opacity:0.7;cursor:not-allowed;border:1px solid rgba(255,255,255,0.1);">
+<label class="popupLabel">Phone Number</label>
+<input id="editPhone" placeholder="Enter phone number" type="tel" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.15);color:#fff;">
 
-<label class="popupLabel">Phone Number (Read-Only)</label>
-<input id="editPhone" placeholder="Phone Number" readonly disabled style="background:#0d1117;opacity:0.7;cursor:not-allowed;border:1px solid rgba(255,255,255,0.1);">
+<label class="popupLabel">Executive Name</label>
+<input id="editExec" placeholder="Enter executive name" type="text" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.15);color:#fff;">
 
 <label class="popupLabel">Total Amount (₹) (Read-Only)</label>
-<input id="editTotal" placeholder="Total" readonly disabled style="background:#0d1117;opacity:0.7;cursor:not-allowed;border:1px solid rgba(255,255,255,0.1);">
+<input id="editTotal" placeholder="Total Amount" readonly disabled style="background:#0d1117;opacity:0.7;cursor:not-allowed;border:1px solid rgba(255,255,255,0.1);">
 
-<label class="popupLabel">Status (Read-Only)</label>
+<label class="popupLabel">Payment Status</label>
 <input id="editStatus" placeholder="Status" readonly disabled style="background:#0d1117;opacity:0.7;cursor:not-allowed;border:1px solid rgba(255,255,255,0.1);">
 
 <div style="border-top:1px solid rgba(255,255,255,0.1);margin:14px 0 10px;"></div>
-<div style="font-size:12px;color:#2ecc71;font-weight:700;margin-bottom:8px;">Employee-Editable Fields (Unlocked):</div>
+<div style="font-size:12px;color:#2ecc71;font-weight:700;margin-bottom:8px;">Payments &amp; Stage Progress:</div>
 
 <label class="popupLabel">Paid Amount (₹)</label>
 <input id="editPaid" placeholder="Enter updated paid amount" type="number" min="0" step="0.01">
@@ -714,7 +658,6 @@ checkSession("employee");
 <script type="module" src="../js/erp.js"></script>
 <script type="module" src="../js/erp-enhancements.js"></script>
 <script type="module" src="../js/history.js"></script>
-<script type="module" src="../js/leave.js"></script>
 <script type="module" src="../js/documents.js"></script>
 <script type="module" src="../js/notifications.js"></script>
 <script type="module" src="../js/quick-actions.js"></script>

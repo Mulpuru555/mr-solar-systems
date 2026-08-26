@@ -52,7 +52,6 @@
 <button onclick="showSection('analyticsCenter')">📊 Analytics</button>
 <div class="sidebarDivider"></div>
 <button onclick="showSection('employeeManagement')">👥 Employee Management</button>
-<button onclick="showSection('leaveApproval')">🗓️ Leave Requests</button>
 <button onclick="showSection('branchManagement')">🏢 Branch Management</button>
 <button onclick="showSection('noticeManagement')">📢 Notice Management</button>
 <div class="sidebarDivider"></div>
@@ -408,14 +407,18 @@ This permanently deletes the record and its full payment history. This cannot be
   </div>
 </div>
 
-<div id="inventoryStockSummary" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;margin-bottom:14px;">
+<div id="inventoryStockSummary" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:12px;margin-bottom:14px;">
   <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px;text-align:center;">
     <div style="font-size:12px;color:#94a3b8;">Total Tracked Items</div>
     <div id="invSummaryTotalItems" style="font-size:22px;font-weight:800;color:#38bdf8;margin-top:4px;">0</div>
   </div>
   <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:12px 16px;text-align:center;">
-    <div style="font-size:12px;color:#94a3b8;">Total Available Stock (Units)</div>
+    <div style="font-size:12px;color:#94a3b8;">Available Stock (Units)</div>
     <div id="invSummaryTotalUnits" style="font-size:22px;font-weight:800;color:#22c55e;margin-top:4px;">0</div>
+  </div>
+  <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:12px 16px;text-align:center;">
+    <div style="font-size:12px;color:#94a3b8;">Total Distributed / Dispatched</div>
+    <div id="invSummaryTotalDistributed" style="font-size:22px;font-weight:800;color:#f59e0b;margin-top:4px;">0 Units</div>
   </div>
   <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:12px 16px;text-align:center;">
     <div style="font-size:12px;color:#94a3b8;">Low Stock Alerts</div>
@@ -479,6 +482,48 @@ This permanently deletes the record and its full payment history. This cannot be
 <tr><th>Item Name</th><th>Vendor</th><th>Quantity Added</th><th>Unit Price</th><th>Total (₹)</th><th>Invoice No</th><th>Purchase Date</th></tr>
 </thead>
 <tbody id="purchaseRecordsTable"><tr><td colspan="7" style="text-align:center;color:#8a97a6;padding:16px;">Loading purchase records...</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<div class="section-box">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+  <h3 style="margin:0;color:#f59e0b;">🚚 Distribute &amp; Issue Stock (Outward Dispatch)</h3>
+</div>
+<p class="hintText">Dispatch panels, inverters, and components to customer installation sites, branches, or technicians. Distributing stock automatically deducts from available quantity and updates tracking.</p>
+<div class="branchForm">
+<select id="distributeItemSelect"><option value="">Select inventory item to distribute...</option></select>
+<input type="number" id="distributeQuantity" placeholder="Quantity to Dispatch" min="1">
+<input type="text" id="distributeCustomer" placeholder="Customer Name / Installation Site">
+<select id="distributeBranch">
+  <option value="Tenali">Tenali Branch / Site</option>
+  <option value="Chirala">Chirala Branch / Site</option>
+  <option value="Bapatla">Bapatla Branch / Site</option>
+  <option value="Direct Site">Direct Customer Site</option>
+  <option value="Main Warehouse">Main Warehouse Transfer</option>
+</select>
+<input type="text" id="distributeTechnician" placeholder="Assigned Technician / Executive">
+<input type="text" id="distributeChallan" placeholder="Challan / Delivery Note / Vehicle No.">
+<input type="date" id="distributeDate">
+<button class="action" id="recordDistributionBtn" style="background:#f59e0b;color:#fff;font-weight:700;">Record Distribution &amp; Dispatch Stock</button>
+</div>
+<div id="distributionFormStatus"></div>
+</div>
+
+<div class="section-box">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+  <h3 style="margin:0;">Recent Stock Distributions &amp; Dispatches</h3>
+  <div style="display:flex;gap:8px;">
+    <button type="button" class="action" id="distExportCsvBtn" style="background:#059669;font-size:12px;padding:6px 12px;">Export Dispatches CSV</button>
+    <button type="button" class="action" id="distExportXlsxBtn" style="background:#0284c7;font-size:12px;padding:6px 12px;">Export Dispatches Excel</button>
+  </div>
+</div>
+<div class="tableScroll">
+<table>
+<thead>
+<tr><th>Item Name</th><th>Qty Dispatched</th><th>Customer / Site</th><th>Branch / Destination</th><th>Technician</th><th>Challan / Ref</th><th>Dispatch Date</th></tr>
+</thead>
+<tbody id="distributionRecordsTable"><tr><td colspan="7" style="text-align:center;color:#8a97a6;padding:16px;">Loading distribution records...</td></tr></tbody>
 </table>
 </div>
 </div>
@@ -845,7 +890,6 @@ This permanently deletes the record and its full payment history. This cannot be
 <script type="module" src="../js/admin-analytics-charts.js"></script>
 <script type="module" src="../js/admin-analytics.js"></script>
 <script type="module" src="../js/admin-management.js"></script>
-<script type="module" src="../js/admin-leave.js"></script>
 <script type="module" src="../js/admin-audit.js"></script>
 <script type="module" src="../js/admin-login-history.js"></script>
 <script type="module" src="../js/admin-settings.js"></script>
