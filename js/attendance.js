@@ -245,23 +245,43 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-function startCountdown(adminClosingHour = 10, adminClosingMinute = 0) {
+let countdownInterval = null;
+
+async function startCountdown() {
   if (!countdownBox) return;
 
-  const now = new Date();
+  let closeHour = 10;
+  let closeMinute = 0;
+
+  // 1. Fetch closing time configured in Admin Settings
+  try {
+    const snap = await getDoc(doc(db, "settings", "attendance"));
+    if (snap.exists() && snap.data().closeHour !== undefined) {
+      closeHour = Number(snap.data().closeHour);
+      closeMinute = Number(snap.data().closeMinute) || 0;
+    }
+  } catch (e) {
+    console.warn("Using default 10:00 AM closing time:", e);
+  }
+
   const closingTime = new Date();
-  closingTime.setHours(adminClosingHour, adminClosingMinute, 0, 0);
+  closingTime.setHours(closeHour, closeMinute, 0, 0);
+
+  const formattedCloseTime = closingTime.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  if (countdownInterval) clearInterval(countdownInterval);
 
   function update() {
     const current = new Date();
     const diff = closingTime - current;
 
     if (diff <= 0) {
-      if (countdownBox) countdownBox.innerText = "Attendance Closed for Today";
+      if (countdownBox) countdownBox.innerText = `Attendance Closed for Today (${formattedCloseTime})`;
       if (btn && !btn.innerText.includes("Already")) {
         btn.disabled = true;
         btn.innerText = "Attendance Closed";
         btn.style.background = "#64748b";
+        btn.style.borderColor = "#64748b";
       }
       return;
     }
@@ -270,12 +290,13 @@ function startCountdown(adminClosingHour = 10, adminClosingMinute = 0) {
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
 
-    const formattedTime = closingTime.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit', hour12: true });
-    if (countdownBox) countdownBox.innerText = `Open until ${formattedTime} | Remaining: ${h}h ${m}m ${s}s`;
+    if (countdownBox) {
+      countdownBox.innerText = `Open until ${formattedCloseTime} | Remaining: ${h}h ${m}m ${s}s`;
+    }
   }
 
   update();
-  setInterval(update, 1000);
+  countdownInterval = setInterval(update, 1000);
 }
 
 function startLocationTracking() {
