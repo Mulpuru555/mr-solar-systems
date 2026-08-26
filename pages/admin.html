@@ -148,12 +148,40 @@
 <div id="attendanceControl" class="section">
 <div class="section-box">
 <h3>Attendance Closing Time</h3>
-<input type="number" id="closeHourInput" min="0" max="23" placeholder="Hour">
-:
-<input type="number" id="closeMinuteInput" min="0" max="59" placeholder="Minute">
-<br>
-<button class="action" onclick="updateCloseTime()">Update Closing Time</button>
-<p id="timeStatus"></p>
+<p class="hintText" style="color:#94a3b8;font-size:13px;margin-bottom:12px;">Set the daily check-in deadline. Employee portal countdown will calculate dynamically based on this time.</p>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+  <select id="closeHourInput" style="padding:10px 14px;background:#0f172a;color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:15px;font-weight:700;">
+    <option value="1">01</option>
+    <option value="2">02</option>
+    <option value="3">03</option>
+    <option value="4">04</option>
+    <option value="5">05</option>
+    <option value="6">06</option>
+    <option value="7">07</option>
+    <option value="8">08</option>
+    <option value="9">09</option>
+    <option value="10" selected>10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+  </select>
+  <span style="font-size:20px;font-weight:800;color:#f59e0b;">:</span>
+  <select id="closeMinuteInput" style="padding:10px 14px;background:#0f172a;color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:15px;font-weight:700;">
+    <option value="0" selected>00</option>
+    <option value="5">05</option>
+    <option value="10">10</option>
+    <option value="15">15</option>
+    <option value="20">20</option>
+    <option value="30">30</option>
+    <option value="45">45</option>
+    <option value="59">59</option>
+  </select>
+  <select id="closeAmpmInput" style="padding:10px 14px;background:#0f172a;color:#fbbf24;border:1px solid rgba(245,158,11,0.4);border-radius:8px;font-size:15px;font-weight:800;">
+    <option value="AM" selected>AM</option>
+    <option value="PM">PM</option>
+  </select>
+  <button class="action" onclick="updateCloseTime()" style="background:linear-gradient(135deg,#f59e0b,#ff7a00);color:#fff;font-weight:700;padding:10px 20px;border-radius:8px;cursor:pointer;">Update Closing Time</button>
+</div>
+<p id="timeStatus" style="margin-top:10px;font-size:14px;font-weight:700;"></p>
 </div>
 </div>
 
