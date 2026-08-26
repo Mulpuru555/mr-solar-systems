@@ -245,12 +245,12 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-function startCountdown() {
+function startCountdown(adminClosingHour = 10, adminClosingMinute = 0) {
   if (!countdownBox) return;
 
   const now = new Date();
   const closingTime = new Date();
-  closingTime.setHours(20, 0, 0, 0);
+  closingTime.setHours(adminClosingHour, adminClosingMinute, 0, 0);
 
   function update() {
     const current = new Date();
@@ -258,7 +258,11 @@ function startCountdown() {
 
     if (diff <= 0) {
       if (countdownBox) countdownBox.innerText = "Attendance Closed for Today";
-      if (btn && !btn.innerText.includes("Already")) btn.disabled = true;
+      if (btn && !btn.innerText.includes("Already")) {
+        btn.disabled = true;
+        btn.innerText = "Attendance Closed";
+        btn.style.background = "#64748b";
+      }
       return;
     }
 
@@ -266,7 +270,8 @@ function startCountdown() {
     const m = Math.floor((diff % 3600000) / 60000);
     const s = Math.floor((diff % 60000) / 1000);
 
-    if (countdownBox) countdownBox.innerText = `Open until 8:00 PM | Remaining: ${h}h ${m}m ${s}s`;
+    const formattedTime = closingTime.toLocaleTimeString("en-IN", { hour: '2-digit', minute: '2-digit', hour12: true });
+    if (countdownBox) countdownBox.innerText = `Open until ${formattedTime} | Remaining: ${h}h ${m}m ${s}s`;
   }
 
   update();
