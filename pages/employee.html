@@ -301,8 +301,12 @@ Add
 
 <div class="glass">
 
-<div class="erpToolbarRow">
-<input id="searchInput" placeholder="Search...">
+<div class="erpToolbarRow" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+<input id="searchInput" placeholder="Search customer, phone, executive..." style="flex:1;min-width:200px;">
+<select id="erpMonthFilter" style="padding:10px 14px;background:#0f172a;color:#fbbf24;border:1px solid rgba(245,158,11,0.4);border-radius:8px;font-weight:700;font-size:13px;">
+  <option value="current">📅 This Month (Fast)</option>
+  <option value="all">🌐 All Records</option>
+</select>
 <button type="button" id="erpExportCsvBtn" class="leaveSubmitBtn">Export CSV</button>
 <button type="button" id="erpExportXlsxBtn" class="leaveSubmitBtn">Export Excel</button>
 </div>
