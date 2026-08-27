@@ -84,6 +84,7 @@ if (form) {
     const phone = document.getElementById("customerPhone")?.value.trim() || "";
     const exec = document.getElementById("executiveName")?.value.trim();
     const total = Number(document.getElementById("totalAmount")?.value) || 0;
+    const remarks = document.getElementById("customerRemarks")?.value.trim() || ""; // 👈 Optional Remarks
 
     if (!name || !exec || total <= 0) {
       alert("Please fill in valid customer name, executive name, and total amount.");
@@ -96,6 +97,7 @@ if (form) {
         phone: phone,
         executiveName: exec,
         totalAmount: total,
+        remarks: remarks, // 👈 Saved as Optional Remarks
         createdBy: uid,
         payments: [],
         status: "Pending",
