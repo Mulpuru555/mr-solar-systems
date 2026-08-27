@@ -369,19 +369,22 @@ Add
 <h3 id="progressModalCustomerName">Work Progress</h3>
 <div class="erpModalSub">Update and track installation/service progress for this customer.</div>
 
-<form id="progressForm">
-<label class="popupLabel">Status</label>
-<select id="progressStatusInput" required>
-<option value="">Select stage</option>
-</select>
+<form id="paymentForm">
 
-<label class="popupLabel">Remarks</label>
-<textarea id="progressRemarksInput" rows="2" required placeholder="What was done / next steps..."></textarea>
+<input id="customerName" placeholder="Customer Name" required maxlength="80">
 
-<label class="popupLabel">Photo (optional)</label>
-<input type="file" id="progressPhotoInput" accept="image/*">
+<input id="customerPhone" placeholder="Phone Number" type="tel" pattern="[0-9+\-\s]{7,15}" required maxlength="20">
 
-<button type="submit" class="leaveSubmitBtn" style="margin-top:10px;width:100%;">Add Update</button>
+<input id="executiveName" placeholder="Executive Name" required maxlength="80">
+
+<input id="totalAmount" placeholder="Total Amount (₹)" type="number" min="1" step="0.01" required>
+
+<input id="customerRemarks" placeholder="Remarks (Optional)" type="text" maxlength="200">
+
+<button type="submit">
+Add Customer
+</button>
+
 </form>
 <div id="progressFormStatus" style="margin-top:8px;font-size:12px;"></div>
 
