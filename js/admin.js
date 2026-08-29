@@ -116,7 +116,19 @@ function renderDashboard() {
     const totalPaid = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
     const balance = (Number(data.totalAmount) || 0) - totalPaid;
     const status = data.status || (balance <= 0 ? "Completed" : "Pending");
-    const currentStage = data.currentStage || data.workStatus || "Registration";
+    const currentStage = data.currentStage || "Registration";
+
+    // Format Created Date
+    const dateStr = data.createdAt?.seconds
+      ? new Date(data.createdAt.seconds * 1000).toLocaleDateString("en-IN")
+      : (typeof data.createdAt === "string" ? data.createdAt.split("T")[0] : "-");
+
+    // Work Status (Completed vs Not Completed)
+    const workStatus = data.workStatus || (currentStage === "Completed" ? "Completed" : "Not Completed");
+    const isWorkDone = workStatus === "Completed";
+    const workBtnHtml = isWorkDone
+      ? `<button class="action" onclick="toggleAdminWorkStatus('${data.id}', 'Completed')" style="background:#10b981;color:#fff;border:none;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;" title="Click to change to Not Completed">Completed ✅</button>`
+      : `<button class="action" onclick="toggleAdminWorkStatus('${data.id}', 'Not Completed')" style="background:rgba(245,158,11,0.2);color:#f59e0b;border:1px solid #f59e0b;padding:4px 8px;border-radius:6px;cursor:pointer;font-weight:700;font-size:11px;" title="Click to change to Completed">Not Completed ⏳</button>`;
 
     if (searchText) {
       const custMatch = (data.customerName || "").toLowerCase().includes(searchText);
@@ -133,7 +145,7 @@ function renderDashboard() {
     const isLocked = data.isLocked !== false;
 
     table.innerHTML += `
-    <tr>
+    <tr data-created="${data.createdAt?.seconds ? new Date(data.createdAt.seconds * 1000).toISOString() : ''}">
       <td class="serial">${serial++}</td>
       <td>${escapeHtml(data.customerName || "-")}</td>
       <td>${escapeHtml(data.phone || "-")}</td>
@@ -143,6 +155,8 @@ function renderDashboard() {
       <td style="color:${balance <= 0 ? '#00e676' : '#ff5252'}">₹${balance.toLocaleString()}</td>
       <td><span class="erpStatusBadge ${status}">${status}</span></td>
       <td><span class="stageBadge" style="font-weight:600;color:#ff9800;">${escapeHtml(currentStage)}</span></td>
+      <td>${workBtnHtml}</td>
+      <td><span style="font-size:12px;color:#94a3b8;">${dateStr}</span></td>
       <td>
         <button class="action" onclick="openAdminEdit('${data.id}')" style="background:#3498db;color:#fff;">Edit</button>
       </td>
@@ -192,6 +206,8 @@ window.openAdminEdit = function (id) {
   const lockSelect = document.getElementById("adminEditLockStatus");
   const remarksInput = document.getElementById("adminEditRemarks");
   const statusMsg = document.getElementById("adminEditFormStatus");
+  const workStatusSelect = document.getElementById("adminEditWorkStatus");
+if (workStatusSelect) workStatusSelect.value = rec.workStatus || (rec.currentStage === "Completed" ? "Completed" : "Not Completed");
 
   if (nameInput) nameInput.value = rec.customerName || "";
   if (phoneInput) phoneInput.value = rec.phone || "";
@@ -230,6 +246,8 @@ if (adminEditSaveBtn) {
     const lockStatus = document.getElementById("adminEditLockStatus")?.value;
     const remarks = document.getElementById("adminEditRemarks")?.value.trim() || "";
     const statusMsg = document.getElementById("adminEditFormStatus");
+    const workStatus = document.getElementById("adminEditWorkStatus")?.value || "Not Completed";
+
 
     if (!name || total <= 0) {
       if (statusMsg) statusMsg.textContent = "Please provide customer name and valid total amount.";
@@ -246,7 +264,7 @@ if (adminEditSaveBtn) {
         totalAmount: total,
         status: status,
         currentStage: stage,
-        workStatus: stage === "Completed" ? "Completed" : "Not Completed",
+        workStatus: workStatus,
         isLocked: lockStatus === "locked",
         remarks: remarks,
         updatedAt: serverTimestamp()
@@ -587,3 +605,16 @@ window.deleteHoliday = async function (date) {
 };
 
 loadHolidays();
+
+window.toggleAdminWorkStatus = async function (id, currentStatus) {
+  const newStatus = currentStatus === "Completed" ? "Not Completed" : "Completed";
+  try {
+    await updateDoc(doc(db, "customerPayments", id), {
+      workStatus: newStatus,
+      updatedAt: serverTimestamp()
+    });
+    logActivity("Admin toggled work status", `id=${id}, workStatus=${newStatus}`);
+  } catch (err) {
+    alert("Failed to update work status: " + err.message);
+  }
+};
