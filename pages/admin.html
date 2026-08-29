@@ -200,9 +200,13 @@
 <div class="section-box">
 <h3>Customer ERP Management (Live)</h3>
 
-<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
-<input type="text" id="searchInput" placeholder="Search Customer / Executive">
-<label><input type="checkbox" id="pendingOnly"> Show Pending Only</label>
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+<input type="text" id="searchInput" placeholder="Search Customer / Executive / Phone..." style="flex:1;min-width:200px;">
+<select id="adminErpMonthFilter" style="padding:8px 14px;background:#0f172a;color:#fbbf24;border:1px solid rgba(245,158,11,0.4);border-radius:8px;font-weight:700;font-size:13px;">
+  <option value="current">📅 This Month (Fast)</option>
+  <option value="all">🌐 All Records</option>
+</select>
+<label style="font-size:13px;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="pendingOnly"> Pending Only</label>
 <button class="action" onclick="exportFullReport()">Export CSV</button>
 <button class="action" id="adminExportXlsxBtn">Export Excel</button>
 </div>
@@ -220,6 +224,8 @@
 <th>Balance</th>
 <th>Status</th>
 <th>Stage</th>
+<th style="color:#10b981;">Work Status</th>
+<th class="erpSortable" data-adminsort="date">Date</th>
 <th>Edit</th>
 <th>Payment</th>
 <th>Lock</th>
@@ -310,7 +316,7 @@ This permanently deletes the record and its full payment history. This cannot be
   <option value="Completed">Completed</option>
 </select>
 
-<label class="popupLabel">Work Status / Stage</label>
+<label class="popupLabel">Work Progress Stage</label>
 <select id="adminEditStage" style="width:100%;padding:8px;border-radius:6px;border:1px solid #4a5568;background:#1a202c;color:#fff;margin-bottom:8px;">
   <option value="Registration">Registration</option>
   <option value="Loan / Cash / Bajaj">Loan / Cash / Bajaj</option>
@@ -325,6 +331,11 @@ This permanently deletes the record and its full payment history. This cannot be
   <option value="Completed">Completed</option>
 </select>
 
+<label class="popupLabel" style="color:#10b981;">Work Status (Admin Only)</label>
+<select id="adminEditWorkStatus" style="width:100%;padding:8px;border-radius:6px;border:1px solid #10b981;background:#0f172a;color:#fff;margin-bottom:8px;font-weight:700;">
+  <option value="Not Completed">Not Completed ⏳</option>
+  <option value="Completed">Completed ✅</option>
+</select>
 <label class="popupLabel">Lock Status</label>
 <select id="adminEditLockStatus" style="width:100%;padding:8px;border-radius:6px;border:1px solid #4a5568;background:#1a202c;color:#fff;margin-bottom:8px;">
   <option value="locked">Locked (Employee cannot edit)</option>
