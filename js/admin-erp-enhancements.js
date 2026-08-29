@@ -1,186 +1,123 @@
+/* ==========================================================
+   M.R SOLAR SYSTEMS - ADMIN MONTH-WISE FAST ERP CONTROLLER
+   ========================================================== */
+
 import { db } from "./firebase-config.js";
 
-let currentPage = 1;
-const pageSize = 8;
-let sortKey = null; // 'customer' | 'executive' | 'total' | 'paid'
-let sortDir = 1;
-let applying = false;
-
 const table = document.getElementById("customerTable");
+let allDocsCache = [];
 
-function parseCurrency(text) {
-  return Number((text || "").replace(/[^0-9.-]/g, "")) || 0;
+function getRecordMonthKey(rec) {
+  if (rec.createdAt?.seconds) {
+    const dt = new Date(rec.createdAt.seconds * 1000);
+    return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`;
+  }
+  if (typeof rec.createdAt === "string" && rec.createdAt.length >= 7) {
+    return rec.createdAt.slice(0, 7);
+  }
+  return "Unknown";
 }
 
-function decorateRow(tr) {
-  const cells = tr.children;
-  if (cells.length < 12) return;
+function populateAdminMonthDropdown(docsList) {
+  const monthFilterEl = document.getElementById("adminErpMonthFilter");
+  if (!monthFilterEl) return;
 
-  // Lock cell is at index 11
-  const lockCell = cells[11];
-  if (lockCell && !lockCell.querySelector(".erpViewBtn")) {
-    const lockBtn = lockCell.querySelector("button");
-    const idMatch = lockBtn?.getAttribute("onclick")?.match(/toggleLock\('([^']+)'/);
-    const recordId = idMatch ? idMatch[1] : null;
-    if (recordId) {
-      const viewBtn = document.createElement("button");
-      viewBtn.textContent = "View";
-      viewBtn.className = "erpViewBtn action";
-      viewBtn.style.marginLeft = "4px";
-      viewBtn.addEventListener("click", () => openTimelineModalById(recordId));
-      lockCell.appendChild(viewBtn);
-    }
-  }
-}
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const currentMonthName = now.toLocaleString("default", { month: "long", year: "numeric" });
 
-function applyView() {
-  if (!table) return;
-  applying = true;
-
-  const rows = Array.from(table.querySelectorAll("tr"));
-  rows.forEach(decorateRow);
-
-  if (sortKey) {
-    const colIndex = { customer: 1, executive: 3, total: 4, paid: 5 }[sortKey];
-    rows.sort((a, b) => {
-      const va = a.children[colIndex]?.textContent.trim() || "";
-      const vb = b.children[colIndex]?.textContent.trim() || "";
-      if (sortKey === "total" || sortKey === "paid") {
-        return sortDir * (parseCurrency(va) - parseCurrency(vb));
-      }
-      return sortDir * va.localeCompare(vb);
-    });
-    rows.forEach(tr => table.appendChild(tr));
-  }
-
-  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
-  if (currentPage > totalPages) currentPage = totalPages;
-
-  rows.forEach((tr, idx) => {
-    const page = Math.floor(idx / pageSize) + 1;
-    tr.style.display = page === currentPage ? "" : "none";
+  const monthSet = new Set();
+  docsList.forEach(r => {
+    const key = getRecordMonthKey(r);
+    if (key && key !== "Unknown") monthSet.add(key);
   });
 
-  renderPaginationControls(rows.length, totalPages);
+  const sortedMonths = Array.from(monthSet).sort().reverse();
 
-  requestAnimationFrame(() => { applying = false; });
+  let optionsHtml = `<option value="${currentMonthKey}">📅 This Month (${currentMonthName})</option>`;
+  sortedMonths.forEach(mKey => {
+    if (mKey !== currentMonthKey) {
+      const [y, m] = mKey.split("-");
+      const dObj = new Date(Number(y), Number(m) - 1, 1);
+      const name = dObj.toLocaleString("default", { month: "long", year: "numeric" });
+      optionsHtml += `<option value="${mKey}">🗓️ ${name}</option>`;
+    }
+  });
+  optionsHtml += `<option value="all">🌐 All Records (${docsList.length})</option>`;
+
+  const savedVal = monthFilterEl.value;
+  monthFilterEl.innerHTML = optionsHtml;
+  if (savedVal && (monthSet.has(savedVal) || savedVal === "all" || savedVal === currentMonthKey)) {
+    monthFilterEl.value = savedVal;
+  }
 }
 
-function renderPaginationControls(totalCount, totalPages) {
+function applyMonthFilter() {
+  if (!table) return;
+
+  const monthFilterEl = document.getElementById("adminErpMonthFilter");
+  const chosenMonth = monthFilterEl?.value || "current";
+
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const targetMonth = chosenMonth === "current" ? currentMonthKey : chosenMonth;
+
+  const rows = Array.from(table.querySelectorAll("tr"));
+  let visibleCount = 0;
+
+  rows.forEach(tr => {
+    const created = tr.getAttribute("data-created");
+    let rowMonthKey = "Unknown";
+    if (created && created.length >= 7) {
+      rowMonthKey = created.slice(0, 7);
+    }
+
+    if (chosenMonth === "all" || rowMonthKey === targetMonth || rowMonthKey === "Unknown") {
+      tr.style.display = "";
+      visibleCount++;
+    } else {
+      tr.style.display = "none";
+    }
+  });
+
+  renderAdminMonthSummaryBar(visibleCount, chosenMonth);
+}
+
+function renderAdminMonthSummaryBar(count, chosenMonth) {
   const el = document.getElementById("adminErpPaginationControls");
   if (!el) return;
 
-  if (totalCount === 0) {
-    el.innerHTML = "";
-    return;
+  const now = new Date();
+  const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const isAll = chosenMonth === "all";
+
+  let monthLabel = "All Records";
+  if (!isAll) {
+    const [y, m] = (chosenMonth === "current" ? currentMonthKey : chosenMonth).split("-");
+    const dObj = new Date(Number(y), Number(m) - 1, 1);
+    monthLabel = dObj.toLocaleString("default", { month: "long", year: "numeric" });
   }
 
   el.innerHTML = `
-    <button id="adminErpPrevBtn" ${currentPage <= 1 ? "disabled" : ""}>&lsaquo; Prev</button>
-    <span>Page ${currentPage} of ${totalPages} (${totalCount} records)</span>
-    <button id="adminErpNextBtn" ${currentPage >= totalPages ? "disabled" : ""}>Next &rsaquo;</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;width:100%;padding:10px 14px;background:rgba(15,23,42,0.85);border:1px solid rgba(245,158,11,0.25);border-radius:8px;font-size:13px;margin-top:10px;">
+      <div>📊 <strong>Showing ${count} customer projects</strong> for <span style="color:#fbbf24;font-weight:700;">${monthLabel}</span></div>
+      <div style="color:#10b981;font-weight:700;">⚡ Admin Fast Month-Wise View Active</div>
+    </div>
   `;
-
-  document.getElementById("adminErpPrevBtn")?.addEventListener("click", () => {
-    currentPage--;
-    applyView();
-  });
-  document.getElementById("adminErpNextBtn")?.addEventListener("click", () => {
-    currentPage++;
-    applyView();
-  });
 }
-
-if (table) {
-  const observer = new MutationObserver(() => {
-    if (applying) return;
-    currentPage = 1;
-    applyView();
-  });
-  observer.observe(table, { childList: true });
-}
-
-document.querySelectorAll('.erpSortable[data-adminsort]').forEach(th => {
-  th.addEventListener("click", () => {
-    const key = th.dataset.adminsort === "customerName" ? "customer"
-      : th.dataset.adminsort === "executiveName" ? "executive"
-      : th.dataset.adminsort;
-    if (sortKey === key) {
-      sortDir *= -1;
-    } else {
-      sortKey = key;
-      sortDir = 1;
-    }
-    applyView();
-  });
-});
 
 document.addEventListener("adminTableRendered", () => {
-  applyView();
+  allDocsCache = window.__adminAllDocs || [];
+  populateAdminMonthDropdown(allDocsCache);
+  applyMonthFilter();
+});
+
+document.getElementById("adminErpMonthFilter")?.addEventListener("change", () => {
+  applyMonthFilter();
 });
 
 /* ==========================================================
-   PAYMENT TIMELINE & INVOICE PRINT
-========================================================== */
-
-const modal = document.getElementById("erpTimelineModal");
-let activeRecord = null;
-
-function computePaid(d) {
-  return (d.payments || []).reduce((s, p) => s + (Number(p.amount) || 0), 0);
-}
-
-function openTimelineModalById(id) {
-  const rec = (window.__adminAllDocs || []).find(r => r.id === id);
-  if (!rec) return;
-
-  activeRecord = rec;
-
-  document.getElementById("erpModalCustomerName").textContent = rec.customerName || "Customer";
-  document.getElementById("erpModalExecName").textContent = `Executive: ${rec.executiveName || "-"}`;
-
-  const listEl = document.getElementById("erpTimelineList");
-  const payments = rec.payments || [];
-
-  listEl.innerHTML = payments.length === 0
-    ? `<div class="erpTimelineEmpty">No payments recorded yet.</div>`
-    : payments.map(p => `
-        <div class="erpTimelineItem">
-          <span>${p.date || "-"}</span>
-          <span>₹${Number(p.amount || 0).toLocaleString()}</span>
-        </div>
-      `).join("");
-
-  modal?.classList.add("open");
-}
-window.openTimelineModalById = openTimelineModalById;
-
-document.getElementById("erpCloseModalBtn")?.addEventListener("click", () => {
-  modal?.classList.remove("open");
-});
-
-document.getElementById("erpPrintInvoiceBtn")?.addEventListener("click", () => {
-  if (!activeRecord) return;
-  const d = activeRecord;
-  const payments = d.payments || [];
-  const totalPaid = computePaid(d);
-
-  document.getElementById("printCustomerLine").textContent = `Customer: ${d.customerName || "-"}`;
-  document.getElementById("printExecLine").textContent = `Executive: ${d.executiveName || "-"}`;
-  document.getElementById("printDateLine").textContent = `Printed: ${new Date().toLocaleDateString("en-IN")}`;
-
-  document.getElementById("printPaymentRows").innerHTML = payments.length === 0
-    ? `<tr><td colspan="3">No payments recorded</td></tr>`
-    : payments.map((p, i) => `<tr><td>${i + 1}</td><td>${p.date || "-"}</td><td>${Number(p.amount || 0).toLocaleString()}</td></tr>`).join("");
-
-  document.getElementById("printTotalsLine").textContent =
-    `Total: ₹${Number(d.totalAmount || 0).toLocaleString()}  |  Paid: ₹${totalPaid.toLocaleString()}  |  Balance: ₹${(Number(d.totalAmount || 0) - totalPaid).toLocaleString()}`;
-
-  window.print();
-});
-
-/* ==========================================================
-   EXCEL EXPORT
+   EXCEL EXPORT (Includes Work Status & Date)
 ========================================================== */
 
 document.getElementById("adminExportXlsxBtn")?.addEventListener("click", () => {
@@ -188,26 +125,33 @@ document.getElementById("adminExportXlsxBtn")?.addEventListener("click", () => {
   if (docs.length === 0) { alert("No records to export."); return; }
 
   if (typeof XLSX === "undefined") {
-    alert("Excel export library didn't load — try CSV export instead.");
+    alert("Excel export library is loading — try CSV export instead.");
     return;
   }
 
   const rows = docs.map(d => {
-    const paid = computePaid(d);
+    const paid = (d.payments || []).reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    const dateStr = d.createdAt?.seconds
+      ? new Date(d.createdAt.seconds * 1000).toLocaleDateString("en-IN")
+      : (typeof d.createdAt === "string" ? d.createdAt.split("T")[0] : "-");
+
     return {
-      Customer: d.customerName || "",
-      Phone: d.phone || "",
-      Executive: d.executiveName || "",
-      Total: d.totalAmount || 0,
-      Paid: paid,
-      Balance: (d.totalAmount || 0) - paid,
-      Status: d.status || "",
-      Stage: d.currentStage || d.workStatus || "Registration"
+      "Customer Name": d.customerName || "",
+      "Phone Number": d.phone || "",
+      "Executive Name": d.executiveName || "",
+      "Total Amount": d.totalAmount || 0,
+      "Paid Amount": paid,
+      "Balance": (d.totalAmount || 0) - paid,
+      "Payment Status": d.status || "Pending",
+      "Stage": d.currentStage || "Registration",
+      "Work Status": d.workStatus || (d.currentStage === "Completed" ? "Completed" : "Not Completed"),
+      "Created Date": dateStr,
+      "Remarks": d.remarks || ""
     };
   });
 
   const ws = XLSX.utils.json_to_sheet(rows);
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Records");
-  XLSX.writeFile(wb, "Customer_ERP_Report.xlsx");
+  XLSX.utils.book_append_sheet(wb, ws, "Customer ERP");
+  XLSX.writeFile(wb, `MR_Solar_Admin_ERP_${new Date().toISOString().split("T")[0]}.xlsx`);
 });
