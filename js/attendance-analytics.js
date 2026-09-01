@@ -167,7 +167,6 @@ function computeStreak() {
 }
 
 async function loadData(uid) {
-
   try {
     const holidaySnap = await getDocs(collection(db, "settings", "holidays", "holidayList"));
     holidayDates = new Set();
@@ -180,34 +179,45 @@ async function loadData(uid) {
 
   if (unsubscribe) unsubscribe();
 
-  // Listen to flat attendance
-  unsubscribe = onSnapshot(collection(db, "attendance"), (snap) => {
+  async function syncAndRender(snap) {
     presentDates = new Set();
-    snap.forEach(d => {
-      const data = d.data();
-      if ((data.employeeId === uid || data.userId === uid) && data.date) {
-        presentDates.add(data.date);
+    if (snap) {
+      snap.forEach(d => {
+        const data = d.data();
+        if ((data.employeeId === uid || data.userId === uid) && data.date) {
+          presentDates.add(data.date);
+        }
+      });
+    }
+
+    // Also check nested check-in path for current month so calendar is 100% accurate
+    try {
+      const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+      const checkPromises = [];
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dt = `${viewYear}-${String(viewMonth + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+        if (!presentDates.has(dt)) {
+          checkPromises.push(
+            getDoc(doc(db, "attendance", uid, dt, "data")).then(s => {
+              if (s.exists() && (s.data().status === "present" || s.data().status === "late")) {
+                presentDates.add(dt);
+              }
+            }).catch(() => {})
+          );
+        }
       }
-    });
+      await Promise.all(checkPromises);
+    } catch (e) {}
 
     renderCalendar();
     renderHeatmap();
     computeStreak();
-  }, async () => {
-    // Fallback getDocs
-    try {
-      const attSnap = await getDocs(
-        query(collection(db, "attendance"), where("employeeId", "==", uid))
-      );
-      presentDates = new Set();
-      attSnap.forEach(d => {
-        const data = d.data();
-        if (data.date) presentDates.add(data.date);
-      });
-      renderCalendar();
-      renderHeatmap();
-      computeStreak();
-    } catch(e) {}
+  }
+
+  unsubscribe = onSnapshot(collection(db, "attendance"), (snap) => {
+    syncAndRender(snap);
+  }, () => {
+    syncAndRender(null);
   });
 }
 
