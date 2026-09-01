@@ -392,7 +392,7 @@ window.markAttendance = async function () {
       }
     } catch (e) {}
 
-          // 1. Fast Nested Path for Employee Instant Read
+             // 1. Fast Nested Path for Employee Instant Read
     const nestedRef = doc(db, "attendance", user.uid, today, "data");
     await setDoc(nestedRef, {
       status: isLate ? "late" : "present",
