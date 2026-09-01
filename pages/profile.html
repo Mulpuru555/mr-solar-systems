@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<link rel="shortcut icon" href="../favicon.ico">
+<link rel="apple-touch-icon" href="../assets/images/mr-logo.jpeg">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Profile – M.R Solar Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/animations.css">
+<link rel="stylesheet" href="../css/profile.css">
+</head>
+<body class="mrs-profile-body">
+
+  <div class="mrs-profile-header">
+    <h2>My Profile</h2>
+    <a class="mrs-back-link" href="employee.html">&larr; Back to dashboard</a>
+  </div>
+
+  <div class="mrs-profile-wrap">
+
+    <!-- ID CARD -->
+    <div class="mrs-idcard" id="idCard">
+      <div class="mrs-idcard-strip"></div>
+      <div class="mrs-idcard-body">
+        <img class="mrs-idcard-logo" src="../assets/images/mr-logo.jpeg" alt="">
+        <div class="mrs-idcard-company">M.R Solar Systems</div>
+
+        <div class="mrs-idcard-photo-wrap">
+          <img class="mrs-idcard-photo" id="profilePhoto" src="" alt="Profile photo">
+          <button class="mrs-photo-upload-btn" id="photoUploadBtn" type="button" title="Change photo">&#128247;</button>
+          <input type="file" id="profilePhotoInput" accept="image/*">
+        </div>
+
+        <div class="mrs-idcard-name" id="idName">—</div>
+        <div class="mrs-idcard-role" id="idRole">—</div>
+
+        <div id="photoUploadStatus"></div>
+
+        <div class="mrs-idcard-divider"></div>
+
+        <div class="mrs-idcard-grid">
+          <div>
+            <span class="mrs-idcard-label">Employee ID</span>
+            <span class="mrs-idcard-value" id="idCode">—</span>
+          </div>
+          <div>
+            <span class="mrs-idcard-label">Branch</span>
+            <span class="mrs-idcard-value" id="idBranch">—</span>
+          </div>
+          <div>
+            <span class="mrs-idcard-label">Department</span>
+            <span class="mrs-idcard-value" id="idDept">—</span>
+          </div>
+          <div>
+            <span class="mrs-idcard-label">Designation</span>
+            <span class="mrs-idcard-value" id="idDesignation">—</span>
+          </div>
+        </div>
+
+        <div class="mrs-idcard-footer">This card is auto-generated and valid while employment is active.</div>
+        <button class="mrs-print-btn" type="button" onclick="printIdCard()">Print / Save ID Card</button>
+      </div>
+    </div>
+
+    <div>
+      <!-- ACCOUNT DETAILS -->
+      <div class="mrs-profile-panel" style="margin-bottom:16px;">
+        <h3>Account Details</h3>
+        <div class="mrs-detail-row">
+          <span class="mrs-dt-label">Full name</span>
+          <span class="mrs-dt-value" id="detName">—</span>
+        </div>
+        <div class="mrs-detail-row">
+          <span class="mrs-dt-label">Email</span>
+          <span class="mrs-dt-value" id="detEmail">—</span>
+        </div>
+        <div class="mrs-detail-row">
+          <span class="mrs-dt-label">Role</span>
+          <span class="mrs-dt-value" id="detRole">—</span>
+        </div>
+        <div class="mrs-detail-row">
+          <span class="mrs-dt-label">Branch</span>
+          <span class="mrs-dt-value" id="detBranch">—</span>
+        </div>
+        <div class="mrs-detail-row">
+          <span class="mrs-dt-label">Account status</span>
+          <span class="mrs-dt-value" id="detStatus">—</span>
+        </div>
+      </div>
+
+      <!-- EMPLOYMENT DETAILS -->
+      <div class="mrs-profile-panel">
+        <h3>Employment Details</h3>
+        <div class="mrs-detail-row">
+          <span class="mrs-dt-label">Department</span>
+          <span class="mrs-dt-value" id="detDept">—</span>
+        </div>
+        <div class="mrs-detail-row">
+          <span class="mrs-dt-label">Designation</span>
+          <span class="mrs-dt-value" id="detDesignation">—</span>
+        </div>
+        <div class="mrs-detail-row">
+          <span class="mrs-dt-label">Joining date</span>
+          <span class="mrs-dt-value" id="detJoining">—</span>
+        </div>
+        <div class="mrs-note">
+          Department, designation and joining date are set by Admin/HR and shown here for reference.
+          You can update your profile photo yourself using the camera icon on your ID card.
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+<script type="module">
+import { checkSession } from "../js/auth.js";
+checkSession("employee");
+</script>
+
+<script type="module" src="../js/session-timeout.js"></script>
+<script type="module" src="../js/profile.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+/* ==============================================
+   Responsive table wrapper
+   Wide tables (8+ columns) overflow narrow viewports and break layout.
+   Wrapping them in .tableScroll gives a contained horizontal scroll
+   instead of the whole page layout breaking.
+   ============================================== */
+
+.tableScroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tableScroll table {
+  min-width: 640px;
+}
+
+@media (max-width: 600px) {
+  .tableScroll table {
+    min-width: 560px;
+  }
+}

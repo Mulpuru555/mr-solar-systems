@@ -1,0 +1,294 @@
+/* ==============================================
+   M.R SOLAR SYSTEMS — Login Page
+   ============================================== */
+
+* { box-sizing: border-box; }
+
+body.mrs-login-body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--mrs-font);
+  display: flex;
+  background: var(--mrs-navy);
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* ---------- Left: brand / illustration panel ---------- */
+.mrs-login-brand {
+  position: relative;
+  flex: 1 1 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: var(--mrs-space-xl) 64px;
+  color: var(--mrs-text-light);
+  background: radial-gradient(circle at 20% 20%, var(--mrs-navy-light), var(--mrs-navy) 65%);
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+.mrs-login-brand::before,
+.mrs-login-brand::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.35;
+  animation: mrsDrift 14s ease-in-out infinite;
+}
+
+.mrs-login-brand::before {
+  width: 340px;
+  height: 340px;
+  background: var(--mrs-orange);
+  top: -80px;
+  left: -80px;
+}
+
+.mrs-login-brand::after {
+  width: 260px;
+  height: 260px;
+  background: #2ecc71;
+  bottom: -60px;
+  right: 10%;
+  animation-duration: 18s;
+  animation-delay: 2s;
+}
+
+.mrs-login-brand-content {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+}
+
+.mrs-login-logo {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  padding: 6px;
+  background: linear-gradient(145deg, var(--mrs-orange), var(--mrs-navy));
+  box-shadow: 0 0 20px rgba(255, 152, 0, 0.5);
+  margin-bottom: var(--mrs-space-lg);
+  animation: mrsFadeIn 0.6s ease both;
+}
+
+.mrs-login-brand h1 {
+  font-size: 32px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin: 0 0 var(--mrs-space-md);
+  animation: mrsFadeUp 0.6s ease 0.1s both;
+}
+
+.mrs-login-brand h1 span { color: var(--mrs-orange); }
+
+.mrs-login-brand p {
+  color: var(--mrs-text-muted);
+  font-size: 15px;
+  line-height: 1.6;
+  margin-bottom: var(--mrs-space-lg);
+  animation: mrsFadeUp 0.6s ease 0.2s both;
+}
+
+.mrs-login-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  animation: mrsFadeUp 0.6s ease 0.3s both;
+}
+
+.mrs-login-features li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--mrs-text-light);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.mrs-login-features li::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--mrs-orange);
+  flex-shrink: 0;
+}
+
+/* ---------- Right: login card panel ---------- */
+.mrs-login-panel {
+  flex: 1 1 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: var(--mrs-space-lg);
+  background: #0d1117;
+  min-height: 100vh;
+}
+
+.mrs-login-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--mrs-glass-bg);
+  border: 1px solid var(--mrs-glass-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: var(--mrs-radius);
+  box-shadow: var(--mrs-shadow);
+  padding: var(--mrs-space-xl) var(--mrs-space-lg);
+  animation: mrsFadeUp 0.5s ease both;
+}
+
+.mrs-login-card h2 {
+  color: var(--mrs-text-light);
+  font-size: 22px;
+  margin: 0 0 4px;
+}
+
+.mrs-login-card p.mrs-login-sub {
+  color: var(--mrs-text-muted);
+  font-size: 13px;
+  margin: 0 0 var(--mrs-space-lg);
+}
+
+.mrs-field {
+  margin-bottom: var(--mrs-space-md);
+}
+
+.mrs-field label {
+  display: block;
+  font-size: 12px;
+  color: var(--mrs-text-muted);
+  margin-bottom: 6px;
+  letter-spacing: 0.02em;
+}
+
+.mrs-input-wrap {
+  position: relative;
+}
+
+.mrs-input-wrap input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: var(--mrs-radius-sm);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--mrs-text-light);
+  font-size: 14px;
+  font-family: var(--mrs-font);
+  transition: border-color var(--mrs-transition), box-shadow var(--mrs-transition);
+}
+
+.mrs-input-wrap input::placeholder { color: rgba(255,255,255,0.35); }
+
+.mrs-input-wrap input:focus {
+  outline: none;
+  border-color: var(--mrs-orange);
+  box-shadow: 0 0 0 3px rgba(255, 152, 0, 0.18);
+}
+
+.mrs-input-wrap input.mrs-input-invalid {
+  border-color: var(--mrs-error);
+}
+
+.mrs-toggle-pass {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--mrs-text-muted);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.mrs-toggle-pass:hover { color: var(--mrs-orange); }
+
+.mrs-login-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--mrs-space-lg);
+  font-size: 13px;
+}
+
+.mrs-remember {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--mrs-text-muted);
+}
+
+.mrs-remember input { accent-color: var(--mrs-orange); }
+
+.mrs-forgot {
+  color: var(--mrs-orange);
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 13px;
+  padding: 0;
+}
+
+.mrs-forgot:hover { text-decoration: underline; }
+
+.mrs-login-btn {
+  width: 100%;
+  padding: 13px;
+  border: none;
+  border-radius: var(--mrs-radius-sm);
+  background: linear-gradient(135deg, var(--mrs-orange), var(--mrs-orange-dark));
+  color: #111;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: transform var(--mrs-transition), box-shadow var(--mrs-transition);
+}
+
+.mrs-login-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(255,152,0,0.35); }
+.mrs-login-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+.mrs-login-msg {
+  margin-top: var(--mrs-space-md);
+  padding: 10px 12px;
+  border-radius: var(--mrs-radius-sm);
+  font-size: 13px;
+  display: none;
+}
+
+.mrs-login-msg.mrs-msg-error {
+  display: block;
+  background: rgba(255, 82, 82, 0.12);
+  border: 1px solid rgba(255, 82, 82, 0.4);
+  color: #ff8a8a;
+}
+
+.mrs-login-msg.mrs-msg-success {
+  display: block;
+  background: rgba(46, 204, 113, 0.12);
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  color: #6fe3a1;
+}
+
+.mrs-login-back {
+  display: inline-block;
+  margin-top: var(--mrs-space-lg);
+  color: var(--mrs-text-muted);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.mrs-login-back:hover { color: var(--mrs-orange); }
+
+@media (max-width: 860px) {
+  .mrs-login-brand { display: none; }
+  .mrs-login-panel { min-height: 100vh; }
+}

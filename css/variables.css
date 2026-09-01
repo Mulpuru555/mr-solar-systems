@@ -1,0 +1,44 @@
+/* ==============================================
+   M.R SOLAR SYSTEMS — Design Tokens
+   Shared by new pages/components going forward.
+   Existing CSS files are untouched; this is additive.
+   ============================================== */
+
+:root {
+  /* Brand colors (matched to existing style.css palette) */
+  --mrs-orange: #ff9800;
+  --mrs-orange-dark: #e67e00;
+  --mrs-navy: #0b1c2d;
+  --mrs-navy-light: #14283d;
+  --mrs-black: #0a0a0a;
+
+  /* Semantic colors */
+  --mrs-success: #2ecc71;
+  --mrs-error: #ff5252;
+  --mrs-warning: #ffb300;
+  --mrs-text-light: #ffffff;
+  --mrs-text-muted: #b7c2cc;
+  --mrs-text-dark: #222222;
+
+  /* Surfaces */
+  --mrs-glass-bg: rgba(255, 255, 255, 0.06);
+  --mrs-glass-border: rgba(255, 255, 255, 0.14);
+
+  /* Typography */
+  --mrs-font: 'Montserrat', sans-serif;
+
+  /* Spacing scale */
+  --mrs-space-xs: 4px;
+  --mrs-space-sm: 8px;
+  --mrs-space-md: 16px;
+  --mrs-space-lg: 24px;
+  --mrs-space-xl: 40px;
+
+  /* Radius / shadow */
+  --mrs-radius: 14px;
+  --mrs-radius-sm: 8px;
+  --mrs-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+
+  /* Motion */
+  --mrs-transition: 0.25s ease;
+}

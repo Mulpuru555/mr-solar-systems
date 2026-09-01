@@ -1,0 +1,227 @@
+/* ==========================================
+   M.R SOLAR SYSTEMS - ADMIN SOLAR CONTROL PANEL
+   ========================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Outfit:wght@500;600;700;800&display=swap');
+
+:root {
+  --solar-gold: #f59e0b;
+  --solar-amber: #fbbf24;
+  --solar-flare: #ff7a00;
+  --solar-cyan: #38bdf8;
+  --solar-dark: #030712;
+  --solar-card-bg: rgba(11, 19, 43, 0.85);
+  --solar-glass-border: rgba(245, 158, 11, 0.2);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Montserrat', sans-serif;
+  background: radial-gradient(circle at 85% 15%, rgba(245, 158, 11, 0.12) 0%, rgba(14, 165, 233, 0.06) 40%, #030712 100%);
+  background-color: #030712;
+  color: #f8fafc;
+  display: flex;
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+.sidebar {
+  width: 260px;
+  background: rgba(3, 7, 18, 0.95);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--solar-glass-border);
+  flex-shrink: 0;
+  overflow-y: auto;
+  backdrop-filter: blur(16px);
+}
+
+.sidebar h3 {
+  font-family: 'Outfit', sans-serif;
+  color: var(--solar-amber);
+  margin-bottom: 24px;
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar button {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #94a3b8;
+  text-align: left;
+  padding: 10px 14px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar button:hover, .sidebar button.active {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(251, 191, 36, 0.08));
+  border-color: var(--solar-amber);
+  color: var(--solar-amber);
+  transform: translateX(3px);
+}
+
+.sidebarDivider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 12px 0;
+}
+
+.main {
+  flex: 1;
+  padding: 28px 36px;
+  overflow-y: auto;
+  max-width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 26px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.header h2 {
+  font-family: 'Outfit', sans-serif;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff 40%, #fbbf24 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.header button {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  border: none;
+  padding: 8px 18px;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-family: inherit;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+
+.header button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.45);
+}
+
+.summary-container {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 26px;
+  flex-wrap: wrap;
+}
+
+.summary-card {
+  background: var(--solar-card-bg);
+  border: 1px solid var(--solar-glass-border);
+  backdrop-filter: blur(14px);
+  padding: 22px;
+  border-radius: 14px;
+  flex: 1;
+  min-width: 190px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.summary-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--solar-amber);
+}
+
+.summary-card h4 {
+  margin: 0 0 8px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.summary-card h2 {
+  margin: 0;
+  font-family: 'Outfit', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.section {
+  display: none;
+}
+
+.section.active {
+  display: block;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 14px;
+}
+
+th {
+  background: #060d1f;
+  color: var(--solar-cyan);
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px 14px;
+  text-align: left;
+  border-bottom: 2px solid rgba(56, 189, 248, 0.25);
+}
+
+td {
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 13px;
+}
+
+tr:hover td {
+  background: rgba(245, 158, 11, 0.04);
+}
+
+input, select, textarea {
+  padding: 10px 14px;
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: #ffffff !important;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+input:focus, select:focus, textarea:focus {
+  border-color: var(--solar-amber) !important;
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+  outline: none;
+}

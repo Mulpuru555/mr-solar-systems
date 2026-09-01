@@ -1,0 +1,48 @@
+/* ==============================================
+   M.R SOLAR SYSTEMS — Shared Animations
+   ============================================== */
+
+@keyframes mrsFadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mrsFadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mrsShake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+@keyframes mrsSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes mrsDrift {
+  0%   { transform: translate(0, 0) scale(1); }
+  50%  { transform: translate(-4%, 3%) scale(1.05); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+
+@keyframes mrsPulseGlow {
+  0%, 100% { box-shadow: 0 0 18px rgba(255, 152, 0, 0.35); }
+  50%      { box-shadow: 0 0 32px rgba(255, 152, 0, 0.6); }
+}
+
+.mrs-anim-fade-in  { animation: mrsFadeIn 0.5s ease both; }
+.mrs-anim-fade-up   { animation: mrsFadeUp 0.6s ease both; }
+.mrs-anim-shake    { animation: mrsShake 0.4s ease; }
+
+.mrs-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: mrsSpin 0.7s linear infinite;
+}

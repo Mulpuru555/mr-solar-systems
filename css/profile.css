@@ -1,0 +1,252 @@
+/* ==============================================
+   M.R SOLAR SYSTEMS — Employee Profile & ID Card
+   ============================================== */
+
+body.mrs-profile-body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--mrs-font);
+  background: #0d1117;
+  color: var(--mrs-text-light);
+}
+
+.mrs-profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 28px;
+  background: var(--mrs-navy);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.mrs-profile-header h2 { margin: 0; font-size: 18px; }
+
+.mrs-back-link {
+  color: var(--mrs-text-muted);
+  text-decoration: none;
+  font-size: 13px;
+}
+.mrs-back-link:hover { color: var(--mrs-orange); }
+
+.mrs-profile-wrap {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: var(--mrs-space-xl) var(--mrs-space-lg);
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: var(--mrs-space-lg);
+  align-items: start;
+}
+
+@media (max-width: 800px) {
+  .mrs-profile-wrap { grid-template-columns: 1fr; }
+}
+
+/* ---------- ID Card ---------- */
+.mrs-idcard {
+  position: relative;
+  border-radius: var(--mrs-radius);
+  overflow: hidden;
+  background: linear-gradient(160deg, var(--mrs-navy-light), var(--mrs-navy) 70%);
+  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: var(--mrs-shadow);
+  animation: mrsFadeUp 0.5s ease both;
+}
+
+.mrs-idcard-strip {
+  height: 8px;
+  background: linear-gradient(90deg, var(--mrs-orange), var(--mrs-orange-dark));
+}
+
+.mrs-idcard-body {
+  padding: var(--mrs-space-lg);
+  text-align: center;
+}
+
+.mrs-idcard-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-bottom: 6px;
+}
+
+.mrs-idcard-company {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--mrs-text-muted);
+  text-transform: uppercase;
+  margin-bottom: var(--mrs-space-md);
+}
+
+.mrs-idcard-photo-wrap {
+  position: relative;
+  width: 108px;
+  height: 108px;
+  margin: 0 auto var(--mrs-space-md);
+}
+
+.mrs-idcard-photo {
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--mrs-orange);
+  background: #1a2332;
+  display: block;
+}
+
+.mrs-photo-upload-btn {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--mrs-orange);
+  border: 2px solid var(--mrs-navy);
+  color: #111;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mrs-photo-upload-btn:hover { background: var(--mrs-orange-dark); }
+
+.mrs-idcard-name { font-size: 18px; font-weight: 700; margin: 0 0 2px; }
+.mrs-idcard-role {
+  display: inline-block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--mrs-orange);
+  background: rgba(255,152,0,0.12);
+  border: 1px solid rgba(255,152,0,0.35);
+  padding: 3px 10px;
+  border-radius: 20px;
+  margin-bottom: var(--mrs-space-md);
+}
+
+.mrs-idcard-divider {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: var(--mrs-space-md) 0;
+}
+
+.mrs-idcard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  text-align: left;
+}
+
+.mrs-idcard-grid div span {
+  display: block;
+}
+.mrs-idcard-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--mrs-text-muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 2px;
+}
+.mrs-idcard-value {
+  font-size: 13px;
+  color: var(--mrs-text-light);
+  font-weight: 600;
+}
+
+.mrs-idcard-footer {
+  margin-top: var(--mrs-space-md);
+  font-size: 10px;
+  color: var(--mrs-text-muted);
+}
+
+.mrs-print-btn {
+  width: 100%;
+  margin-top: var(--mrs-space-lg);
+  padding: 10px;
+  border-radius: var(--mrs-radius-sm);
+  border: 1px solid rgba(255,255,255,0.16);
+  background: rgba(255,255,255,0.04);
+  color: var(--mrs-text-light);
+  cursor: pointer;
+  font-size: 13px;
+}
+.mrs-print-btn:hover { border-color: var(--mrs-orange); color: var(--mrs-orange); }
+
+/* ---------- Details / edit panel ---------- */
+.mrs-profile-panel {
+  background: var(--mrs-glass-bg);
+  border: 1px solid var(--mrs-glass-border);
+  border-radius: var(--mrs-radius);
+  padding: var(--mrs-space-lg);
+  animation: mrsFadeUp 0.55s ease both;
+}
+
+.mrs-profile-panel h3 {
+  margin: 0 0 var(--mrs-space-md);
+  font-size: 15px;
+  color: var(--mrs-text-light);
+}
+
+.mrs-detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 13px;
+}
+.mrs-detail-row:last-child { border-bottom: none; }
+.mrs-detail-row .mrs-dt-label { color: var(--mrs-text-muted); }
+.mrs-detail-row .mrs-dt-value { color: var(--mrs-text-light); font-weight: 600; }
+
+.mrs-badge-active {
+  color: #6fe3a1;
+  background: rgba(46,204,113,0.12);
+  border: 1px solid rgba(46,204,113,0.4);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+}
+.mrs-badge-blocked {
+  color: #ff8a8a;
+  background: rgba(255,82,82,0.12);
+  border: 1px solid rgba(255,82,82,0.4);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+}
+
+.mrs-note {
+  margin-top: var(--mrs-space-md);
+  font-size: 12px;
+  color: var(--mrs-text-muted);
+  background: rgba(255,255,255,0.03);
+  border: 1px dashed rgba(255,255,255,0.14);
+  border-radius: var(--mrs-radius-sm);
+  padding: 10px 12px;
+}
+
+#profilePhotoInput { display: none; }
+
+#photoUploadStatus {
+  font-size: 12px;
+  margin-top: 8px;
+  min-height: 16px;
+  color: var(--mrs-text-muted);
+}
+
+/* Print-friendly ID card */
+@media print {
+  body * { visibility: hidden; }
+  .mrs-idcard, .mrs-idcard * { visibility: visible; }
+  .mrs-idcard {
+    position: fixed;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 320px;
+  }
+  .mrs-print-btn { display: none; }
+}

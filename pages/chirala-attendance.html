@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<link rel="shortcut icon" href="../favicon.ico">
+<link rel="apple-touch-icon" href="../assets/images/mr-logo.jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Chirala Attendance</title>
+
+<link rel="stylesheet" href="../css/chirala.css">
+
+</head>
+
+<body>
+
+
+<!-- NAVBAR -->
+
+<div class="navbar">
+
+<div>
+<h2>M.R SOLAR SYSTEMS</h2>
+<span>Chirala Branch</span>
+</div>
+
+<button onclick="logoutUser()" class="logoutBtn">
+Logout
+</button>
+
+</div>
+
+
+
+<!-- MAIN CARD -->
+
+<div class="card">
+
+<h3 id="empName">Loading...</h3>
+
+<p id="gpsStatus">Checking GPS...</p>
+
+
+<div class="btnGroup">
+
+<button id="morningBtn" class="btn">
+Morning Attendance
+</button>
+
+<button id="eveningBtn" class="btn">
+Evening Attendance
+</button>
+
+</div>
+
+<p id="msg"></p>
+
+</div>
+
+
+
+<!-- CAMERA BOX -->
+
+<div id="cameraBox" class="cameraBox">
+
+<video id="video" autoplay></video>
+
+<canvas id="canvas"></canvas>
+
+<div class="camBtns">
+
+<button id="captureBtn" class="btn">
+Capture
+</button>
+
+<button id="cancelBtn" class="btn cancel">
+Cancel
+</button>
+
+</div>
+
+</div>
+
+
+
+<!-- VERIFY SCREEN -->
+
+<div id="verifyScreen" class="verifyScreen">
+
+<div class="verifyCard">
+
+<div class="loader"></div>
+
+<p id="verifyText">
+Checking...
+</p>
+
+</div>
+
+</div>
+
+
+
+<!-- SUCCESS SCREEN -->
+
+<div id="successScreen" class="successScreen">
+
+<div class="successCard">
+
+<h2>✅ Verified</h2>
+
+<p>Attendance Recorded</p>
+
+</div>
+
+</div>
+
+
+
+<script type="module">
+import { checkSession } from "../js/auth.js";
+checkSession("employee");
+</script>
+
+<script type="module" src="../js/session-timeout.js"></script>
+<script type="module" src="../js/chirala.js"></script>
+
+</body>
+</html>

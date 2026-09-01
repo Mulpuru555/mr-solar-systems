@@ -1,0 +1,130 @@
+/* ==============================================
+   Admin Portal — Phase 4 additions
+   Additive only — does not alter admin.css.
+   ============================================== */
+
+.sidebarDivider {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 14px 0;
+}
+
+.widgetGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.widgetCard {
+  background: #1a1a1a;
+  border: 1px solid rgba(255,140,0,0.25);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+
+.widgetCard h4 {
+  margin: 0 0 8px;
+  color: #cfd8e3;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.widgetCard h2 {
+  margin: 0;
+  color: #ff8c00;
+  font-size: 26px;
+}
+
+.hintText {
+  color: #8a97a6;
+  font-size: 13px;
+  margin: 4px 0 16px;
+}
+
+.branchBreakdownRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 13px;
+}
+.branchBreakdownRow:last-child { border-bottom: none; }
+.branchBreakdownRow strong { color: #ff8c00; }
+
+textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  font-family: 'Montserrat', sans-serif;
+  box-sizing: border-box;
+  resize: vertical;
+}
+
+.branchForm {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.branchForm input { margin: 0; }
+
+.roleBadge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  text-transform: capitalize;
+  background: rgba(255,255,255,0.08);
+  color: #cfd8e3;
+}
+.roleBadge.admin { background: rgba(255,82,82,0.15); color: #ff8a8a; }
+.roleBadge.manager { background: rgba(9,132,227,0.15); color: #63b3ed; }
+.roleBadge.employee { background: rgba(46,204,113,0.15); color: #6fe3a1; }
+
+.statusBadge {
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+}
+.statusBadge.active { background: rgba(46,204,113,0.15); color: #6fe3a1; }
+.statusBadge.blocked { background: rgba(255,82,82,0.15); color: #ff8a8a; }
+
+.miniInput {
+  width: 90px;
+  padding: 5px 6px;
+  border-radius: 4px;
+  border: none;
+  font-size: 12px;
+  margin: 2px;
+}
+
+.deleteBtn { background: #d63031; }
+.saveBtn { background: #00b894; }
+
+.companySettingsForm {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+  max-width: 640px;
+}
+.companySettingsForm label {
+  display: block;
+  font-size: 12px;
+  color: #8a97a6;
+  text-transform: uppercase;
+}
+.companySettingsForm input,
+.companySettingsForm textarea {
+  display: block;
+  width: 100%;
+  margin-top: 4px;
+  padding: 9px 10px;
+  border-radius: 6px;
+  border: none;
+  font-family: 'Montserrat', sans-serif;
+  box-sizing: border-box;
+}

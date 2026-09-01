@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="icon" type="image/x-icon" href="../favicon.ico">
+<link rel="shortcut icon" href="../favicon.ico">
+<link rel="apple-touch-icon" href="../assets/images/mr-logo.jpeg">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<title>Admin Panel – M.R Solar Systems</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="../css/admin.css">
+<link rel="stylesheet" href="../css/admin-management.css">
+<link rel="stylesheet" href="../css/erp-widgets.css">
+<link rel="stylesheet" href="../css/responsive-tables.css">
+
+<script>
+  window.showSection = function(id) {
+    document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
+    const target = document.getElementById(id);
+    if (target) target.classList.add("active");
+  };
+  window.logoutAdmin = async function() {
+    try {
+      const { auth } = await import('../js/firebase-config.js');
+      const { signOut } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js');
+      await signOut(auth);
+    } catch(e) {}
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = '/index.html';
+  };
+</script>
+</head>
+
+<body>
+
+<div class="sidebar">
+<h3>M.R Solar systems Admin</h3>
+<button onclick="showSection('overview')">📊 Overview</button>
+<button onclick="showSection('attendanceControl')">🕒 Attendance Control</button>
+<button onclick="showSection('attendanceReport')">📈 Attendance Report</button>
+<button onclick="showSection('holidayManagement')">🎉 Holiday Management</button>
+<button onclick="showSection('erp')">💰 Customer ERP</button>
+<button onclick="showSection('serviceRequests')">🛠️ Service Requests</button>
+<button onclick="showSection('websiteLeads')">🌐 Website Leads</button>
+<div class="sidebarDivider"></div>
+<button onclick="showSection('inventoryManagement')">📦 Inventory</button>
+<button onclick="showSection('taskManagement')">✅ Task Management</button>
+<div class="sidebarDivider"></div>
+<button onclick="showSection('reportsCenter')">📄 Reports</button>
+<button onclick="showSection('analyticsCenter')">📊 Analytics</button>
+<div class="sidebarDivider"></div>
+<button onclick="showSection('employeeManagement')">👥 Employee Management</button>
+<button onclick="showSection('branchManagement')">🏢 Branch Management</button>
+<button onclick="showSection('noticeManagement')">📢 Notice Management</button>
+<div class="sidebarDivider"></div>
+<button onclick="showSection('auditLogs')">🧾 Audit Logs</button>
+<button onclick="showSection('loginHistory')">🔑 Login History</button>
+<button onclick="showSection('companySettings')">⚙️ Company Settings</button>
+<button onclick="showSection('backupOptions')">💾 Backup &amp; Export</button>
+</div>
+
+<div class="main">
+
+<div class="header">
+<h2>Admin Control Dashboard</h2>
+<div style="display:flex;gap:10px;align-items:center;">
+<input type="text" id="adminGlobalSearch" placeholder="Search entire portal..." style="padding:6px 12px;border-radius:6px;border:1px solid #4a5568;background:#1a202c;color:#fff;font-size:13px;">
+<button onclick="logoutAdmin()">Logout</button>
+</div>
+</div>
+
+<!-- OVERVIEW -->
+<div id="overview" class="section active">
+<div class="summary-container">
+<div class="summary-card revenue-card">
+<h4>Total Revenue</h4>
+<h2 id="totalRevenue">₹ 0</h2>
+</div>
+<div class="summary-card pending-card">
+<h4>Total Pending</h4>
+<h2 id="totalPending">₹ 0</h2>
+</div>
+<div class="summary-card present-card">
+<h4>Today Present</h4>
+<h2 id="todayPresent">0</h2>
+</div>
+</div>
+
+<div class="widgetGrid">
+
+<div class="widgetCard">
+<h4>Total Employees</h4>
+<h2 id="widgetTotalEmployees">0</h2>
+</div>
+
+<div class="widgetCard">
+<h4>Today's Attendance</h4>
+<h2 id="widgetTodayAttendance">0</h2>
+</div>
+
+<div class="widgetCard">
+<h4>Today's Collections</h4>
+<h2 id="widgetTodayCollections">₹0</h2>
+</div>
+
+<div class="widgetCard">
+<h4>Today's Installations</h4>
+<h2 id="widgetTodayInstallations">0</h2>
+</div>
+
+<div class="widgetCard">
+<h4>Pending Service Requests</h4>
+<h2 id="widgetPendingService">0</h2>
+</div>
+
+<div class="widgetCard">
+<h4>Low Stock Alerts</h4>
+<h2 id="widgetLowStockCount">0</h2>
+</div>
+
+<div class="widgetCard">
+<h4>Blocked Accounts</h4>
+<h2 id="widgetBlockedCount">0</h2>
+</div>
+
+<div class="widgetCard">
+<h4>Pending Leave Requests</h4>
+<h2 id="widgetPendingLeaves">0</h2>
+</div>
+
+<div class="widgetCard">
+<h4>Branches</h4>
+<h2 id="widgetBranchCount">0</h2>
+</div>
+
+</div>
+
+<div class="section-box">
+<h3>Employees per Branch</h3>
+<div id="branchBreakdown">Loading…</div>
+</div>
+
+</div>
+
+<!-- ATTENDANCE CONTROL -->
+<div id="attendanceControl" class="section">
+<div class="section-box">
+<h3>Attendance Closing Time</h3>
+<p class="hintText" style="color:#94a3b8;font-size:13px;margin-bottom:12px;">Set the daily check-in deadline. Employee portal countdown will calculate dynamically based on this time.</p>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+  <select id="closeHourInput" style="padding:10px 14px;background:#0f172a;color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:15px;font-weight:700;">
+    <option value="1">01</option>
+    <option value="2">02</option>
+    <option value="3">03</option>
+    <option value="4">04</option>
+    <option value="5">05</option>
+    <option value="6">06</option>
+    <option value="7">07</option>
+    <option value="8">08</option>
+    <option value="9">09</option>
+    <option value="10" selected>10</option>
+    <option value="11">11</option>
+    <option value="12">12</option>
+  </select>
+  <span style="font-size:20px;font-weight:800;color:#f59e0b;">:</span>
+  <select id="closeMinuteInput" style="padding:10px 14px;background:#0f172a;color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:15px;font-weight:700;">
+    <option value="0" selected>00</option>
+    <option value="5">05</option>
+    <option value="10">10</option>
+    <option value="15">15</option>
+    <option value="20">20</option>
+    <option value="30">30</option>
+    <option value="45">45</option>
+    <option value="59">59</option>
+  </select>
+  <select id="closeAmpmInput" style="padding:10px 14px;background:#0f172a;color:#fbbf24;border:1px solid rgba(245,158,11,0.4);border-radius:8px;font-size:15px;font-weight:800;">
+    <option value="AM" selected>AM</option>
+    <option value="PM">PM</option>
+  </select>
+  <button class="action" onclick="updateCloseTime()" style="background:linear-gradient(135deg,#f59e0b,#ff7a00);color:#fff;font-weight:700;padding:10px 20px;border-radius:8px;cursor:pointer;">Update Closing Time</button>
+</div>
+<p id="timeStatus" style="margin-top:10px;font-size:14px;font-weight:700;"></p>
+</div>
+</div>
+
+<!-- ATTENDANCE REPORT -->
+<div id="attendanceReport" class="section">
+<div class="section-box">
+<h3>Employee Attendance Report</h3>
+<input type="month" id="reportMonth">
+<button class="action" onclick="generateAttendanceReport()">Generate</button>
+<div id="attendanceReportData"></div>
+</div>
+</div>
+
+<!-- ERP -->
+<div id="erp" class="section">
+<div class="section-box">
+<h3>Customer ERP Management (Live)</h3>
+
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;">
+<input type="text" id="searchInput" placeholder="Search Customer / Executive / Phone..." style="flex:1;min-width:200px;">
+<select id="adminErpMonthFilter" style="padding:8px 14px;background:#0f172a;color:#fbbf24;border:1px solid rgba(245,158,11,0.4);border-radius:8px;font-weight:700;font-size:13px;">
+  <option value="current">📅 This Month (Fast)</option>
+  <option value="all">🌐 All Records</option>
+</select>
+<label style="font-size:13px;display:flex;align-items:center;gap:4px;"><input type="checkbox" id="pendingOnly"> Pending Only</label>
+<button class="action" onclick="exportFullReport()">Export CSV</button>
+<button class="action" id="adminExportXlsxBtn">Export Excel</button>
+</div>
+
+<div class="tableScroll">
+<table>
+<thead>
+<tr>
+<th>S.No</th>
+<th class="erpSortable" data-adminsort="customerName">Customer<span class="erpSortArrow">⇅</span></th>
+<th>Phone</th>
+<th class="erpSortable" data-adminsort="executiveName">Executive<span class="erpSortArrow">⇅</span></th>
+<th class="erpSortable" data-adminsort="totalAmount">Total<span class="erpSortArrow">⇅</span></th>
+<th class="erpSortable" data-adminsort="paid">Paid<span class="erpSortArrow">⇅</span></th>
+<th>Balance</th>
+<th>Status</th>
+<th>Stage</th>
+<th style="color:#10b981;">Work Status</th>
+<th class="erpSortable" data-adminsort="date">Date</th>
+<th>Edit</th>
+<th>Payment</th>
+<th>Lock</th>
+<th>Delete</th>
+<th>Progress</th>
+</tr>
+</thead>
+<tbody id="customerTable"></tbody>
+</table>
+</div>
+
+<div class="erpPaginationRow" id="adminErpPaginationControls"></div>
+
+</div>
+</div>
+
+<!-- ERP payment timeline modal (admin) -->
+<div class="erpModalOverlay" id="erpTimelineModal">
+<div class="erpModalBox">
+<h3 id="erpModalCustomerName">Customer</h3>
+<div class="erpModalSub" id="erpModalExecName"></div>
+<div id="erpTimelineList"></div>
+<div class="erpModalActions">
+<button class="erpBtnPrint" id="erpPrintInvoiceBtn">Print Invoice</button>
+<button class="erpBtnClose" id="erpCloseModalBtn">Close</button>
+</div>
+</div>
+</div>
+
+<div id="erpInvoicePrintArea">
+<h2>M.R Solar Systems — Invoice</h2>
+<p id="printCustomerLine"></p>
+<p id="printExecLine"></p>
+<p id="printDateLine"></p>
+<table>
+<thead><tr><th>#</th><th>Payment Date</th><th>Amount (₹)</th></tr></thead>
+<tbody id="printPaymentRows"></tbody>
+</table>
+<p id="printTotalsLine" style="margin-top:16px;font-weight:bold;"></p>
+</div>
+
+<div id="reportPrintArea">
+<h2 id="reportPrintTitle">M.R Solar Systems — Report</h2>
+<p id="reportPrintMeta"></p>
+<table>
+<thead><tr id="reportPrintHead"></tr></thead>
+<tbody id="reportPrintBody"></tbody>
+</table>
+</div>
+
+<!-- Delete confirmation modal — admin-only, permanent deletion -->
+<div class="erpModalOverlay" id="deleteConfirmModal">
+<div class="erpModalBox">
+<h3 style="color:#ff5252;">Delete Customer Record</h3>
+<div class="erpModalSub" id="deleteConfirmSub"></div>
+<p style="font-size:13px;color:#cfd8e3;">
+This permanently deletes the record and its full payment history. This cannot be undone.
+</p>
+<div class="erpModalActions">
+<button class="erpBtnPrint" id="deleteConfirmBtn" style="background:#ff5252;color:white;">Yes, Delete Permanently</button>
+<button class="erpBtnClose" id="deleteCancelBtn">Cancel</button>
+</div>
+</div>
+</div>
+
+<!-- Admin Edit Record Modal — FULL ERP access / Edit EVERYTHING -->
+<div class="erpModalOverlay" id="adminEditRecordModal">
+<div class="erpModalBox" style="max-height:85vh;overflow-y:auto;">
+<h3 id="adminEditCustomerHeader">Edit Customer Record</h3>
+<div class="erpModalSub">Full administrative edit access. All fields can be updated directly.</div>
+
+<label class="popupLabel">Customer Name</label>
+<input type="text" id="adminEditCustomerName" required>
+
+<label class="popupLabel">Phone Number</label>
+<input type="tel" id="adminEditPhone">
+
+<label class="popupLabel">Executive Name</label>
+<input type="text" id="adminEditExecutiveName">
+
+<label class="popupLabel">Total Amount (₹)</label>
+<input type="number" id="adminEditTotalAmount" min="0" step="0.01">
+
+<label class="popupLabel">Status</label>
+<select id="adminEditStatus" style="width:100%;padding:8px;border-radius:6px;border:1px solid #4a5568;background:#1a202c;color:#fff;margin-bottom:8px;">
+  <option value="Pending">Pending</option>
+  <option value="Partially Paid">Partially Paid</option>
+  <option value="Completed">Completed</option>
+</select>
+
+<label class="popupLabel">Work Progress Stage</label>
+<select id="adminEditStage" style="width:100%;padding:8px;border-radius:6px;border:1px solid #4a5568;background:#1a202c;color:#fff;margin-bottom:8px;">
+  <option value="Registration">Registration</option>
+  <option value="Loan / Cash / Bajaj">Loan / Cash / Bajaj</option>
+  <option value="Payments">Payments</option>
+  <option value="Installation Agreement">Installation Agreement</option>
+  <option value="Civil Work">Civil Work</option>
+  <option value="AE Login">AE Login</option>
+  <option value="Net Meter">Net Meter</option>
+  <option value="Subsidy Push">Subsidy Push</option>
+  <option value="Subsidy Received">Subsidy Received</option>
+  <option value="Warranty">Warranty</option>
+  <option value="Completed">Completed</option>
+</select>
+
+<label class="popupLabel" style="color:#10b981;">Work Status (Admin Only)</label>
+<select id="adminEditWorkStatus" style="width:100%;padding:8px;border-radius:6px;border:1px solid #10b981;background:#0f172a;color:#fff;margin-bottom:8px;font-weight:700;">
+  <option value="Not Completed">Not Completed ⏳</option>
+  <option value="Completed">Completed ✅</option>
+</select>
+
+<label class="popupLabel">Lock Status</label>
+<select id="adminEditLockStatus" style="width:100%;padding:8px;border-radius:6px;border:1px solid #4a5568;background:#1a202c;color:#fff;margin-bottom:8px;">
+  <option value="locked">Locked (Employee cannot edit)</option>
+  <option value="open">Open (Employee can edit)</option>
+</select>
+
+<label class="popupLabel">Remarks</label>
+<textarea id="adminEditRemarks" rows="2" style="width:100%;padding:8px;border-radius:6px;border:1px solid #4a5568;background:#1a202c;color:#fff;margin-bottom:8px;"></textarea>
+
+<div id="adminEditFormStatus" style="margin-top:8px;font-size:12px;"></div>
+
+<div class="erpModalActions" style="margin-top:16px;">
+  <button class="erpBtnPrint" id="adminEditSaveBtn">Save Changes</button>
+  <button class="erpBtnClose" id="adminEditCloseBtn">Cancel</button>
+</div>
+</div>
+</div>
+
+<!-- Customer Progress modal — Simplified: Current Stage -> Next Stage -> Save / Cancel -->
+<div class="erpModalOverlay" id="adminProgressModal">
+<div class="erpModalBox">
+<h3 id="adminProgressCustomerName">Customer Progress</h3>
+
+<div style="margin:20px 0;text-align:center;">
+  <div style="font-size:12px;color:#8a97a6;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Current Stage</div>
+  <div id="adminProgressCurrentStage" style="font-size:18px;font-weight:700;color:#ff9800;">—</div>
+
+  <div style="font-size:24px;color:#4fa3ff;margin:12px 0;">↓</div>
+
+  <div style="font-size:12px;color:#8a97a6;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Next Stage</div>
+  <select id="adminProgressStageInput" style="width:100%;max-width:320px;padding:10px;border-radius:6px;border:1px solid #4a5568;background:#1a202c;color:#fff;font-size:14px;font-weight:600;">
+  </select>
+</div>
+
+<div id="adminProgressFormStatus" style="margin-top:8px;font-size:12px;text-align:center;"></div>
+
+<div class="erpModalActions" style="margin-top:20px;">
+  <button class="erpBtnPrint" id="adminProgressSaveBtn">Save</button>
+  <button class="erpBtnClose" id="adminProgressCloseBtn">Cancel</button>
+</div>
+</div>
+</div>
+
+<!-- SERVICE REQUESTS (admin: full view + technician assignment) -->
+<div id="serviceRequests" class="section">
+<div class="section-box">
+<h3>Service Requests</h3>
+<p class="hintText">Customer complaints and service requests logged by employees. Assign a technician, update status, and add internal notes.</p>
+<input type="text" id="serviceSearchInput" placeholder="Search by customer, status, or technician">
+<div id="adminServiceList">Loading…</div>
+</div>
+</div>
+
+<!-- WEBSITE LEADS (public Site Visit + Service Request form submissions) -->
+<div id="websiteLeads" class="section">
+<div class="section-box">
+<h3>Website Leads</h3>
+<p class="hintText">Real-time submissions from the public website — the "Get Free Solar Site Visit" popup and the "Request Service / Installation" form.</p>
+<div class="branchForm">
+<input type="text" id="leadsSearchInput" placeholder="Search by name, mobile, or location">
+<select id="leadsTypeFilter">
+<option value="">All types</option>
+<option value="Site Visit">Site Visit</option>
+<option value="Service Request">Service Request</option>
+</select>
+</div>
+<div class="tableScroll">
+<table>
+<thead>
+<tr><th>Name</th><th>Mobile</th><th>Location</th><th>Type</th><th>Service</th><th>Status</th><th>Received</th></tr>
+</thead>
+<tbody id="websiteLeadsTable"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- INVENTORY MANAGEMENT -->
+<div id="inventoryManagement" class="section">
+
+<div class="section-box">
+<h3>Add / Update Inventory Item</h3>
+<div class="branchForm">
+<input type="text" id="invItemName" placeholder="Item name (e.g. Mono PERC 540W Panel)">
+<select id="invCategory">
+<option value="Panel">Solar Panel</option>
+<option value="Inverter">Inverter</option>
+<option value="Battery">Battery</option>
+<option value="Structure">Mounting Structure</option>
+<option value="Cable">Solar Cable / Wire</option>
+<option value="Accessory">Accessory / Tool</option>
+</select>
+<input type="text" id="invSku" placeholder="SKU / Code (e.g. SL-540W)">
+<input type="number" id="invQuantity" placeholder="Stock Quantity" min="0">
+<input type="text" id="invUnit" placeholder="Unit (pcs, kW, meters, sets...)" value="pcs">
+<input type="number" id="invLowStockThreshold" placeholder="Low stock alert below (e.g. 5)" min="0">
+<button class="action" id="invSaveBtn">Save Item</button>
+</div>
+<div id="invFormStatus"></div>
+</div>
+
+<div class="section-box">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+  <h3 style="margin:0;">Current Stock &amp; Inventory</h3>
+  <div style="display:flex;gap:8px;">
+    <button type="button" class="action" id="invExportCsvBtn" style="background:#059669;">Export CSV</button>
+    <button type="button" class="action" id="invExportXlsxBtn" style="background:#0284c7;">Export Excel</button>
+  </div>
+</div>
+
+<div id="inventoryStockSummary" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));gap:12px;margin-bottom:14px;">
+  <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px 16px;text-align:center;">
+    <div style="font-size:12px;color:#94a3b8;">Total Tracked Items</div>
+    <div id="invSummaryTotalItems" style="font-size:22px;font-weight:800;color:#38bdf8;margin-top:4px;">0</div>
+  </div>
+  <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(34,197,94,0.3);border-radius:8px;padding:12px 16px;text-align:center;">
+    <div style="font-size:12px;color:#94a3b8;">Available Stock (Units)</div>
+    <div id="invSummaryTotalUnits" style="font-size:22px;font-weight:800;color:#22c55e;margin-top:4px;">0</div>
+  </div>
+  <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:12px 16px;text-align:center;">
+    <div style="font-size:12px;color:#94a3b8;">Total Distributed / Dispatched</div>
+    <div id="invSummaryTotalDistributed" style="font-size:22px;font-weight:800;color:#f59e0b;margin-top:4px;">0 Units</div>
+  </div>
+  <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(245,158,11,0.3);border-radius:8px;padding:12px 16px;text-align:center;">
+    <div style="font-size:12px;color:#94a3b8;">Low Stock Alerts</div>
+    <div id="invSummaryLowStock" style="font-size:22px;font-weight:800;color:#f59e0b;margin-top:4px;">0</div>
+  </div>
+  <div style="background:rgba(15,23,42,0.8);border:1px solid rgba(239,68,68,0.3);border-radius:8px;padding:12px 16px;text-align:center;">
+    <div style="font-size:12px;color:#94a3b8;">Out of Stock</div>
+    <div id="invSummaryOutOfStock" style="font-size:22px;font-weight:800;color:#ef4444;margin-top:4px;">0</div>
+  </div>
+</div>
+
+<div class="branchForm">
+<input type="text" id="invSearchInput" placeholder="Search inventory by item name, category, SKU...">
+<select id="invFilterCategory">
+<option value="">All categories</option>
+<option value="Panel">Solar Panels</option>
+<option value="Inverter">Inverters</option>
+<option value="Battery">Batteries</option>
+<option value="Structure">Mounting Structures</option>
+<option value="Cable">Solar Cables</option>
+<option value="Accessory">Accessories</option>
+</select>
+<select id="invFilterStockStatus">
+<option value="">All stock levels</option>
+<option value="in_stock">In Stock</option>
+<option value="low_stock">Low Stock</option>
+<option value="out_of_stock">Out of Stock</option>
+</select>
+</div>
+
+<div class="tableScroll">
+<table>
+<thead>
+<tr><th>Item Name</th><th>Category</th><th>SKU</th><th>Quantity</th><th>Unit</th><th>Low Alert</th><th>Status</th><th>Last Updated</th><th>Actions</th></tr>
+</thead>
+<tbody id="inventoryTable"></tbody>
+</table>
+</div>
+</div>
+
+<div class="section-box">
+<h3>Record Stock Purchase (Inward Inventory)</h3>
+<p class="hintText">Record new material purchases from vendors. Saving a purchase automatically increases the actual available stock quantity.</p>
+<div class="branchForm">
+<select id="purchaseItemSelect"><option value="">Select inventory item to purchase...</option></select>
+<input type="number" id="purchaseQuantity" placeholder="Purchased Quantity" min="1">
+<input type="text" id="purchaseVendor" placeholder="Vendor / Supplier Name">
+<input type="number" id="purchaseUnitPrice" placeholder="Unit Price (₹)" min="0" step="0.01">
+<input type="text" id="purchaseInvoiceNumber" placeholder="Invoice / Bill Number">
+<input type="date" id="purchaseDate">
+<button class="action" id="recordPurchaseBtn" style="background:#0284c7;">Record Purchase &amp; Add Stock</button>
+</div>
+<div id="purchaseFormStatus"></div>
+</div>
+
+<div class="section-box">
+<h3>Recent Stock Purchases &amp; Inward Movement</h3>
+<div class="tableScroll">
+<table>
+<thead>
+<tr><th>Item Name</th><th>Vendor</th><th>Quantity Added</th><th>Unit Price</th><th>Total (₹)</th><th>Invoice No</th><th>Purchase Date</th></tr>
+</thead>
+<tbody id="purchaseRecordsTable"><tr><td colspan="7" style="text-align:center;color:#8a97a6;padding:16px;">Loading purchase records...</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<div class="section-box">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;">
+  <h3 style="margin:0;color:#f59e0b;">🚚 Distribute &amp; Issue Stock (Outward Dispatch)</h3>
+</div>
+<p class="hintText">Dispatch panels, inverters, and components to customer installation sites, branches, or technicians. Distributing stock automatically deducts from available quantity and updates tracking.</p>
+<div class="branchForm">
+<select id="distributeItemSelect"><option value="">Select inventory item to distribute...</option></select>
+<input type="number" id="distributeQuantity" placeholder="Quantity to Dispatch" min="1">
+<input type="text" id="distributeCustomer" placeholder="Customer Name / Installation Site">
+<select id="distributeBranch">
+  <option value="Tenali">Tenali Branch / Site</option>
+  <option value="Chirala">Chirala Branch / Site</option>
+  <option value="Bapatla">Bapatla Branch / Site</option>
+  <option value="Direct Site">Direct Customer Site</option>
+  <option value="Main Warehouse">Main Warehouse Transfer</option>
+</select>
+<input type="text" id="distributeTechnician" placeholder="Assigned Technician / Executive">
+<input type="text" id="distributeChallan" placeholder="Challan / Delivery Note / Vehicle No.">
+<input type="date" id="distributeDate">
+<button class="action" id="recordDistributionBtn" style="background:#f59e0b;color:#fff;font-weight:700;">Record Distribution &amp; Dispatch Stock</button>
+</div>
+<div id="distributionFormStatus"></div>
+</div>
+
+<div class="section-box">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+  <h3 style="margin:0;">Recent Stock Distributions &amp; Dispatches</h3>
+  <div style="display:flex;gap:8px;">
+    <button type="button" class="action" id="distExportCsvBtn" style="background:#059669;font-size:12px;padding:6px 12px;">Export Dispatches CSV</button>
+    <button type="button" class="action" id="distExportXlsxBtn" style="background:#0284c7;font-size:12px;padding:6px 12px;">Export Dispatches Excel</button>
+  </div>
+</div>
+<div class="tableScroll">
+<table>
+<thead>
+<tr><th>Item Name</th><th>Qty Dispatched</th><th>Customer / Site</th><th>Branch / Destination</th><th>Technician</th><th>Challan / Ref</th><th>Dispatch Date</th></tr>
+</thead>
+<tbody id="distributionRecordsTable"><tr><td colspan="7" style="text-align:center;color:#8a97a6;padding:16px;">Loading distribution records...</td></tr></tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<!-- TASK MANAGEMENT (admin assign & track) -->
+<div id="taskManagement" class="section">
+
+<div class="section-box">
+<h3>Assign a New Task</h3>
+<div class="branchForm">
+<input type="text" id="taskTitleInput" placeholder="Task title">
+<select id="taskAssigneeSelect"><option value="">Assign to employee...</option></select>
+<input type="date" id="taskDueDateInput">
+<select id="taskPriorityInput">
+<option value="Normal">Normal priority</option>
+<option value="High">High priority</option>
+<option value="Urgent">Urgent</option>
+</select>
+<button class="action" id="taskCreateBtn">Assign Task</button>
+</div>
+<div id="taskFormStatus"></div>
+</div>
+
+<div class="section-box">
+<h3>All Tasks</h3>
+<div class="branchForm">
+<input type="text" id="taskSearchInput" placeholder="Search tasks...">
+<select id="taskStatusFilter">
+<option value="">All statuses</option>
+<option value="Pending">Pending</option>
+<option value="In Progress">In Progress</option>
+<option value="Completed">Completed</option>
+</select>
+</div>
+<div id="adminTaskList">Loading…</div>
+</div>
+
+</div>
+
+<!-- REPORTS CENTER -->
+<div id="reportsCenter" class="section">
+<div class="section-box">
+<h3>Pre-built Reports</h3>
+<div class="branchForm">
+<select id="reportTypeSelect">
+<option value="attendance">Attendance Summary (all employees)</option>
+<option value="employee">Employee Directory &amp; Status</option>
+<option value="branch">Branch Performance Comparison</option>
+<option value="revenue">Customer Revenue &amp; Balances</option>
+<option value="service">Service Requests Report</option>
+<option value="inventory">Inventory Valuation &amp; Reorder</option>
+<option value="audit">Admin Audit Trail</option>
+</select>
+<button class="action" id="reportGenerateBtn">Generate Report</button>
+<button class="action" id="reportPrintBtn">Print Report</button>
+<button class="action" id="reportExportCsvBtn">Export CSV</button>
+</div>
+<div id="reportContainer" style="margin-top:16px;"></div>
+</div>
+</div>
+
+<!-- ANALYTICS CENTER -->
+<div id="analyticsCenter" class="section">
+
+<!-- 1. TOTAL COLLECTIONS SUMMARY -->
+<div class="section-box">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <h3 style="margin:0;">1. Total Collections &amp; Financial Metrics</h3>
+    <div style="font-size:12px;color:#94a3b8;">Real-time ERP payments and customer balances</div>
+  </div>
+  <div id="analyticsCollectionsMetrics" style="display:grid;grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));gap:12px;margin-bottom:12px;">
+    <div class="chartCard" style="padding:16px;text-align:center;">
+      <div style="font-size:12px;color:#94a3b8;">Total Collections (All-Time)</div>
+      <div id="statTotalCollections" style="font-size:22px;font-weight:800;color:#22c55e;margin-top:6px;">₹0</div>
+    </div>
+    <div class="chartCard" style="padding:16px;text-align:center;">
+      <div style="font-size:12px;color:#94a3b8;">This Month Collections</div>
+      <div id="statThisMonthCollections" style="font-size:22px;font-weight:800;color:#38bdf8;margin-top:6px;">₹0</div>
+    </div>
+    <div class="chartCard" style="padding:16px;text-align:center;">
+      <div style="font-size:12px;color:#94a3b8;">Previous Month Collections</div>
+      <div id="statPrevMonthCollections" style="font-size:22px;font-weight:800;color:#a855f7;margin-top:6px;">₹0</div>
+    </div>
+    <div class="chartCard" style="padding:16px;text-align:center;">
+      <div style="font-size:12px;color:#94a3b8;">Total Outstanding Balance</div>
+      <div id="statTotalPending" style="font-size:22px;font-weight:800;color:#ef4444;margin-top:6px;">₹0</div>
+    </div>
+    <div class="chartCard" style="padding:16px;text-align:center;">
+      <div style="font-size:12px;color:#94a3b8;">Contributing Customers</div>
+      <div id="statCustomerCount" style="font-size:22px;font-weight:800;color:#facc15;margin-top:6px;">0</div>
+    </div>
+  </div>
+</div>
+
+<!-- 2. MONTHLY LEADS — EXECUTIVE WISE -->
+<div class="section-box">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <h3 style="margin:0;">2. Monthly Leads — Executive Wise</h3>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <label for="leadsMonthSelect" style="font-size:12px;color:#94a3b8;">Select Month:</label>
+      <select id="leadsMonthSelect" style="padding:6px 12px;border-radius:6px;background:#1a202c;color:#fff;border:1px solid #4a5568;font-size:13px;"></select>
+    </div>
+  </div>
+  <div class="tableScroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Executive Name</th>
+          <th>Leads This Month</th>
+          <th>Previous Month</th>
+          <th>Growth %</th>
+          <th>Converted Leads</th>
+        </tr>
+      </thead>
+      <tbody id="executiveLeadsTable">
+        <tr><td colspan="5" style="text-align:center;color:#8a97a6;padding:14px;">Loading lead metrics...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 3. EXECUTIVE PERFORMANCE RANKINGS -->
+<div class="section-box">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <h3 style="margin:0;">3. Executive Performance Rankings</h3>
+    <div style="font-size:12px;color:#94a3b8;">Ranked by total collections and completed installations</div>
+  </div>
+  <div class="tableScroll">
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Executive</th>
+          <th>Total Assigned Leads</th>
+          <th>Converted Customers</th>
+          <th>Total Collections (₹)</th>
+          <th>Pending Balance (₹)</th>
+          <th>Performance Score</th>
+        </tr>
+      </thead>
+      <tbody id="executiveRankingsTable">
+        <tr><td colspan="7" style="text-align:center;color:#8a97a6;padding:14px;">Calculating executive rankings...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- 4. PERFORMANCE CHARTS & VISUAL TRENDS -->
+<div class="section-box">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+<h3 style="margin:0;">4. Performance Visual Trends</h3>
+<div style="display:flex;gap:6px;">
+<button type="button" class="action chartModeBtn active" data-chartmode="7d">Last 7 Days</button>
+<button type="button" class="action chartModeBtn" data-chartmode="30d">Last 30 Days</button>
+<button type="button" class="action chartModeBtn" data-chartmode="12m">Last 12 Months</button>
+</div>
+</div>
+<div class="analyticsChartsGrid">
+<div class="chartCard">
+<h4>Daily Collections (₹)</h4>
+<canvas id="collectionsChart"></canvas>
+</div>
+<div class="chartCard">
+<h4>Attendance Trend</h4>
+<canvas id="attendanceChart"></canvas>
+</div>
+<div class="chartCard">
+<h4>Employees vs Attendance by Branch</h4>
+<canvas id="branchChart"></canvas>
+</div>
+<div class="chartCard">
+<h4>Lead Acquisition Trend</h4>
+<canvas id="leadsChart"></canvas>
+</div>
+</div>
+</div>
+</div>
+
+<!-- EMPLOYEE MANAGEMENT -->
+<div id="employeeManagement" class="section">
+<div class="section-box">
+<h3>Employee Directory &amp; Status</h3>
+<input type="text" id="employeeSearchInput" placeholder="Search by name, email, or branch">
+<div class="tableScroll">
+<table>
+<thead>
+<tr><th>Name</th><th>Email</th><th>Role</th><th>Branch</th><th>Status</th><th>Absences</th><th>Actions</th></tr>
+</thead>
+<tbody id="employeeTable"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- LEAVE APPROVAL -->
+<div id="leaveApproval" class="section">
+<div class="section-box">
+<h3>Leave Requests</h3>
+<p class="hintText">Approve or reject employee leave applications. Approved leaves update the employee's allowance and mark their calendar.</p>
+<div id="leaveRequestsList">Loading…</div>
+</div>
+</div>
+
+<!-- BRANCH MANAGEMENT -->
+<div id="branchManagement" class="section">
+<div class="section-box">
+<h3>Add New Branch Location</h3>
+<div class="branchForm">
+<input type="text" id="branchNameInput" placeholder="Branch name (e.g. guntur)">
+<input type="number" step="0.000001" id="branchLatInput" placeholder="Latitude (e.g. 16.3067)">
+<input type="number" step="0.000001" id="branchLonInput" placeholder="Longitude (e.g. 80.4365)">
+<input type="number" id="branchRadiusInput" placeholder="Radius in meters (e.g. 100)" value="100">
+<button class="action" onclick="addBranch()">Save Branch</button>
+</div>
+<p id="branchStatus"></p>
+</div>
+<div class="section-box">
+<h3>Configured Branches</h3>
+<div class="tableScroll">
+<table>
+<thead><tr><th>Branch</th><th>Latitude</th><th>Longitude</th><th>Radius</th><th>Actions</th></tr></thead>
+<tbody id="branchTable"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- NOTICE MANAGEMENT -->
+<div id="noticeManagement" class="section">
+<div class="section-box">
+<h3>Broadcast Notice</h3>
+<p class="hintText">Post a company-wide notice that displays on all employee and manager dashboards.</p>
+<textarea id="noticeMessageInput" rows="3" placeholder="Enter notice text..."></textarea>
+<div class="branchForm" style="margin-top:8px;">
+<select id="noticeTypeSelect">
+<option value="info">Information (Blue)</option>
+<option value="warning">Warning (Orange)</option>
+<option value="critical">Critical (Red)</option>
+</select>
+<button class="action" onclick="postNotice()">Post Notice</button>
+<button class="action" onclick="clearNotice()">Clear Active Notice</button>
+</div>
+<p id="noticeStatus"></p>
+</div>
+</div>
+
+<!-- HOLIDAY MANAGEMENT -->
+<div id="holidayManagement" class="section">
+<div class="section-box">
+<h3>Add Company Holiday</h3>
+<input type="date" id="holidayDate">
+<input type="text" id="holidayName" placeholder="Holiday name (e.g. Diwali)">
+<button class="action" onclick="addHoliday()">Add Holiday</button>
+<p id="holidayStatus"></p>
+</div>
+<div class="section-box">
+<h3>Holiday Calendar</h3>
+<ul class="holidayList" id="adminHolidayList"></ul>
+</div>
+</div>
+
+<!-- AUDIT LOGS -->
+<div id="auditLogs" class="section">
+<div class="section-box">
+<h3>Administrative Action Audit Trail</h3>
+<p class="hintText">Chronological record of changes made by administrators (unblocks, deletions, lock changes, configuration edits).</p>
+<input type="text" id="auditSearchInput" placeholder="Filter audit logs...">
+<div class="tableScroll">
+<table>
+<thead><tr><th>Timestamp</th><th>Admin</th><th>Action</th><th>Target</th></tr></thead>
+<tbody id="auditLogTable"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- LOGIN HISTORY -->
+<div id="loginHistory" class="section">
+<div class="section-box">
+<h3>User Login Activity</h3>
+<p class="hintText">Tracks successful sign-ins across all employee, manager, and admin accounts.</p>
+<input type="text" id="loginSearchInput" placeholder="Filter by email or role...">
+<div class="tableScroll">
+<table>
+<thead><tr><th>Timestamp</th><th>Email</th><th>Role</th><th>Browser / Device</th></tr></thead>
+<tbody id="loginHistoryTable"></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- COMPANY SETTINGS -->
+<div id="companySettings" class="section">
+<div class="section-box">
+<h3>Company Profile</h3>
+<div class="settingsGrid">
+<label>Company Name<input type="text" id="settingCompanyName" value="M.R Solar Systems"></label>
+<label>Support Phone<input type="text" id="settingSupportPhone"></label>
+<label>Support Email<input type="email" id="settingSupportEmail"></label>
+<label>Head Office Address<input type="text" id="settingOfficeAddress"></label>
+<label>GST Number<input type="text" id="settingGstNumber"></label>
+</div>
+<button class="action" id="saveCompanySettingsBtn" style="margin-top:12px;">Save Profile</button>
+<div id="companySettingsStatus" style="margin-top:8px;font-size:12px;"></div>
+</div>
+
+<div class="section-box">
+<h3>Operational Defaults</h3>
+<div class="settingsGrid">
+<label>Default Attendance Radius (meters)<input type="number" id="settingDefaultRadius" value="100"></label>
+<label>Default Leave Allowance (days/year)<input type="number" id="settingDefaultLeaveAllowance" value="12"></label>
+<label>Consecutive Absences Before Auto-Block<input type="number" id="settingAbsenceThreshold" value="3"></label>
+</div>
+<button class="action" id="saveOperationalDefaultsBtn" style="margin-top:12px;">Save Defaults</button>
+<div id="operationalDefaultsStatus" style="margin-top:8px;font-size:12px;"></div>
+</div>
+</div>
+
+<!-- BACKUP & EXPORT -->
+<div id="backupOptions" class="section">
+<div class="section-box">
+<h3>Manual System Backups</h3>
+<p class="hintText">Download snapshot JSON files of your critical database collections for offsite storage.</p>
+<div style="display:flex;gap:8px;flex-wrap:wrap;">
+<button class="action" id="backupAllBtn">Download Full Backup (JSON)</button>
+<button class="action" id="backupUsersBtn">Download Users Only</button>
+<button class="action" id="backupErpBtn">Download ERP Only</button>
+<button class="action" id="backupAttendanceBtn">Download Attendance Only</button>
+</div>
+<div id="backupProgressStatus" style="margin-top:12px;font-size:13px;"></div>
+</div>
+
+<div class="section-box">
+<h3>Automated Backup Schedule</h3>
+<label>Frequency
+<select id="backupFrequencyInput">
+<option value="daily">Daily</option>
+<option value="weekly">Weekly</option>
+<option value="monthly">Monthly</option>
+</select>
+</label>
+<label style="margin-left:12px;">
+<input type="checkbox" id="backupEnabledInput"> Enable scheduled backups
+</label>
+<div id="backupScheduleStatus" style="margin-top:10px;color:#8a97a6;font-size:12px;"></div>
+</div>
+</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<script type="module" src="../js/session-timeout.js"></script>
+<script type="module" src="../js/admin.js"></script>
+<script type="module" src="../js/admin-erp-enhancements.js"></script>
+<script type="module" src="../js/admin-service.js"></script>
+<script type="module" src="../js/admin-website-leads.js"></script>
+<script type="module" src="../js/admin-inventory.js"></script>
+<script type="module" src="../js/admin-tasks.js"></script>
+<script type="module" src="../js/admin-reports.js"></script>
+<script type="module" src="../js/admin-analytics-charts.js"></script>
+<script type="module" src="../js/admin-analytics.js"></script>
+<script type="module" src="../js/admin-management.js"></script>
+<script type="module" src="../js/admin-audit.js"></script>
+<script type="module" src="../js/admin-login-history.js"></script>
+<script type="module" src="../js/admin-settings.js"></script>
+<script type="module" src="../js/auth.js"></script>
+
+</body>
+</html>
