@@ -392,7 +392,7 @@ window.markAttendance = async function () {
       }
     } catch (e) {}
 
-       // ✅ Saves ONLY to: /attendance/{employeeId}/{date}/data
+          // 1. Fast Nested Path for Employee Instant Read
     const nestedRef = doc(db, "attendance", user.uid, today, "data");
     await setDoc(nestedRef, {
       status: isLate ? "late" : "present",
@@ -404,6 +404,21 @@ window.markAttendance = async function () {
       branch: userBranch || "Office",
       date: today,
       time: serverTimestamp()
+    });
+
+    // 2. Top-Level Record for Manager Portal & Analytics Calendar
+    const flatRef = doc(db, "attendance", `${today}_${user.uid}`);
+    await setDoc(flatRef, {
+      employeeId: user.uid,
+      userId: user.uid,
+      employeeName: empName,
+      employeeEmail: user.email || "",
+      branch: userBranch || "Office",
+      status: isLate ? "late" : "present",
+      isLate: isLate,
+      date: today,
+      type: "checkin",
+      timestamp: serverTimestamp()
     });
 
     // Recalculate late marks count
