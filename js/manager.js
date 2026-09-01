@@ -121,21 +121,20 @@ async function renderAttendance(date) {
     return role !== "admin" && role !== "manager";
   });
 
-  // Also check nested hierarchy /attendance/{employeeId}/{selectedDate}/data for any missing records
+    // Also check nested hierarchy /attendance/{employeeId}/{selectedDate}/data for any missing records
   await Promise.all(employees.map(async (u) => {
     if (!map[u.id] || map[u.id].length === 0) {
       try {
         const directSnap = await getDoc(doc(db, "attendance", u.id, selectedDate, "data"));
-if (directSnap.exists()) {
-  const dData = directSnap.data();
-  if (dData.status === "present" || dData.status === "late") {
-    map[u.id] = [dData];
-  }
-}
+        if (directSnap.exists()) {
+          const dData = directSnap.data();
+          if (dData.status === "present" || dData.status === "late") {
+            map[u.id] = [dData];
+          }
+        }
       } catch (e) {}
     }
   }));
-
   if (employees.length === 0) {
     attendanceBody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#8a97a6;padding:16px;">No employee records found.</td></tr>`;
     if (metricsContainer) metricsContainer.innerHTML = "";
