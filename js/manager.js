@@ -126,9 +126,12 @@ async function renderAttendance(date) {
     if (!map[u.id] || map[u.id].length === 0) {
       try {
         const directSnap = await getDoc(doc(db, "attendance", u.id, selectedDate, "data"));
-        if (directSnap.exists() && directSnap.data().status === "present") {
-          map[u.id] = [directSnap.data()];
-        }
+if (directSnap.exists()) {
+  const dData = directSnap.data();
+  if (dData.status === "present" || dData.status === "late") {
+    map[u.id] = [dData];
+  }
+}
       } catch (e) {}
     }
   }));
