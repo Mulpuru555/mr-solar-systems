@@ -577,51 +577,76 @@ window.generateAttendanceReport = async function () {
   document.getElementById("attendanceReportData").innerHTML = html;
 };
 
-const holidayTable = document.getElementById("holidayTable");
+const holidayListEl = document.getElementById("adminHolidayList");
+const holidayStatusEl = document.getElementById("holidayStatus");
 
 async function loadHolidays() {
-  if (!holidayTable) return;
-  holidayTable.innerHTML = "";
+  if (!holidayListEl) return;
+  holidayListEl.innerHTML = "<li style='color:#94a3b8;padding:8px;'>Loading holidays...</li>";
 
-  const snapshot = await getDocs(collection(db, "settings", "holidays", "holidayList"));
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${data.date}</td>
-      <td>${escapeHtml(data.name)}</td>
-      <td>
-        <button class="lock-btn" onclick="deleteHoliday('${docSnap.id}')">Delete</button>
-      </td>
-    `;
-    holidayTable.appendChild(row);
-  });
+  try {
+    const snapshot = await getDocs(collection(db, "settings", "holidays", "holidayList"));
+    if (snapshot.empty) {
+      holidayListEl.innerHTML = "<li style='color:#94a3b8;padding:8px;'>No company holidays added yet.</li>";
+      return;
+    }
+
+    holidayListEl.innerHTML = "";
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const li = document.createElement("li");
+      li.style.cssText = "display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.07);";
+      li.innerHTML = `
+        <div>
+          <span style="color:#f59e0b;font-weight:700;margin-right:12px;">📅 ${data.date}</span>
+          <span style="color:#fff;font-weight:600;">${escapeHtml(data.name || docSnap.id)}</span>
+        </div>
+        <button class="lock-btn" onclick="deleteHoliday('${docSnap.id}')" style="background:#ef4444;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-weight:700;">Delete</button>
+      `;
+      holidayListEl.appendChild(li);
+    });
+  } catch (err) {
+    console.warn("loadHolidays error:", err);
+    holidayListEl.innerHTML = "<li style='color:#ef4444;padding:8px;'>Failed to load holidays. Check permissions.</li>";
+  }
 }
 
 window.addHoliday = async function () {
-  const date = document.getElementById("holidayDate").value;
-  const name = document.getElementById("holidayName").value.trim();
+  const dateInput = document.getElementById("holidayDate");
+  const nameInput = document.getElementById("holidayName");
+  const date = dateInput ? dateInput.value : "";
+  const name = nameInput ? nameInput.value.trim() : "";
 
   if (!date || !name) {
-    document.getElementById("holidayMessage").innerText = "Fill all fields.";
+    if (holidayStatusEl) holidayStatusEl.innerHTML = "<span style='color:#ef4444;'>⚠️ Please enter both date and holiday name.</span>";
     return;
   }
 
-  await setDoc(doc(db, "settings", "holidays", "holidayList", date), { name, date });
+  if (holidayStatusEl) holidayStatusEl.innerHTML = "<span style='color:#fbbf24;'>Adding holiday...</span>";
 
-  document.getElementById("holidayMessage").innerText = "Holiday Added Successfully.";
-  document.getElementById("holidayDate").value = "";
-  document.getElementById("holidayName").value = "";
+  try {
+    await setDoc(doc(db, "settings", "holidays", "holidayList", date), { name, date });
 
-  logActivity("Added holiday", `date=${date}, name=${name}`);
-  loadHolidays();
+    if (holidayStatusEl) holidayStatusEl.innerHTML = "<span style='color:#22c55e;'>✅ Holiday added successfully!</span>";
+    if (dateInput) dateInput.value = "";
+    if (nameInput) nameInput.value = "";
+
+    logActivity("Added holiday", `date=${date}, name=${name}`);
+    loadHolidays();
+  } catch (err) {
+    if (holidayStatusEl) holidayStatusEl.innerHTML = `<span style='color:#ef4444;'>❌ Failed to add: ${err.message}</span>`;
+  }
 };
 
 window.deleteHoliday = async function (date) {
-  if (!confirm("Delete this holiday?")) return;
-  await deleteDoc(doc(db, "settings", "holidays", "holidayList", date));
-  logActivity("Deleted holiday", `date=${date}`);
-  loadHolidays();
+  if (!confirm(`Delete holiday for ${date}?`)) return;
+  try {
+    await deleteDoc(doc(db, "settings", "holidays", "holidayList", date));
+    logActivity("Deleted holiday", `date=${date}`);
+    loadHolidays();
+  } catch (err) {
+    alert("Failed to delete holiday: " + err.message);
+  }
 };
 
 loadHolidays();
