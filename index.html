@@ -60,14 +60,85 @@
         <!-- HEADER ACTION BUTTONS -->
         <div class="header-actions">
             <a href="#service" class="quote-btn-header">
-                <span>⚡ Free Consultation</span>
+                <span class="quote-text-full">⚡ Free Consultation</span>
+                <span class="quote-text-mobile">⚡ Quote</span>
             </a>
             <a class="login-btn" href="pages/login.html">
                 <span>🔒 Staff Login</span>
             </a>
+            <button class="mobile-toggle-btn" id="mobileToggleBtn" aria-label="Open Menu">
+                <span class="hamburger-bar"></span>
+                <span class="hamburger-bar"></span>
+                <span class="hamburger-bar"></span>
+            </button>
         </div>
     </div>
 </header>
+
+<!-- MOBILE NAVIGATION DRAWER & BACKDROP -->
+<div class="mobile-nav-backdrop" id="mobileNavBackdrop"></div>
+<div class="mobile-nav-drawer" id="mobileNavDrawer">
+    <div class="mobile-drawer-header">
+        <div class="mobile-drawer-brand">
+            <img src="assets/images/mr-logo.jpeg" class="drawer-logo" alt="M.R Solar Systems">
+            <div class="drawer-brand-text">
+                <div class="drawer-title">M.R <span>SOLAR</span> SYSTEMS</div>
+                <div class="drawer-dealer">Authorized Dealer: <strong style="color:#38bdf8;">Tata Power Solar</strong></div>
+            </div>
+        </div>
+        <button class="mobile-drawer-close" id="mobileDrawerClose" aria-label="Close Menu">✕</button>
+    </div>
+
+    <div class="mobile-drawer-nav">
+        <a href="#systems" class="drawer-nav-link">
+            <span class="drawer-nav-icon">☀️</span>
+            <span>Products & Systems</span>
+        </a>
+        <a href="#technology" class="drawer-nav-link">
+            <span class="drawer-nav-icon">⚙️</span>
+            <span>Engineering Excellence</span>
+        </a>
+        <a href="#subsidy" class="drawer-nav-link drawer-nav-highlight">
+            <span class="drawer-nav-icon">🏛️</span>
+            <span>PM Surya Ghar Subsidy (₹78k)</span>
+        </a>
+        <a href="#calculator" class="drawer-nav-link">
+            <span class="drawer-nav-icon">💳</span>
+            <span>Savings & EMI Calculator</span>
+        </a>
+        <a href="#projects" class="drawer-nav-link">
+            <span class="drawer-nav-icon">📸</span>
+            <span>400+ Solar Installations</span>
+        </a>
+        <a href="#service" class="drawer-nav-link">
+            <span class="drawer-nav-icon">⚡</span>
+            <span>Book Rooftop Survey</span>
+        </a>
+        <a href="#contact" class="drawer-nav-link">
+            <span class="drawer-nav-icon">📍</span>
+            <span>Branches & Office</span>
+        </a>
+    </div>
+
+    <div class="mobile-drawer-cta">
+        <a href="#service" class="drawer-cta-primary">
+            ⚡ Get Free Quote & Survey
+        </a>
+        <a href="pages/login.html" class="drawer-cta-secondary">
+            🔒 Staff ERP & Admin Login
+        </a>
+    </div>
+
+    <div class="mobile-drawer-footer">
+        <div class="drawer-phone-row">
+            <span style="font-size:12px;color:#94a3b8;font-weight:600;">Customer Helpline:</span>
+            <a href="tel:9154777773" class="drawer-call-btn">📞 +91 91547 77773</a>
+        </div>
+        <div class="drawer-branches-strip">
+            Tenali • Guntur • Vijayawada • Bapatla • Chirala • Repalle
+        </div>
+    </div>
+</div>
 
 <!-- HERO SECTION (Tata Motors Futuristic Electric Style) -->
 <section class="hero">
@@ -764,6 +835,39 @@ window.closeLeadPopup = function() {
         popup.style.display = "none";
     }
 };
+
+// ================= MOBILE NAVIGATION DRAWER =================
+const mobileToggleBtn = document.getElementById("mobileToggleBtn");
+const mobileNavDrawer = document.getElementById("mobileNavDrawer");
+const mobileNavBackdrop = document.getElementById("mobileNavBackdrop");
+const mobileDrawerClose = document.getElementById("mobileDrawerClose");
+
+function openMobileMenu() {
+    if (mobileNavDrawer && mobileNavBackdrop) {
+        mobileNavDrawer.classList.add("active");
+        mobileNavBackdrop.classList.add("active");
+        document.body.style.overflow = "hidden";
+    }
+}
+
+function closeMobileMenu() {
+    if (mobileNavDrawer && mobileNavBackdrop) {
+        mobileNavDrawer.classList.remove("active");
+        mobileNavBackdrop.classList.remove("active");
+        document.body.style.overflow = "";
+    }
+}
+
+if (mobileToggleBtn) mobileToggleBtn.addEventListener("click", openMobileMenu);
+if (mobileDrawerClose) mobileDrawerClose.addEventListener("click", closeMobileMenu);
+if (mobileNavBackdrop) mobileNavBackdrop.addEventListener("click", closeMobileMenu);
+
+// Close menu upon tapping any link inside mobile drawer
+document.querySelectorAll(".mobile-drawer-nav a, .mobile-drawer-cta a").forEach(function(link) {
+    link.addEventListener("click", function() {
+        closeMobileMenu();
+    });
+});
 </script>
 
 </body>

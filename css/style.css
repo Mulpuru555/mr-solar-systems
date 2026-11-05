@@ -278,6 +278,265 @@ body {
   transform: translateY(-1px);
 }
 
+.quote-text-mobile {
+  display: none;
+}
+
+.quote-text-full {
+  display: inline;
+}
+
+/* Mobile Toggle Hamburger Button */
+.mobile-toggle-btn {
+  display: none;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  cursor: pointer;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.mobile-toggle-btn:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--light-blue);
+}
+
+.hamburger-bar {
+  width: 20px;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 2px;
+  transition: var(--transition);
+}
+
+/* ==========================================================
+   MOBILE NAVIGATION DRAWER & BACKDROP
+   ========================================================== */
+
+.mobile-nav-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 7, 18, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10001;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.mobile-nav-backdrop.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-nav-drawer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 86%;
+  max-width: 360px;
+  height: 100vh;
+  background: #030d24;
+  border-left: 1px solid rgba(56, 189, 248, 0.25);
+  box-shadow: -15px 0 45px rgba(0, 0, 0, 0.7);
+  z-index: 10002;
+  transform: translateX(100%);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 24px 20px 30px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-nav-drawer.active {
+  transform: translateX(0);
+}
+
+.mobile-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 18px;
+}
+
+.mobile-drawer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.drawer-logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid rgba(245, 158, 11, 0.6);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+}
+
+.drawer-title {
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.drawer-title span {
+  color: var(--solar-amber);
+}
+
+.drawer-dealer {
+  font-size: 10px;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
+.mobile-drawer-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  font-size: 18px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.mobile-drawer-close:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.mobile-drawer-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 22px;
+}
+
+.drawer-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #e2e8f0;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14.5px;
+  padding: 11px 14px;
+  border-radius: 10px;
+  transition: var(--transition);
+}
+
+.drawer-nav-link:hover,
+.drawer-nav-link:active {
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--light-blue);
+  transform: translateX(4px);
+}
+
+.drawer-nav-icon {
+  font-size: 18px;
+  width: 24px;
+  text-align: center;
+}
+
+.drawer-nav-highlight {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  color: #fbbf24;
+}
+
+.mobile-drawer-cta {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.drawer-cta-primary {
+  background: var(--accent-green);
+  color: #ffffff !important;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 13px;
+  border-radius: var(--radius-pill);
+  text-align: center;
+  box-shadow: 0 4px 14px rgba(0, 168, 82, 0.35);
+  transition: var(--transition);
+  display: block;
+}
+
+.drawer-cta-primary:hover {
+  background: var(--accent-green-hover);
+}
+
+.drawer-cta-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  color: #ffffff !important;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px;
+  border-radius: var(--radius-pill);
+  text-align: center;
+  transition: var(--transition);
+  display: block;
+}
+
+.drawer-cta-secondary:hover {
+  background: rgba(56, 189, 248, 0.15);
+  border-color: var(--light-blue);
+  color: var(--light-blue) !important;
+}
+
+.mobile-drawer-footer {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.drawer-phone-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.drawer-call-btn {
+  color: #38bdf8;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.drawer-branches-strip {
+  font-size: 11px;
+  color: #64748b;
+  line-height: 1.5;
+}
+
 /* ==========================================================
    HERO SECTION (Tata Motors Futuristic Aesthetic)
    ========================================================== */
@@ -1643,16 +1902,24 @@ section {
    RESPONSIVE DESIGN (Tablets & Mobile Phones)
    ========================================================== */
 
+/* Tablet Landscape & Laptops (<= 1024px) */
 @media (max-width: 1024px) {
   .products-split-layout {
     grid-template-columns: 1fr;
+    gap: 30px;
   }
   .products-sidebar {
     position: static;
     text-align: center;
+    max-width: 700px;
+    margin: 0 auto 20px;
+  }
+  .sidebar-contact-btn {
+    margin: 0 auto;
   }
   .metrics-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
   }
   .metric-item:nth-child(2) {
     border-right: none;
@@ -1668,9 +1935,27 @@ section {
   }
   .footer-grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 36px;
+  }
+  .nav-menu {
+    gap: 12px;
+  }
+  .nav-menu a {
+    font-size: 12.5px;
   }
 }
 
+/* Tablet Portrait & Large Phones (<= 900px) */
+@media (max-width: 900px) {
+  .nav-menu {
+    display: none;
+  }
+  .mobile-toggle-btn {
+    display: flex;
+  }
+}
+
+/* Standard Mobile & Small Tablets (<= 768px) */
 @media (max-width: 768px) {
   .top-bar {
     display: none;
@@ -1678,45 +1963,433 @@ section {
   .nav-menu {
     display: none;
   }
-  .header {
-    padding: 12px 5%;
+  .mobile-toggle-btn {
+    display: flex;
   }
+  
+  /* Top Bar & Header Adjustments */
+  .header {
+    padding: 10px 4%;
+  }
+  .header-container {
+    gap: 10px;
+  }
+  .header-actions {
+    gap: 8px;
+  }
+  .login-btn {
+    display: none; /* Moved to mobile drawer & footer to keep header neat */
+  }
+  .quote-btn-header {
+    padding: 7px 14px;
+    font-size: 12px;
+  }
+  
+  /* Brand title responsive */
+  .mr-logo {
+    width: 42px;
+    height: 42px;
+  }
+  .brand-title {
+    font-size: 16px;
+  }
+  .dealer-text {
+    font-size: 9.5px;
+  }
+
+  /* Hero Section */
   .hero {
-    padding: 60px 5% 70px;
+    padding: 48px 4% 56px;
     min-height: auto;
   }
+  .hero-subtag {
+    font-size: 11px;
+    padding: 5px 14px;
+    margin-bottom: 16px;
+  }
+  .hero h2 {
+    font-size: clamp(24px, 6.5vw, 36px);
+    line-height: 1.22;
+    letter-spacing: -0.5px;
+    margin-bottom: 12px;
+  }
+  .hero-movement-text {
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    margin-bottom: 20px;
+  }
   .hero-glass-card {
-    padding: 24px 20px;
+    padding: 24px 18px;
+    border-radius: 16px;
+    margin-top: 10px;
+    width: 100%;
+  }
+  .hero-glass-card h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    line-height: 1.3;
+  }
+  .hero-glass-card p {
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .hero-cta-group {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+  .btn-primary-green,
+  .btn-secondary-glass {
+    width: 100%;
+    justify-content: center;
+    padding: 13px 20px;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  /* Metrics Grid */
+  .metrics-strip {
+    padding: 18px 4%;
   }
   .metrics-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
   }
   .metric-item {
     border-right: none;
-    border-bottom: 1px solid var(--border-light);
-    padding-bottom: 16px;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    padding: 12px 10px;
+    background: #ffffff;
+    box-shadow: var(--shadow-sm);
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
-  .metric-item:last-child {
-    border-bottom: none;
+  .metric-icon-wrap {
+    width: 38px;
+    height: 38px;
+    font-size: 18px;
+    border-radius: 10px;
+  }
+  .metric-number {
+    font-size: 20px;
+  }
+  .metric-label {
+    font-size: 11px;
+    line-height: 1.3;
+  }
+
+  /* General Section Spacing */
+  section {
+    padding: 50px 4%;
+  }
+  .section-head {
+    margin-bottom: 34px;
+  }
+  .section-title {
+    font-size: clamp(24px, 5.5vw, 32px);
+    line-height: 1.25;
+  }
+  .section-desc {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  /* Product Cards */
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .waaree-card {
+    border-radius: 16px;
+  }
+  .waaree-card-img-wrap {
+    min-height: 180px;
+    padding: 20px;
+  }
+  .waaree-card-body {
+    padding: 20px 16px;
+  }
+  .waaree-card-body h3 {
+    font-size: 18px;
+  }
+  .waaree-card-body p {
+    font-size: 13.5px;
+  }
+  .waaree-card-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 13.5px;
+  }
+
+  /* Engineering Excellence */
+  .tech-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .tech-card {
+    border-radius: 16px;
+  }
+  .tech-img-wrap {
+    height: 190px;
+  }
+  .tech-card-body {
+    padding: 20px 16px;
+  }
+  .tech-card-body h3 {
+    font-size: 18px;
+  }
+  .tech-points li {
+    font-size: 13px;
+  }
+
+  /* Subsidy Highlight */
+  section#subsidy {
+    padding: 10px 4% !important;
   }
   .subsidy-highlight-section {
     flex-direction: column;
     text-align: center;
+    padding: 26px 18px;
+    border-radius: 16px;
+    gap: 20px;
+  }
+  .subsidy-content h3 {
+    font-size: 20px;
+    line-height: 1.3;
+  }
+  .subsidy-content p {
+    font-size: 13.5px;
+    line-height: 1.6;
+  }
+  .subsidy-card-badge {
+    width: 100%;
+    max-width: 260px;
+    margin: 0 auto;
+    padding: 18px;
+    border-radius: 14px;
+  }
+  .subsidy-amount {
+    font-size: 32px;
+  }
+
+  /* Calculator */
+  .calc-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .calc-box {
+    padding: 22px 16px;
+    border-radius: 16px;
+  }
+  .calc-box h3 {
+    font-size: 18px;
+  }
+  .calc-input {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS Safari */
+  }
+  .calc-btn {
+    width: 100%;
+    padding: 13px;
+    font-size: 14px;
+  }
+  .calc-result-number {
+    font-size: 26px;
+  }
+
+  /* Projects Section */
+  .projects-filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    text-align: left;
+  }
+  .project-readmore-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 18px;
+    font-size: 13px;
   }
   .projects-grid {
     grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  .project-thumb-card {
+    border-radius: 14px;
+  }
+  .project-thumb-img-wrap {
+    height: 195px;
+  }
+
+  /* Testimonials */
+  .testimonials-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .testimonial-card {
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  /* Lead Consultation Form */
+  .lead-card-box {
+    padding: 22px 16px;
+    border-radius: 16px;
   }
   .lead-form-grid {
     grid-template-columns: 1fr;
+    gap: 14px;
   }
   .lead-form-full {
     grid-column: span 1;
   }
+  .lead-input {
+    font-size: 16px !important; /* Prevents iOS Safari auto-zoom */
+    padding: 13px 14px;
+  }
+  .lead-submit-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 15px;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 45px 4% 95px; /* Extra bottom clearance for floating actions */
+  }
   .footer-grid {
     grid-template-columns: 1fr;
+    gap: 28px;
   }
   .footer-bottom {
     flex-direction: column;
     text-align: center;
+    gap: 12px;
+    font-size: 12px;
+  }
+
+  /* Floating Actions */
+  .floating-whatsapp {
+    width: 52px;
+    height: 52px;
+    bottom: 20px;
+    right: 18px;
+  }
+  .floating-call {
+    width: 44px;
+    height: 44px;
+    bottom: 82px;
+    right: 22px;
+  }
+
+  /* Modals */
+  .lead-popup-box {
+    padding: 24px 18px;
+    border-radius: 16px;
+    width: 92%;
+    max-width: 420px;
+  }
+  .lead-popup-box h2 {
+    font-size: 20px;
+  }
+  .lead-popup-box form input {
+    font-size: 16px !important;
+  }
+  .gallery-box {
+    padding: 16px 12px;
+    border-radius: 16px;
+    width: 94%;
+  }
+  .gallery-view img {
+    max-height: 52vh;
+  }
+}
+
+/* Phones & Small Screens (<= 480px) */
+@media (max-width: 480px) {
+  .header {
+    padding: 8px 3%;
+  }
+  .brand-wrapper {
+    gap: 8px;
+  }
+  .mr-logo {
+    width: 36px;
+    height: 36px;
+  }
+  .brand-title {
+    font-size: 15px;
+  }
+  .dealer-text {
+    font-size: 8.5px;
+    letter-spacing: 0.2px;
+  }
+  
+  /* Swap header button text for ultra-clean mobile navbar */
+  .quote-text-full {
+    display: none;
+  }
+  .quote-text-mobile {
+    display: inline;
+  }
+  .quote-btn-header {
+    padding: 6px 11px;
+    font-size: 11.5px;
+  }
+  .mobile-toggle-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+  }
+  .hamburger-bar {
+    width: 18px;
+    height: 2px;
+  }
+
+  .hero {
+    padding: 40px 3% 50px;
+  }
+  .hero h2 {
+    font-size: clamp(22px, 6.8vw, 28px);
+  }
+  .hero-glass-card {
+    padding: 20px 14px;
+  }
+
+  /* Floating Action Buttons scaled for thumb touch */
+  .floating-whatsapp {
+    width: 48px;
+    height: 48px;
+    bottom: 18px;
+    right: 16px;
+  }
+  .floating-whatsapp svg {
+    width: 26px;
+    height: 26px;
+  }
+  .floating-call {
+    width: 40px;
+    height: 40px;
+    bottom: 74px;
+    right: 20px;
+  }
+  .floating-call svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+/* Extra Small Phones (<= 360px) */
+@media (max-width: 360px) {
+  .brand-title {
+    font-size: 13.5px;
+  }
+  .dealer-text {
+    font-size: 7.8px;
+  }
+  .quote-btn-header {
+    display: none; /* Keep header completely uncluttered on tiny 320px devices */
   }
 }
